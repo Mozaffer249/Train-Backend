@@ -1,0 +1,17 @@
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.AssemblyInfo.cs
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Infrastructure.deps.json
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Infrastructure.runtimeconfig.json
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Infrastructure.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Infrastructure.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Data.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\bin\Debug\net8.0\Trains.Data.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.I.05428C94.Up2Date
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\refint\Trains.Infrastructure.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\Trains.Infrastructure.genruntimeconfig.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Infrastructure\obj\Debug\net8.0\ref\Trains.Infrastructure.dll

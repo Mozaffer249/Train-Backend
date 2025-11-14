@@ -1,0 +1,168 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|c:\\users\\user\\onedrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\visual studio 2022\\projects\\sudan_trains\\sudan_train.infrastructure\\migrations\\20251105175339_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|solutionrelative:sudan_train.infrastructure\\migrations\\20251105175339_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|c:\\users\\user\\onedrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\visual studio 2022\\projects\\sudan_trains\\sudan_train.infrastructure\\context\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|solutionrelative:sudan_train.infrastructure\\context\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|c:\\users\\user\\onedrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\visual studio 2022\\projects\\sudan_trains\\sudan_train.infrastructure\\trains.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{D396E700-4C7B-4629-A3E3-7D6CDCCA4BA7}|Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj|solutionrelative:sudan_train.infrastructure\\trains.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9E977159-E52B-430C-B002-33D596ACB01F}|Sudan_Train\\Trains.Api.csproj|c:\\users\\user\\onedrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\visual studio 2022\\projects\\sudan_trains\\sudan_train\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9E977159-E52B-430C-B002-33D596ACB01F}|Sudan_Train\\Trains.Api.csproj|solutionrelative:sudan_train\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "20251105175339_init.cs",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251105175339_init.cs",
+              "RelativeDocumentMoniker": "Sudan_Train.Infrastructure\\Migrations\\20251105175339_init.cs",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251105175339_init.cs",
+              "RelativeToolTip": "Sudan_Train.Infrastructure\\Migrations\\20251105175339_init.cs",
+              "ViewState": "AgIAAPYAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-05T17:53:39.833Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "20251104191250_init.cs",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs",
+              "RelativeDocumentMoniker": "Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs",
+              "RelativeToolTip": "Sudan_Train.Infrastructure\\Migrations\\20251104191250_init.cs",
+              "ViewState": "AgIAADcCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T19:12:50.836Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "20251104190557_init.cs",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs",
+              "RelativeDocumentMoniker": "Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs",
+              "RelativeToolTip": "Sudan_Train.Infrastructure\\Migrations\\20251104190557_init.cs",
+              "ViewState": "AgIAAMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T19:05:57.739Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train\\Program.cs",
+              "RelativeDocumentMoniker": "Sudan_Train\\Program.cs",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train\\Program.cs",
+              "RelativeToolTip": "Sudan_Train\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T19:01:43.213Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ApplicationDBContext.cs",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\context\\ApplicationDBContext.cs",
+              "RelativeDocumentMoniker": "Sudan_Train.Infrastructure\\context\\ApplicationDBContext.cs",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\context\\ApplicationDBContext.cs",
+              "RelativeToolTip": "Sudan_Train.Infrastructure\\context\\ApplicationDBContext.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAAAgwGAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-04T18:57:16.57Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Trains.Infrastructure.csproj",
+              "DocumentMoniker": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\user\\OneDrive\\\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A\\Visual Studio 2022\\projects\\Sudan_Trains\\Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj",
+              "RelativeToolTip": "Sudan_Train.Infrastructure\\Trains.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-11-04T16:44:56.344Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

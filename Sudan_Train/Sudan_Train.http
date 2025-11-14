@@ -1,0 +1,6 @@
+@Sudan_Train_HostAddress = http://localhost:5145
+
+GET {{Sudan_Train_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

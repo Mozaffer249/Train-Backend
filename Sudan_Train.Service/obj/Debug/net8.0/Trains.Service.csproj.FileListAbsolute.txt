@@ -1,0 +1,17 @@
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.csproj.AssemblyReference.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.AssemblyInfoInputs.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.AssemblyInfo.cs
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.csproj.CoreCompileInputs.cache
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Service.deps.json
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Service.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Service.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Data.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Infrastructure.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Data.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\bin\Debug\net8.0\Trains.Infrastructure.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.S.15A69EFE.Up2Date
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\refint\Trains.Service.dll
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\Trains.Service.pdb
+C:\Users\user\OneDrive\المستندات\Visual Studio 2022\projects\Sudan_Trains\Sudan_Train.Service\obj\Debug\net8.0\ref\Trains.Service.dll
