@@ -10,15 +10,16 @@ namespace Sudan_Train.Infrastructure.context
     public class ApplicationDBContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>,
           IdentityUserRole<int>, IdentityUserLogin<int>, IdentityRoleClaim<int>,
           IdentityUserToken<int>>
-    {
-        //private readonly IEncryptionProvider _encryptionProvider;
-        //public ApplicationDBContext()
-        //{
 
-        //}
+    {
+        private readonly IEncryptionProvider _encryptionProvider;
+        public ApplicationDBContext()
+        {
+
+        }
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
-            //_encryptionProvider = new GenerateEncryptionProvider("8a4dcaaec64d412380fe4b02193cd26f");
+            encryptionProvider = new GenerateEncryptionProvider("8a4dcaaec64d412380fe4b02193cd26f");
         }
         public DbSet<Train> Trains { get; set; }
         public DbSet<Coach> Coaches { get; set; }
