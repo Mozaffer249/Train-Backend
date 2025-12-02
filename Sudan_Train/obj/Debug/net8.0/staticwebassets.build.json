@@ -1,1 +1,11 @@
-{"Version":1,"Hash":"dkDpTko1pPM/CKjDOXSR6kSMrk64IGUS7U3ytOmIHDE=","Source":"Trains.Api","BasePath":"_content/Trains.Api","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "/GoY+Z7pjMz5IQbvIsWyxW0EQfm9YI4yTPYr129rv08=",
+  "Source": "Trains.Api",
+  "BasePath": "_content/Trains.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

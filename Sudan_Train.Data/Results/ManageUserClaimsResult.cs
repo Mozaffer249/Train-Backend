@@ -8,11 +8,11 @@ namespace Sudan_Train.Data.Results
     public class ManageUserClaimsResult
     {
         public int UserId { get; set; }
-        public List<UserClaims> userClaims { get; set; }
+        public List<UserClaims> userClaims { get; set; } = default!;
     }
     public class UserClaims
     {
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
         public bool Value { get; set; }
     }
 }

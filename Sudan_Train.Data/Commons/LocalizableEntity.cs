@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sudan_Train.Data.Commons
 {
     public class LocalizableEntity
     {
-        public string NameAr { get; set; }
-        public string NameEn { get; set; }
+        public string NameAr { get; set; } = default!;
+        public string NameEn { get; set; } = default!;
 
         public string GetLocalized()
         {

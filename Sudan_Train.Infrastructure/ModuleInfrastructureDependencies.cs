@@ -1,22 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Sudan_Train.Infrastructure.Abstracts;
+using Sudan_Train.Infrastructure.InfrastructureBases;
+using Sudan_Train.Infrastructure.Repositories;
 
 namespace Sudan_Train.Infrastructure
 {
-    public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
+    public static class ModuleInfrastructureDependencies
     {
+        public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
+        {
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
 
-        services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
-        services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
+            //views
 
-        //views
+            //Procedure
 
-        //Procedure
+            //functions
 
-        //functions
-
-        return services;
+            return services;
+        }
     }
 }

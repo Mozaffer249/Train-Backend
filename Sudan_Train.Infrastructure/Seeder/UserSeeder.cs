@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Seeder
 {

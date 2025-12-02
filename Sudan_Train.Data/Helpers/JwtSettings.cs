@@ -7,9 +7,9 @@ namespace Sudan_Train.Data.Helpers
 {
     public class JwtSettings
     {
-        public string Secret { get; set; }
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
+        public string Secret { get; set; } = default!;
+        public string Issuer { get; set; } = default!;
+        public string Audience { get; set; } = default!;
         public bool ValidateIssuer { get; set; }
         public bool ValidateAudience { get; set; }
         public bool ValidateLifeTime { get; set; }

@@ -1,4 +1,7 @@
 ﻿using System.Reflection;
+using EntityFrameworkCore.EncryptColumn.Extension;
+using EntityFrameworkCore.EncryptColumn.Interfaces;
+using EntityFrameworkCore.EncryptColumn.Util;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +13,15 @@ namespace Sudan_Train.Infrastructure.context
     public class ApplicationDBContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>,
           IdentityUserRole<int>, IdentityUserLogin<int>, IdentityRoleClaim<int>,
           IdentityUserToken<int>>
-
     {
         private readonly IEncryptionProvider _encryptionProvider;
-        public ApplicationDBContext()
-        {
-
-        }
+        //public ApplicationDBContext()
+        //{
+        //
+        //}
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
-            encryptionProvider = new GenerateEncryptionProvider("8a4dcaaec64d412380fe4b02193cd26f");
+            _encryptionProvider = new GenerateEncryptionProvider("8a4dcaaec64d412380fe4b02193cd26f");
         }
         public DbSet<Train> Trains { get; set; }
         public DbSet<Coach> Coaches { get; set; }
@@ -54,7 +56,7 @@ namespace Sudan_Train.Infrastructure.context
             builder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims", "security");
             builder.Entity<IdentityUserToken<int>>().ToTable("UserTokens", "security");
 
-            //modelBuilder.UseEncryption(_encryptionProvider);
+            builder.UseEncryption(_encryptionProvider);
         }
     }
 }
