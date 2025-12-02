@@ -13,5 +13,11 @@ namespace Sudan_Train.Data.AppMetaData
         public const string version = "V1";
         public const string Rule = root + "/" + version + "/";
 
+        #region Authentication
+        public const string Authentication = Rule + "Authentication";
+        public const string AuthenticationRegister = Authentication + "/Register";
+        public const string AuthenticationLogin = Authentication + "/Login";
+        #endregion
+
     }
 }
