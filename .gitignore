@@ -79,3 +79,5 @@ bld/
 .idea/
 *.sln.iml
 
+.env
+appsettings.*.json

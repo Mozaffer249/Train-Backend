@@ -5,6 +5,7 @@ using Serilog;
 using Sudan_Train.Core;
 using Sudan_Train.Infrastructure;
 using Sudan_Train.Infrastructure.context;
+using Sudan_Train.Infrastructure.Seeder;
 using Sudan_Train.Service;
 using System.Globalization;
 
@@ -80,6 +81,33 @@ builder.Services.AddSerilog();
 #endregion
 
 var app = builder.Build();
+
+#region Database Initialization & Seeding
+
+// Initialize database and seed data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var databaseSeeder = services.GetRequiredService<DatabaseSeeder>();
+        await databaseSeeder.InitializeAsync();
+
+        var roleSeeder = services.GetRequiredService<RoleSeeder>();
+        await roleSeeder.SeedAsync();
+
+        var userSeeder = services.GetRequiredService<UserSeeder>();
+        await userSeeder.SeedAsync();
+
+        Log.Information("Database initialization and seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while initializing the database.");
+    }
+}
+
+#endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
