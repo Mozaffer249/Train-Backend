@@ -116,6 +116,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Redirect root to Swagger in Development
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
 #region Localization Middleware
 var options = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(options!.Value);

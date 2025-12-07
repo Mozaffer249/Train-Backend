@@ -205,5 +205,3 @@ export emailSettings__Password="your-password"
 - Change admin password after first login
 
 For complete details, see **CONFIGURATION.md**
-
-

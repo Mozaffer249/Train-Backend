@@ -23,37 +23,42 @@ namespace Sudan_Train.Infrastructure.Seeder
         {
             try
             {
-                var databaseCreator = _context.GetService<IRelationalDatabaseCreator>() as RelationalDatabaseCreator;
-
-                if (databaseCreator != null)
+                // Ensure database exists
+                _logger.LogInformation("Checking database connection...");
+                var canConnect = await _context.Database.CanConnectAsync();
+                
+                if (!canConnect)
                 {
-                    // Check if can connect to database
-                    if (!databaseCreator.CanConnect())
-                    {
-                        _logger.LogInformation("Creating database...");
-                        databaseCreator.Create();
-                        _logger.LogInformation("Database created successfully.");
-                    }
-
-                    // Check if database has tables
-                    if (!databaseCreator.HasTables())
-                    {
-                        _logger.LogInformation("Creating database tables...");
-                        databaseCreator.CreateTables();
-                        _logger.LogInformation("Database tables created successfully.");
-                    }
+                    _logger.LogInformation("Database does not exist. Creating database...");
+                    await _context.Database.EnsureCreatedAsync();
+                    _logger.LogInformation("Database created successfully.");
+                }
+                else
+                {
+                    _logger.LogInformation("Database connection successful.");
                 }
 
-                // Apply any pending migrations
+                // Apply migrations (this is idempotent - safe to run multiple times)
+                _logger.LogInformation("Checking for pending migrations...");
                 var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+                
                 if (pendingMigrations.Any())
                 {
-                    _logger.LogInformation("Applying pending migrations...");
+                    _logger.LogInformation($"Found {pendingMigrations.Count()} pending migration(s). Applying...");
+                    foreach (var migration in pendingMigrations)
+                    {
+                        _logger.LogInformation($"  - {migration}");
+                    }
+                    
                     await _context.Database.MigrateAsync();
                     _logger.LogInformation("Migrations applied successfully.");
                 }
+                else
+                {
+                    _logger.LogInformation("Database is up to date. No pending migrations.");
+                }
 
-                _logger.LogInformation("Database initialization completed.");
+                _logger.LogInformation("Database initialization completed successfully.");
             }
             catch (Exception ex)
             {
