@@ -84,6 +84,25 @@ namespace Sudan_Train.Infrastructure.Seeder
                     _logger.LogError($"Inner exception: {ex.InnerException.Message}");
                 }
 
+                // Check for specific errors and provide helpful guidance
+                if (ex.Message.Contains("There is already an object named"))
+                {
+                    _logger.LogError("⚠️  Database has existing tables that conflict with the migration.");
+                    _logger.LogError("📋 Solutions:");
+                    _logger.LogError("   1. Drop the database and recreate it (recommended for development)");
+                    _logger.LogError("   2. Run the cleanup_database.sql script to remove old tables");
+                    _logger.LogError("   3. Manually remove conflicting tables from the database");
+                }
+                else if (ex.Message.Contains("network-related") || ex.Message.Contains("not found or was not accessible"))
+                {
+                    _logger.LogError("⚠️  Cannot connect to the database server.");
+                    _logger.LogError("📋 Check:");
+                    _logger.LogError("   1. Connection string is correct in appsettings.Development.json");
+                    _logger.LogError("   2. Database server is accessible and running");
+                    _logger.LogError("   3. Firewall allows the connection");
+                    _logger.LogError("   4. Server name and credentials are correct");
+                }
+
                 throw;
             }
         }

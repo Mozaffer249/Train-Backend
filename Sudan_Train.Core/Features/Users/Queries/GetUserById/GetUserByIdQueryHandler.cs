@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Sudan_Train.Core.Features.Users.Queries.GetUserList;
-using Sudan_Train.Core.Wrappers;
+using Sudan_Train.Core.Bases;
 using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Core.Features.Users.Queries.GetUserById

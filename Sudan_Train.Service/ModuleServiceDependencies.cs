@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Sudan_Train.Service.Abstracts;
+using Sudan_Train.Service.Implementations;
 
 namespace Sudan_Train.Service
 {
@@ -7,8 +9,9 @@ namespace Sudan_Train.Service
         public static IServiceCollection AddServiceDependencies(this IServiceCollection services)
         {
             // Register services here
-            // Example: services.AddTransient<IAuthenticationService, AuthenticationService>();
-            
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
+
             return services;
         }
     }

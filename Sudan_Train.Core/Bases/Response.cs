@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Sudan_Train.Core.Wrappers
+namespace Sudan_Train.Core.Bases
 {
     public class Response<T>
     {
@@ -28,10 +28,10 @@ namespace Sudan_Train.Core.Wrappers
         }
 
         public HttpStatusCode StatusCode { get; set; }
-        public object Meta { get; set; } = default!;
+        public object? Meta { get; set; }
         public bool Succeeded { get; set; }
         public string Message { get; set; } = default!;
-        public List<string> Errors { get; set; } = default!;
+        public List<string>? Errors { get; set; }
         public T Data { get; set; } = default!;
     }
 }

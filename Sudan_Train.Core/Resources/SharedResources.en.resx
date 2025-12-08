@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Response Messages -->
+  <data name="Success" xml:space="preserve">
+    <value>Operation completed successfully</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Created successfully</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Deleted successfully</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Updated successfully</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad request</value>
+  </data>
+  <data name="UnAuthorized" xml:space="preserve">
+    <value>Unauthorized access</value>
+  </data>
+  <data name="UnprocessableEntity" xml:space="preserve">
+    <value>Unprocessable entity</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+
+  <!-- Authentication & Authorization -->
+  <data name="UserNameIsExist" xml:space="preserve">
+    <value>Username already exists</value>
+  </data>
+  <data name="EmailIsExist" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="EmailIsNotExist" xml:space="preserve">
+    <value>Email does not exist</value>
+  </data>
+  <data name="FailedToAddUser" xml:space="preserve">
+    <value>Failed to add user</value>
+  </data>
+  <data name="FailedToUpdateUser" xml:space="preserve">
+    <value>Failed to update user</value>
+  </data>
+  <data name="FailedToDeleteUser" xml:space="preserve">
+    <value>Failed to delete user</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found</value>
+  </data>
+  <data name="PasswordNotCorrect" xml:space="preserve">
+    <value>Password is incorrect</value>
+  </data>
+  <data name="UserIsNotActive" xml:space="preserve">
+    <value>User account is not active</value>
+  </data>
+  <data name="UserRegisteredSuccessfully" xml:space="preserve">
+    <value>User registered successfully</value>
+  </data>
+
+  <!-- Validation -->
+  <data name="IsRequired" xml:space="preserve">
+    <value>This field is required</value>
+  </data>
+  <data name="IsExist" xml:space="preserve">
+    <value>Already exists</value>
+  </data>
+  <data name="IsNotExist" xml:space="preserve">
+    <value>Does not exist</value>
+  </data>
+  <data name="MaxLengthIs100" xml:space="preserve">
+    <value>Maximum length is 100 characters</value>
+  </data>
+  <data name="MaxLengthIs200" xml:space="preserve">
+    <value>Maximum length is 200 characters</value>
+  </data>
+  <data name="MaxLengthIs500" xml:space="preserve">
+    <value>Maximum length is 500 characters</value>
+  </data>
+  <data name="MinLengthIs3" xml:space="preserve">
+    <value>Minimum length is 3 characters</value>
+  </data>
+  <data name="InvalidFormat" xml:space="preserve">
+    <value>Invalid format</value>
+  </data>
+
+  <!-- Train Domain -->
+  <data name="TrainNotFound" xml:space="preserve">
+    <value>Train not found</value>
+  </data>
+  <data name="TrainAlreadyExist" xml:space="preserve">
+    <value>Train already exists</value>
+  </data>
+  <data name="CoachNotFound" xml:space="preserve">
+    <value>Coach not found</value>
+  </data>
+  <data name="SeatNotFound" xml:space="preserve">
+    <value>Seat not found</value>
+  </data>
+  <data name="SeatAlreadyBooked" xml:space="preserve">
+    <value>Seat is already booked</value>
+  </data>
+
+  <!-- Trip Domain -->
+  <data name="TripNotFound" xml:space="preserve">
+    <value>Trip not found</value>
+  </data>
+  <data name="TripIsFull" xml:space="preserve">
+    <value>Trip is fully booked</value>
+  </data>
+  <data name="TripIsNotAvailable" xml:space="preserve">
+    <value>Trip is not available</value>
+  </data>
+
+  <!-- Booking Domain -->
+  <data name="BookingNotFound" xml:space="preserve">
+    <value>Booking not found</value>
+  </data>
+  <data name="BookingAlreadyExist" xml:space="preserve">
+    <value>Booking already exists</value>
+  </data>
+  <data name="BookingCancelled" xml:space="preserve">
+    <value>Booking has been cancelled</value>
+  </data>
+  <data name="BookingConfirmed" xml:space="preserve">
+    <value>Booking has been confirmed</value>
+  </data>
+  <data name="InvalidBookingStatus" xml:space="preserve">
+    <value>Invalid booking status</value>
+  </data>
+
+  <!-- Station Domain -->
+  <data name="StationNotFound" xml:space="preserve">
+    <value>Station not found</value>
+  </data>
+  <data name="StationAlreadyExist" xml:space="preserve">
+    <value>Station already exists</value>
+  </data>
+
+  <!-- Passenger Domain -->
+  <data name="PassengerNotFound" xml:space="preserve">
+    <value>Passenger not found</value>
+  </data>
+  <data name="PassengerAlreadyExist" xml:space="preserve">
+    <value>Passenger already exists</value>
+  </data>
+
+  <!-- Payment Domain -->
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>Payment failed</value>
+  </data>
+  <data name="PaymentSuccessful" xml:space="preserve">
+    <value>Payment successful</value>
+  </data>
+  <data name="InvalidPaymentMethod" xml:space="preserve">
+    <value>Invalid payment method</value>
+  </data>
+
+  <!-- General -->
+  <data name="NoDataFound" xml:space="preserve">
+    <value>No data found</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>Operation failed</value>
+  </data>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>Operation successful</value>
+  </data>
+</root>

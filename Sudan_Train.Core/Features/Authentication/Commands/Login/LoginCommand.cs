@@ -1,5 +1,5 @@
 using MediatR;
-using Sudan_Train.Core.Wrappers;
+using Sudan_Train.Core.Bases;
 using Sudan_Train.Data.Results;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.Login

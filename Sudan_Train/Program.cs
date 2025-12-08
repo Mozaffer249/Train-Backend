@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using SchoolProject.Core.MiddleWare;
 using Serilog;
 using Sudan_Train.Core;
 using Sudan_Train.Infrastructure;
@@ -123,6 +124,8 @@ app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 var options = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(options!.Value);
 #endregion
+
+app.UseMiddleware<ErrorHandlerMiddleware>(); // Error Handling Middleware
 
 app.UseHttpsRedirection();
 

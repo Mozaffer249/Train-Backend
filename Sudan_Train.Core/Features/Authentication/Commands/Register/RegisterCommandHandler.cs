@@ -1,17 +1,21 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Sudan_Train.Core.Wrappers;
+using Microsoft.Extensions.Localization;
+using Sudan_Train.Core.Bases;
+using Sudan_Train.Core.Resources;
 using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.Register
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Response<string>>
+    public class RegisterCommandHandler : ResponseHandler, IRequestHandler<RegisterCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager;
+        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
 
-        public RegisterCommandHandler(UserManager<User> userManager)
+        public RegisterCommandHandler(UserManager<User> userManager, IStringLocalizer<SharedResources> stringLocalizer) : base(stringLocalizer)
         {
             _userManager = userManager;
+            _stringLocalizer = stringLocalizer;
         }
 
         public async Task<Response<string>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -20,14 +24,14 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             var existingUser = await _userManager.FindByNameAsync(request.UserName);
             if (existingUser != null)
             {
-                return new Response<string>("Username already exists");
+                return BadRequest<string>(_stringLocalizer[SharedResourcesKeys.UserNameIsExist]);
             }
 
             // Check if email already exists
             var existingEmail = await _userManager.FindByEmailAsync(request.Email);
             if (existingEmail != null)
             {
-                return new Response<string>("Email already exists");
+                return BadRequest<string>(_stringLocalizer[SharedResourcesKeys.EmailIsExist]);
             }
 
             // Create new user
@@ -40,16 +44,15 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
                 PhoneNumber = request.PhoneNumber,
                 IsActive = true
             };
-
             var result = await _userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return new Response<string>($"Registration failed: {errors}");
+                return BadRequest<string>(_stringLocalizer[SharedResourcesKeys.FailedToAddUser]);
             }
 
-            return new Response<string>("User registered successfully");
+            return Created<string>(_stringLocalizer[SharedResourcesKeys.UserRegisteredSuccessfully], new { user.UserName, user.Email });
         }
     }
 }

@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Sudan_Train.Core.Wrappers;
+using Sudan_Train.Core.Bases;
 using System.Net;
 
 namespace Sudan_Train.Base

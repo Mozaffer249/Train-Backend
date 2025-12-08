@@ -17,6 +17,11 @@ namespace Sudan_Train.Data.AppMetaData
         public const string Authentication = Rule + "Authentication";
         public const string AuthenticationRegister = Authentication + "/Register";
         public const string AuthenticationLogin = Authentication + "/Login";
+        public const string AuthenticationRefreshToken = Authentication + "/RefreshToken";
+        public const string AuthenticationSendResetPasswordCode = Authentication + "/SendResetPasswordCode";
+        public const string AuthenticationResetPassword = Authentication + "/ResetPassword";
+        public const string AuthenticationConfirmEmail = Authentication + "/ConfirmEmail";
+        public const string AuthenticationValidateToken = Authentication + "/ValidateToken";
         #endregion
 
     }

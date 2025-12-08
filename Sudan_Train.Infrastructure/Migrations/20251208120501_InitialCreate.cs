@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Trains.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,28 +15,14 @@ namespace Trains.Infrastructure.Migrations
                 name: "security");
 
             migrationBuilder.CreateTable(
-                name: "AspNetRoles",
+                name: "Roles",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Roles",
-                schema: "security",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -65,8 +51,8 @@ namespace Trains.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TrainNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    NameEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NameAr = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NameEn = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    NameAr = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Type = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -81,11 +67,11 @@ namespace Trains.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Nationality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -122,9 +108,10 @@ namespace Trains.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_RoleClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RoleClaims_AspNetRoles_RoleId",
+                        name: "FK_RoleClaims_Roles_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
+                        principalSchema: "security",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -147,7 +134,7 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.StateId,
                         principalTable: "States",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -157,7 +144,7 @@ namespace Trains.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TrainId = table.Column<int>(type: "int", nullable: false),
-                    CoachNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CoachNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Class = table.Column<int>(type: "int", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     Sequence = table.Column<int>(type: "int", nullable: false)
@@ -193,7 +180,8 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalSchema: "security",
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -280,9 +268,10 @@ namespace Trains.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_AspNetRoles_RoleId",
+                        name: "FK_UserRoles_Roles_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
+                        principalSchema: "security",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -324,11 +313,11 @@ namespace Trains.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: true),
                     CityId = table.Column<int>(type: "int", nullable: true),
-                    FullNameEn = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullNameAr = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    FullNameEn = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    FullNameAr = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    IdNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    Nationality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -337,13 +326,15 @@ namespace Trains.Infrastructure.Migrations
                         name: "FK_Passengers_Cities_CityId",
                         column: x => x.CityId,
                         principalTable: "Cities",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Passengers_Users_UserId",
                         column: x => x.UserId,
                         principalSchema: "security",
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -358,8 +349,8 @@ namespace Trains.Infrastructure.Migrations
                     CityId = table.Column<int>(type: "int", nullable: false),
                     Latitude = table.Column<double>(type: "float", nullable: true),
                     Longitude = table.Column<double>(type: "float", nullable: true),
-                    AddressEn = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AddressAr = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AddressEn = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    AddressAr = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -371,7 +362,7 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.CityId,
                         principalTable: "Cities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -381,7 +372,7 @@ namespace Trains.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CoachId = table.Column<int>(type: "int", nullable: false),
-                    SeatNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SeatNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     IsWindow = table.Column<bool>(type: "bit", nullable: false),
                     IsAccessible = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -393,7 +384,7 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.CoachId,
                         principalTable: "Coaches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -405,12 +396,12 @@ namespace Trains.Infrastructure.Migrations
                     BookingId = table.Column<int>(type: "int", nullable: false),
                     Method = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Currency = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false, defaultValue: "SDG"),
                     Status = table.Column<int>(type: "int", nullable: false),
                     ProcessorResponse = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CardLast4 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CardBrand = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reference = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CardLast4 = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: true),
+                    CardBrand = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CardToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -422,7 +413,7 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.BookingId,
                         principalTable: "Bookings",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -493,7 +484,7 @@ namespace Trains.Infrastructure.Migrations
                     RouteId = table.Column<int>(type: "int", nullable: false),
                     DepartureTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ArrivalTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Scheduled")
                 },
                 constraints: table =>
                 {
@@ -503,13 +494,13 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.RouteId,
                         principalTable: "Routes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Trip_Trains_TrainId",
                         column: x => x.TrainId,
                         principalTable: "Trains",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -521,9 +512,9 @@ namespace Trains.Infrastructure.Migrations
                     TripId = table.Column<int>(type: "int", nullable: true),
                     CoachClass = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    VatRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DiscountPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VatRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    DiscountPercent = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
+                    Currency = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false, defaultValue: "SDG"),
                     EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -534,7 +525,8 @@ namespace Trains.Infrastructure.Migrations
                         name: "FK_Fares_Trip_TripId",
                         column: x => x.TripId,
                         principalTable: "Trip",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -569,7 +561,7 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.TripId,
                         principalTable: "Trip",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -584,7 +576,7 @@ namespace Trains.Infrastructure.Migrations
                     TripSeatId = table.Column<int>(type: "int", nullable: true),
                     FareId = table.Column<int>(type: "int", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SeatNumber = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    SeatNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -594,29 +586,31 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.BookingId,
                         principalTable: "Bookings",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_BookingPassengers_Fares_FareId",
                         column: x => x.FareId,
                         principalTable: "Fares",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_BookingPassengers_Passengers_PassengerId",
                         column: x => x.PassengerId,
                         principalTable: "Passengers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_BookingPassengers_TripSeats_TripSeatId",
                         column: x => x.TripSeatId,
                         principalTable: "TripSeats",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_BookingPassengers_Trip_TripId",
                         column: x => x.TripId,
                         principalTable: "Trip",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -626,13 +620,13 @@ namespace Trains.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BookingPassengerId = table.Column<int>(type: "int", nullable: false),
-                    TicketNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TicketNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     QrCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IssuedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ValidFrom = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ValidUntil = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Issued")
                 },
                 constraints: table =>
                 {
@@ -642,15 +636,8 @@ namespace Trains.Infrastructure.Migrations
                         column: x => x.BookingPassengerId,
                         principalTable: "BookingPassengers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookingPassengers_BookingId",
@@ -683,14 +670,16 @@ namespace Trains.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cities_StateId",
+                name: "IX_Cities_StateId_NameEn",
                 table: "Cities",
-                column: "StateId");
+                columns: new[] { "StateId", "NameEn" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Coaches_TrainId",
+                name: "IX_Coaches_TrainId_CoachNumber",
                 table: "Coaches",
-                column: "TrainId");
+                columns: new[] { "TrainId", "CoachNumber" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Fares_TripId",
@@ -701,6 +690,12 @@ namespace Trains.Infrastructure.Migrations
                 name: "IX_Passengers_CityId",
                 table: "Passengers",
                 column: "CityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Passengers_IdNumber",
+                table: "Passengers",
+                column: "IdNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Passengers_UserId",
@@ -717,6 +712,14 @@ namespace Trains.Infrastructure.Migrations
                 schema: "security",
                 table: "RoleClaims",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                schema: "security",
+                table: "Roles",
+                column: "NormalizedName",
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Routes_DestinationStationId",
@@ -745,9 +748,16 @@ namespace Trains.Infrastructure.Migrations
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Seats_CoachId",
+                name: "IX_Seats_CoachId_SeatNumber",
                 table: "Seats",
-                column: "CoachId");
+                columns: new[] { "CoachId", "SeatNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_States_NameEn",
+                table: "States",
+                column: "NameEn",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stations_CityId",
@@ -755,9 +765,27 @@ namespace Trains.Infrastructure.Migrations
                 column: "CityId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Stations_Code",
+                table: "Stations",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tickets_BookingPassengerId",
                 table: "Tickets",
                 column: "BookingPassengerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_TicketNumber",
+                table: "Tickets",
+                column: "TicketNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trains_TrainNumber",
+                table: "Trains",
+                column: "TrainNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -781,9 +809,10 @@ namespace Trains.Infrastructure.Migrations
                 column: "SeatId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TripSeats_TripId",
+                name: "IX_TripSeats_TripId_SeatId",
                 table: "TripSeats",
-                column: "TripId");
+                columns: new[] { "TripId", "SeatId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
@@ -834,10 +863,6 @@ namespace Trains.Infrastructure.Migrations
                 schema: "security");
 
             migrationBuilder.DropTable(
-                name: "Roles",
-                schema: "security");
-
-            migrationBuilder.DropTable(
                 name: "RouteStations");
 
             migrationBuilder.DropTable(
@@ -866,7 +891,8 @@ namespace Trains.Infrastructure.Migrations
                 name: "BookingPassengers");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "Roles",
+                schema: "security");
 
             migrationBuilder.DropTable(
                 name: "Bookings");

@@ -8,7 +8,7 @@ namespace Sudan_Train.Data.Results
     public class JwtAuthResult
     {
         public string AccessToken { get; set; } = default!;
-        public RefreshToken refreshToken { get; set; } = default!;
+        public RefreshToken RefreshToken { get; set; } = default!;
     }
     public class RefreshToken
     {

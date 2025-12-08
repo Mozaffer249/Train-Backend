@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Response Messages -->
+  <data name="Success" xml:space="preserve">
+    <value>تمت العملية بنجاح</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>تم الإنشاء بنجاح</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>تم الحذف بنجاح</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>تم التحديث بنجاح</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>غير موجود</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>طلب غير صحيح</value>
+  </data>
+  <data name="UnAuthorized" xml:space="preserve">
+    <value>غير مصرح بالوصول</value>
+  </data>
+  <data name="UnprocessableEntity" xml:space="preserve">
+    <value>كيان غير قابل للمعالجة</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>خطأ في الخادم الداخلي</value>
+  </data>
+
+  <!-- Authentication & Authorization -->
+  <data name="UserNameIsExist" xml:space="preserve">
+    <value>اسم المستخدم موجود بالفعل</value>
+  </data>
+  <data name="EmailIsExist" xml:space="preserve">
+    <value>البريد الإلكتروني موجود بالفعل</value>
+  </data>
+  <data name="EmailIsNotExist" xml:space="preserve">
+    <value>البريد الإلكتروني غير موجود</value>
+  </data>
+  <data name="FailedToAddUser" xml:space="preserve">
+    <value>فشل في إضافة المستخدم</value>
+  </data>
+  <data name="FailedToUpdateUser" xml:space="preserve">
+    <value>فشل في تحديث المستخدم</value>
+  </data>
+  <data name="FailedToDeleteUser" xml:space="preserve">
+    <value>فشل في حذف المستخدم</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود</value>
+  </data>
+  <data name="PasswordNotCorrect" xml:space="preserve">
+    <value>كلمة المرور غير صحيحة</value>
+  </data>
+  <data name="UserIsNotActive" xml:space="preserve">
+    <value>حساب المستخدم غير نشط</value>
+  </data>
+  <data name="UserRegisteredSuccessfully" xml:space="preserve">
+    <value>تم تسجيل المستخدم بنجاح</value>
+  </data>
+
+  <!-- Validation -->
+  <data name="IsRequired" xml:space="preserve">
+    <value>هذا الحقل مطلوب</value>
+  </data>
+  <data name="IsExist" xml:space="preserve">
+    <value>موجود بالفعل</value>
+  </data>
+  <data name="IsNotExist" xml:space="preserve">
+    <value>غير موجود</value>
+  </data>
+  <data name="MaxLengthIs100" xml:space="preserve">
+    <value>الحد الأقصى للطول هو 100 حرف</value>
+  </data>
+  <data name="MaxLengthIs200" xml:space="preserve">
+    <value>الحد الأقصى للطول هو 200 حرف</value>
+  </data>
+  <data name="MaxLengthIs500" xml:space="preserve">
+    <value>الحد الأقصى للطول هو 500 حرف</value>
+  </data>
+  <data name="MinLengthIs3" xml:space="preserve">
+    <value>الحد الأدنى للطول هو 3 أحرف</value>
+  </data>
+  <data name="InvalidFormat" xml:space="preserve">
+    <value>تنسيق غير صالح</value>
+  </data>
+
+  <!-- Train Domain -->
+  <data name="TrainNotFound" xml:space="preserve">
+    <value>القطار غير موجود</value>
+  </data>
+  <data name="TrainAlreadyExist" xml:space="preserve">
+    <value>القطار موجود بالفعل</value>
+  </data>
+  <data name="CoachNotFound" xml:space="preserve">
+    <value>العربة غير موجودة</value>
+  </data>
+  <data name="SeatNotFound" xml:space="preserve">
+    <value>المقعد غير موجود</value>
+  </data>
+  <data name="SeatAlreadyBooked" xml:space="preserve">
+    <value>المقعد محجوز بالفعل</value>
+  </data>
+
+  <!-- Trip Domain -->
+  <data name="TripNotFound" xml:space="preserve">
+    <value>الرحلة غير موجودة</value>
+  </data>
+  <data name="TripIsFull" xml:space="preserve">
+    <value>الرحلة محجوزة بالكامل</value>
+  </data>
+  <data name="TripIsNotAvailable" xml:space="preserve">
+    <value>الرحلة غير متاحة</value>
+  </data>
+
+  <!-- Booking Domain -->
+  <data name="BookingNotFound" xml:space="preserve">
+    <value>الحجز غير موجود</value>
+  </data>
+  <data name="BookingAlreadyExist" xml:space="preserve">
+    <value>الحجز موجود بالفعل</value>
+  </data>
+  <data name="BookingCancelled" xml:space="preserve">
+    <value>تم إلغاء الحجز</value>
+  </data>
+  <data name="BookingConfirmed" xml:space="preserve">
+    <value>تم تأكيد الحجز</value>
+  </data>
+  <data name="InvalidBookingStatus" xml:space="preserve">
+    <value>حالة الحجز غير صالحة</value>
+  </data>
+
+  <!-- Station Domain -->
+  <data name="StationNotFound" xml:space="preserve">
+    <value>المحطة غير موجودة</value>
+  </data>
+  <data name="StationAlreadyExist" xml:space="preserve">
+    <value>المحطة موجودة بالفعل</value>
+  </data>
+
+  <!-- Passenger Domain -->
+  <data name="PassengerNotFound" xml:space="preserve">
+    <value>المسافر غير موجود</value>
+  </data>
+  <data name="PassengerAlreadyExist" xml:space="preserve">
+    <value>المسافر موجود بالفعل</value>
+  </data>
+
+  <!-- Payment Domain -->
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>فشل الدفع</value>
+  </data>
+  <data name="PaymentSuccessful" xml:space="preserve">
+    <value>تم الدفع بنجاح</value>
+  </data>
+  <data name="InvalidPaymentMethod" xml:space="preserve">
+    <value>طريقة دفع غير صالحة</value>
+  </data>
+
+  <!-- General -->
+  <data name="NoDataFound" xml:space="preserve">
+    <value>لا توجد بيانات</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>فشلت العملية</value>
+  </data>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>نجحت العملية</value>
+  </data>
+</root>
