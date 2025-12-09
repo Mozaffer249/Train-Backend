@@ -1,0 +1,192 @@
+### Test Validation Messages WITHOUT Property Name Prefix
+### Now messages should NOT include "UserName:", "Password:", etc.
+
+@baseUrl = http://localhost:5145/Api/V1/Authentication
+
+### ===================================
+### 1. Login - Missing UserName (English)
+### BEFORE: "UserName: User name is required"
+### AFTER: "User name is required"
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: en-US
+Content-Type: application/json
+
+{
+  "password": "test123"
+}
+
+### ===================================
+### 2. Login - Missing UserName (Arabic)
+### BEFORE: "UserName: اسم المستخدم مطلوب"
+### AFTER: "اسم المستخدم مطلوب"
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{
+  "password": "test123"
+}
+
+### ===================================
+### 3. Login - Empty UserName (English)
+### AFTER: "User name is required" (no prefix)
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: en-US
+Content-Type: application/json
+
+{
+  "userName": "",
+  "password": "test123"
+}
+
+### ===================================
+### 4. Login - Empty UserName (Arabic)
+### AFTER: "اسم المستخدم مطلوب" (no prefix)
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{
+  "userName": "",
+  "password": "test123"
+}
+
+### ===================================
+### 5. Login - Short Password (English)
+### AFTER: "Password must be at least 6 characters" (no prefix)
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: en-US
+Content-Type: application/json
+
+{
+  "userName": "testuser",
+  "password": "123"
+}
+
+### ===================================
+### 6. Login - Short Password (Arabic)
+### AFTER: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" (no prefix)
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{
+  "userName": "testuser",
+  "password": "123"
+}
+
+### ===================================
+### 7. Login - Both Missing (English)
+### AFTER: Two clean messages without "UserName:" or "Password:" prefixes
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: en-US
+Content-Type: application/json
+
+{}
+
+### ===================================
+### 8. Login - Both Missing (Arabic)
+### AFTER: Two clean messages without field name prefixes
+### ===================================
+POST {{baseUrl}}/Login
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{}
+
+### ===================================
+### 9. Register - Missing Email (English)
+### AFTER: "Email is required" (no "Email:" prefix)
+### ===================================
+POST {{baseUrl}}/Register
+Accept-Language: en-US
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "userName": "johndoe",
+  "password": "Password123",
+  "confirmPassword": "Password123"
+}
+
+### ===================================
+### 10. Register - Missing Email (Arabic)
+### AFTER: "البريد الإلكتروني مطلوب" (no prefix)
+### ===================================
+POST {{baseUrl}}/Register
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "userName": "johndoe",
+  "password": "Password123",
+  "confirmPassword": "Password123"
+}
+
+### ===================================
+### 11. Register - Invalid Email (English)
+### AFTER: "Please enter a valid email address" (no prefix)
+### ===================================
+POST {{baseUrl}}/Register
+Accept-Language: en-US
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "userName": "johndoe",
+  "email": "invalid-email",
+  "password": "Password123",
+  "confirmPassword": "Password123"
+}
+
+### ===================================
+### 12. Register - Invalid Email (Arabic)
+### AFTER: "يرجى إدخال بريد إلكتروني صحيح" (no prefix)
+### ===================================
+POST {{baseUrl}}/Register
+Accept-Language: ar-EG
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "userName": "johndoe",
+  "email": "invalid-email",
+  "password": "Password123",
+  "confirmPassword": "Password123"
+}
+
+### ===================================
+### EXPECTED RESPONSE FORMAT (English):
+### ===================================
+# {
+#     "StatusCode": 422,
+#     "Meta": null,
+#     "Succeeded": false,
+#     "Message": "اسم المستخدم مطلوب",    ← NO "UserName:" prefix!
+#     "Errors": null,
+#     "Data": null
+# }
+
+### ===================================
+### EXPECTED RESPONSE FORMAT (Arabic):
+### ===================================
+# {
+#     "StatusCode": 422,
+#     "Meta": null,
+#     "Succeeded": false,
+#     "Message": "User name is required",    ← NO "UserName:" prefix!
+#     "Errors": null,
+#     "Data": null
+# }

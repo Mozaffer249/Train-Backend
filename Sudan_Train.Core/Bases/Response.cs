@@ -28,11 +28,13 @@ namespace Sudan_Train.Core.Bases
         }
 
         public HttpStatusCode StatusCode { get; set; }
-        public object? Meta { get; set; }
         public bool Succeeded { get; set; }
-        public string Message { get; set; } = default!;
-        public List<string>? Errors { get; set; }
+        public string? Message { get; set; }
         public T Data { get; set; } = default!;
+        public List<string>? Errors { get; set; }
+        public object? Meta { get; set; }
+
+
     }
 }
 

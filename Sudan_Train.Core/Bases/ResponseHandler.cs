@@ -1,33 +1,42 @@
 using Microsoft.Extensions.Localization;
-using Sudan_Train.Core.Resources;
+using Sudan_Train.Core.Resources.Shared;
 
 namespace Sudan_Train.Core.Bases
 {
     public class ResponseHandler
     {
-        protected readonly IStringLocalizer<SharedResources> _stringLocalizer;
+        private readonly IStringLocalizer<SharedResources> _sharedLocalizer;
 
-        public ResponseHandler(IStringLocalizer<SharedResources> stringLocalizer)
+        public ResponseHandler(IStringLocalizer<SharedResources> sharedLocalizer)
         {
-            _stringLocalizer = stringLocalizer;
+            _sharedLocalizer = sharedLocalizer;
         }
+
+        // Constructor for handlers that use other resource types
+        protected ResponseHandler(object localizer)
+        {
+            // This constructor is used when derived classes pass non-SharedResources localizers
+            // They won't use the default response methods with localization
+            _sharedLocalizer = null!;
+        }
+
         public Response<T> Deleted<T>(string? Message = null)
         {
             return new Response<T>()
             {
                 StatusCode = System.Net.HttpStatusCode.OK,
                 Succeeded = true,
-                Message = Message == null ? _stringLocalizer[SharedResourcesKeys.Deleted] : Message
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.Deleted] ?? "Deleted"
             };
         }
-        public Response<T> Success<T>(T entity, object? Meta = null)
+        public Response<T> Success<T>(string? Message = null, T? entity = default, object? Meta = null)
         {
             return new Response<T>()
             {
-                Data = entity,
+                Data = entity ?? default!,
                 StatusCode = System.Net.HttpStatusCode.OK,
                 Succeeded = true,
-                Message = _stringLocalizer[SharedResourcesKeys.Success],
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.Success] ?? "Success",
                 Meta = Meta
             };
         }
@@ -37,7 +46,7 @@ namespace Sudan_Train.Core.Bases
             {
                 StatusCode = System.Net.HttpStatusCode.Unauthorized,
                 Succeeded = true,
-                Message = Message == null ? _stringLocalizer[SharedResourcesKeys.UnAuthorized] : Message
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.UnAuthorized] ?? "Unauthorized"
             };
         }
         public Response<T> BadRequest<T>(string? Message = null)
@@ -46,7 +55,7 @@ namespace Sudan_Train.Core.Bases
             {
                 StatusCode = System.Net.HttpStatusCode.BadRequest,
                 Succeeded = false,
-                Message = Message == null ? _stringLocalizer[SharedResourcesKeys.BadRequest] : Message
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.BadRequest] ?? "Bad Request"
             };
         }
 
@@ -56,7 +65,7 @@ namespace Sudan_Train.Core.Bases
             {
                 StatusCode = System.Net.HttpStatusCode.UnprocessableEntity,
                 Succeeded = false,
-                Message = Message == null ? _stringLocalizer[SharedResourcesKeys.UnprocessableEntity] : Message
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.UnprocessableEntity] ?? "Unprocessable Entity"
             };
         }
 
@@ -66,18 +75,18 @@ namespace Sudan_Train.Core.Bases
             {
                 StatusCode = System.Net.HttpStatusCode.NotFound,
                 Succeeded = false,
-                Message = message == null ? _stringLocalizer[SharedResourcesKeys.NotFound] : message
+                Message = message ?? _sharedLocalizer?[SharedResourcesKeys.NotFound] ?? "Not Found"
             };
         }
 
-        public Response<T> Created<T>(T entity, object? Meta = null)
+        public Response<T> Created<T>(string? Message = null, T? entity = default, object? Meta = null)
         {
             return new Response<T>()
             {
-                Data = entity,
+                Data = entity ?? default!,
                 StatusCode = System.Net.HttpStatusCode.Created,
                 Succeeded = true,
-                Message = _stringLocalizer[SharedResourcesKeys.Created],
+                Message = Message ?? _sharedLocalizer?[SharedResourcesKeys.Created] ?? "Created",
                 Meta = Meta
             };
         }

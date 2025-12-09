@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
-using Sudan_Train.Core.Resources;
+using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Service.Abstracts;
 
 namespace Sudan_Train.Core.Features.Authentication.Queries.ValidateToken
@@ -11,8 +11,8 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.ValidateToken
         private readonly IAuthenticationService _authenticationService;
 
         public ValidateTokenQueryHandler(
-            IStringLocalizer<SharedResources> stringLocalizer,
-            IAuthenticationService authenticationService) : base(stringLocalizer)
+            IStringLocalizer<SharedResources> sharedLocalizer,
+            IAuthenticationService authenticationService) : base(sharedLocalizer)
         {
             _authenticationService = authenticationService;
         }
@@ -23,7 +23,7 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.ValidateToken
 
             if (result == "NotExpired")
             {
-                return Success("Token is valid and not expired");
+                return Success<string>("Token is valid and not expired");
             }
             else if (result == "Expired")
             {

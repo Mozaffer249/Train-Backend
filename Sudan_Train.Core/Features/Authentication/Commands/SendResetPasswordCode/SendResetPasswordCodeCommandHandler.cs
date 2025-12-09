@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
-using Sudan_Train.Core.Resources;
+using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Service.Abstracts;
 
@@ -12,14 +12,16 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.SendResetPasswordCod
     {
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
+        private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
 
         public SendResetPasswordCodeCommandHandler(
-            IStringLocalizer<SharedResources> stringLocalizer,
+            IStringLocalizer<AuthenticationResources> authLocalizer,
             UserManager<User> userManager,
-            IEmailService emailService) : base(stringLocalizer)
+            IEmailService emailService) : base(authLocalizer)
         {
             _userManager = userManager;
             _emailService = emailService;
+            _authLocalizer = authLocalizer;
         }
 
         public async Task<Response<string>> Handle(SendResetPasswordCodeCommand request, CancellationToken cancellationToken)
@@ -29,12 +31,12 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.SendResetPasswordCod
 
             if (user == null)
             {
-                return NotFound<string>(_stringLocalizer[SharedResourcesKeys.EmailIsNotExist]);
+                return NotFound<string>(_authLocalizer[AuthenticationResourcesKeys.EmailIsNotExist]);
             }
 
             if (!user.IsActive)
             {
-                return Unauthorized<string>(_stringLocalizer[SharedResourcesKeys.UserIsNotActive]);
+                return Unauthorized<string>(_authLocalizer[AuthenticationResourcesKeys.UserIsNotActive]);
             }
 
             // Generate password reset token
@@ -48,7 +50,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.SendResetPasswordCod
                 "Password Reset Code - Train Booking System",
                 emailMessage);
 
-            return Success<string>(_stringLocalizer[SharedResourcesKeys.Success]);
+            return Success<string>("Password reset code sent successfully");
         }
     }
 }

@@ -2,7 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
-using Sudan_Train.Core.Resources;
+using Sudan_Train.Core.Resources.Authentication;
+using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmail
@@ -10,12 +11,17 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmail
     public class ConfirmEmailCommandHandler : ResponseHandler, IRequestHandler<ConfirmEmailCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager;
+        private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
+        private readonly IStringLocalizer<SharedResources> _sharedLocalizer;
 
         public ConfirmEmailCommandHandler(
-            IStringLocalizer<SharedResources> stringLocalizer,
-            UserManager<User> userManager) : base(stringLocalizer)
+            IStringLocalizer<SharedResources> sharedLocalizer,
+            IStringLocalizer<AuthenticationResources> authLocalizer,
+            UserManager<User> userManager) : base(sharedLocalizer)
         {
             _userManager = userManager;
+            _authLocalizer = authLocalizer;
+            _sharedLocalizer = sharedLocalizer;
         }
 
         public async Task<Response<string>> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
@@ -25,7 +31,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmail
 
             if (user == null)
             {
-                return NotFound<string>(_stringLocalizer[SharedResourcesKeys.UserNotFound]);
+                return NotFound<string>(_authLocalizer[AuthenticationResourcesKeys.UserNotFound]);
             }
 
             // Confirm email
@@ -37,7 +43,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmail
                 return BadRequest<string>(errors);
             }
 
-            return Success<string>(_stringLocalizer[SharedResourcesKeys.Success]);
+            return Success<string>(_sharedLocalizer[SharedResourcesKeys.Success]);
         }
     }
 }

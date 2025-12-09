@@ -1,18 +1,23 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Sudan_Train.Core.Resources.Authentication;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.Login
 {
     public class LoginCommandValidator : AbstractValidator<LoginCommand>
     {
-        public LoginCommandValidator()
+        public LoginCommandValidator(IStringLocalizer<AuthenticationResources> stringLocalizer)
         {
             RuleFor(x => x.UserName)
-                .NotEmpty().WithMessage("Username is required")
-                .NotNull().WithMessage("Username cannot be null");
+                .NotNull().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameIsRequired])
+                .NotEmpty().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameIsRequired])
+                .OverridePropertyName(string.Empty);
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required")
-                .NotNull().WithMessage("Password cannot be null");
+                .NotNull().WithMessage(stringLocalizer[AuthenticationResourcesKeys.PasswordIsRequired])
+                .NotEmpty().WithMessage(stringLocalizer[AuthenticationResourcesKeys.PasswordIsRequired])
+                .MinimumLength(6).WithMessage(stringLocalizer[AuthenticationResourcesKeys.PasswordMinLength])
+                .OverridePropertyName(string.Empty);
         }
     }
 }

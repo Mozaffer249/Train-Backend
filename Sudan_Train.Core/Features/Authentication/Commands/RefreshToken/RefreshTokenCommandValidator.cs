@@ -1,8 +1,9 @@
 using FluentValidation;
 using Microsoft.Extensions.Localization;
-using Sudan_Train.Core.Resources;
+using Sudan_Train.Core.Features.Authentication.Commands.RefreshToken;
+using Sudan_Train.Core.Resources.Shared;
 
-namespace Sudan_Train.Core.Features.Authentication.Commands.RefreshToken
+namespace Trains.Core.Features.Authentication.Commands.RefreshToken
 {
     public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
     {
@@ -10,11 +11,13 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.RefreshToken
         {
             RuleFor(x => x.AccessToken)
                 .NotEmpty().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
-                .NotNull().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired]);
+                .NotNull().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
+                .OverridePropertyName(string.Empty);
 
             RuleFor(x => x.RefreshToken)
                 .NotEmpty().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
-                .NotNull().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired]);
+                .NotNull().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
+                .OverridePropertyName(string.Empty);
         }
     }
 }

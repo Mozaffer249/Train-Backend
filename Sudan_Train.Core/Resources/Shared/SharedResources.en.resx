@@ -91,39 +91,7 @@
     <value>Internal server error</value>
   </data>
 
-  <!-- Authentication & Authorization -->
-  <data name="UserNameIsExist" xml:space="preserve">
-    <value>Username already exists</value>
-  </data>
-  <data name="EmailIsExist" xml:space="preserve">
-    <value>Email already exists</value>
-  </data>
-  <data name="EmailIsNotExist" xml:space="preserve">
-    <value>Email does not exist</value>
-  </data>
-  <data name="FailedToAddUser" xml:space="preserve">
-    <value>Failed to add user</value>
-  </data>
-  <data name="FailedToUpdateUser" xml:space="preserve">
-    <value>Failed to update user</value>
-  </data>
-  <data name="FailedToDeleteUser" xml:space="preserve">
-    <value>Failed to delete user</value>
-  </data>
-  <data name="UserNotFound" xml:space="preserve">
-    <value>User not found</value>
-  </data>
-  <data name="PasswordNotCorrect" xml:space="preserve">
-    <value>Password is incorrect</value>
-  </data>
-  <data name="UserIsNotActive" xml:space="preserve">
-    <value>User account is not active</value>
-  </data>
-  <data name="UserRegisteredSuccessfully" xml:space="preserve">
-    <value>User registered successfully</value>
-  </data>
-
-  <!-- Validation -->
+  <!-- Generic Validation -->
   <data name="IsRequired" xml:space="preserve">
     <value>This field is required</value>
   </data>
@@ -145,80 +113,11 @@
   <data name="MinLengthIs3" xml:space="preserve">
     <value>Minimum length is 3 characters</value>
   </data>
+  <data name="MinLengthIs6" xml:space="preserve">
+    <value>Minimum length is 6 characters</value>
+  </data>
   <data name="InvalidFormat" xml:space="preserve">
     <value>Invalid format</value>
-  </data>
-
-  <!-- Train Domain -->
-  <data name="TrainNotFound" xml:space="preserve">
-    <value>Train not found</value>
-  </data>
-  <data name="TrainAlreadyExist" xml:space="preserve">
-    <value>Train already exists</value>
-  </data>
-  <data name="CoachNotFound" xml:space="preserve">
-    <value>Coach not found</value>
-  </data>
-  <data name="SeatNotFound" xml:space="preserve">
-    <value>Seat not found</value>
-  </data>
-  <data name="SeatAlreadyBooked" xml:space="preserve">
-    <value>Seat is already booked</value>
-  </data>
-
-  <!-- Trip Domain -->
-  <data name="TripNotFound" xml:space="preserve">
-    <value>Trip not found</value>
-  </data>
-  <data name="TripIsFull" xml:space="preserve">
-    <value>Trip is fully booked</value>
-  </data>
-  <data name="TripIsNotAvailable" xml:space="preserve">
-    <value>Trip is not available</value>
-  </data>
-
-  <!-- Booking Domain -->
-  <data name="BookingNotFound" xml:space="preserve">
-    <value>Booking not found</value>
-  </data>
-  <data name="BookingAlreadyExist" xml:space="preserve">
-    <value>Booking already exists</value>
-  </data>
-  <data name="BookingCancelled" xml:space="preserve">
-    <value>Booking has been cancelled</value>
-  </data>
-  <data name="BookingConfirmed" xml:space="preserve">
-    <value>Booking has been confirmed</value>
-  </data>
-  <data name="InvalidBookingStatus" xml:space="preserve">
-    <value>Invalid booking status</value>
-  </data>
-
-  <!-- Station Domain -->
-  <data name="StationNotFound" xml:space="preserve">
-    <value>Station not found</value>
-  </data>
-  <data name="StationAlreadyExist" xml:space="preserve">
-    <value>Station already exists</value>
-  </data>
-
-  <!-- Passenger Domain -->
-  <data name="PassengerNotFound" xml:space="preserve">
-    <value>Passenger not found</value>
-  </data>
-  <data name="PassengerAlreadyExist" xml:space="preserve">
-    <value>Passenger already exists</value>
-  </data>
-
-  <!-- Payment Domain -->
-  <data name="PaymentFailed" xml:space="preserve">
-    <value>Payment failed</value>
-  </data>
-  <data name="PaymentSuccessful" xml:space="preserve">
-    <value>Payment successful</value>
-  </data>
-  <data name="InvalidPaymentMethod" xml:space="preserve">
-    <value>Invalid payment method</value>
   </data>
 
   <!-- General -->
