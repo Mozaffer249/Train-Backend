@@ -1,9 +1,11 @@
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
+using Sudan_Train.Service.Abstracts;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.Register
 {
@@ -11,11 +13,16 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
     {
         private readonly UserManager<User> _userManager;
         private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
+        private readonly IEmailService _emailService;
 
-        public RegisterCommandHandler(UserManager<User> userManager, IStringLocalizer<AuthenticationResources> authLocalizer) : base(authLocalizer)
+        public RegisterCommandHandler(
+            UserManager<User> userManager,
+            IStringLocalizer<AuthenticationResources> authLocalizer,
+            IEmailService emailService) : base(authLocalizer)
         {
             _userManager = userManager;
             _authLocalizer = authLocalizer;
+            _emailService = emailService;
         }
 
         public async Task<Response<object>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -25,6 +32,16 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             if (existingEmail != null)
             {
                 return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.EmailIsExist]);
+            }
+
+            // Check if phone number already exists (if provided)
+            if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+            {
+                var existingPhone = _userManager.Users.Any(u => u.PhoneNumber == request.PhoneNumber);
+                if (existingPhone)
+                {
+                    return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.PhoneNumberIsExist]);
+                }
             }
 
             // Create new user (validation ensures all required fields are not null)
@@ -43,6 +60,24 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.FailedToAddUser]);
+            }
+
+            // Send welcome email
+            try
+            {
+                var emailSubject = _authLocalizer[AuthenticationResourcesKeys.WelcomeEmailSubject];
+                var emailBody = string.Format(
+                    _authLocalizer[AuthenticationResourcesKeys.WelcomeEmailBody],
+                    $"{user.FirstName} {user.LastName}",
+                    user.Email,
+                    user.UserName);
+
+                await _emailService.SendEmailAsync(user.Email!, emailSubject, emailBody);
+            }
+            catch (Exception)
+            {
+                // Log error but don't fail registration if email fails
+                // User is already created successfully
             }
 
             return Created<object>(

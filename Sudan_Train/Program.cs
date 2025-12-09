@@ -29,7 +29,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(option =>
 
 // Service Registration
 builder.Services.AddInfrastructureDependencies()
-                .AddServiceDependencies()
+                .AddServiceDependencies(builder.Configuration)
                 .AddCoreDependencies()
                 .AddServiceRegisteration(builder.Configuration);
 

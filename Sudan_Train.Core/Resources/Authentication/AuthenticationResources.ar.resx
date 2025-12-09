@@ -72,6 +72,9 @@
   <data name="EmailIsNotExist" xml:space="preserve">
     <value>البريد الإلكتروني غير موجود</value>
   </data>
+  <data name="PhoneNumberIsExist" xml:space="preserve">
+    <value>رقم الهاتف موجود بالفعل</value>
+  </data>
   <data name="FailedToAddUser" xml:space="preserve">
     <value>فشل في إضافة المستخدم</value>
   </data>
@@ -133,5 +136,11 @@
   </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>كلمات المرور غير متطابقة</value>
+  </data>
+  <data name="WelcomeEmailSubject" xml:space="preserve">
+    <value>مرحباً بك في نظام حجز قطارات السودان</value>
+  </data>
+  <data name="WelcomeEmailBody" xml:space="preserve">
+    <value>عزيزي/عزيزتي {0}،&lt;br/&gt;&lt;br/&gt;مرحباً بك في نظام حجز قطارات السودان!&lt;br/&gt;&lt;br/&gt;تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول باستخدام عنوان بريدك الإلكتروني وحجز تذاكر القطار.&lt;br/&gt;&lt;br/&gt;تفاصيل الحساب:&lt;br/&gt;البريد الإلكتروني: {1}&lt;br/&gt;اسم المستخدم: {2}&lt;br/&gt;&lt;br/&gt;شكراً لاختيارك قطارات السودان!&lt;br/&gt;&lt;br/&gt;مع أطيب التحيات،&lt;br/&gt;فريق قطارات السودان</value>
   </data>
 </root>

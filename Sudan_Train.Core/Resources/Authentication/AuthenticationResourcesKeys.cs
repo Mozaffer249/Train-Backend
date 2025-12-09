@@ -6,6 +6,7 @@ namespace Sudan_Train.Core.Resources.Authentication
         public const string UserNameIsExist = "UserNameIsExist";
         public const string EmailIsExist = "EmailIsExist";
         public const string EmailIsNotExist = "EmailIsNotExist";
+        public const string PhoneNumberIsExist = "PhoneNumberIsExist";
         public const string FailedToAddUser = "FailedToAddUser";
         public const string FailedToUpdateUser = "FailedToUpdateUser";
         public const string FailedToDeleteUser = "FailedToDeleteUser";
@@ -13,6 +14,8 @@ namespace Sudan_Train.Core.Resources.Authentication
         public const string PasswordNotCorrect = "PasswordNotCorrect";
         public const string UserIsNotActive = "UserIsNotActive";
         public const string UserRegisteredSuccessfully = "UserRegisteredSuccessfully";
+        public const string WelcomeEmailSubject = "WelcomeEmailSubject";
+        public const string WelcomeEmailBody = "WelcomeEmailBody";
 
         // Field-Specific Validation Messages
         public const string UserNameIsRequired = "UserNameIsRequired";

@@ -72,6 +72,9 @@
   <data name="EmailIsNotExist" xml:space="preserve">
     <value>Email does not exist</value>
   </data>
+  <data name="PhoneNumberIsExist" xml:space="preserve">
+    <value>Phone number already exists</value>
+  </data>
   <data name="FailedToAddUser" xml:space="preserve">
     <value>Failed to add user</value>
   </data>
@@ -133,5 +136,11 @@
   </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>Passwords do not match</value>
+  </data>
+  <data name="WelcomeEmailSubject" xml:space="preserve">
+    <value>Welcome to Sudan Train Booking System</value>
+  </data>
+  <data name="WelcomeEmailBody" xml:space="preserve">
+    <value>Dear {0},&lt;br/&gt;&lt;br/&gt;Welcome to Sudan Train Booking System!&lt;br/&gt;&lt;br/&gt;Your account has been successfully created. You can now log in using your email address and book train tickets.&lt;br/&gt;&lt;br/&gt;Account Details:&lt;br/&gt;Email: {1}&lt;br/&gt;Username: {2}&lt;br/&gt;&lt;br/&gt;Thank you for choosing Sudan Train!&lt;br/&gt;&lt;br/&gt;Best regards,&lt;br/&gt;Sudan Train Team</value>
   </data>
 </root>
