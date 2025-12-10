@@ -9,5 +9,6 @@ namespace Sudan_Train.Service.Models
         public string UserName { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool EnableSsl { get; set; } = true;
+        public EmailSendingStrategy DefaultStrategy { get; set; } = EmailSendingStrategy.Queued;
     }
 }

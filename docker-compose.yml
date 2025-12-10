@@ -58,6 +58,7 @@ services:
       - jwtSettings__Secret=${JWT_SECRET:-TrainProjectSecretKey123456789TrainProjectSecretKey123456789}
       - emailSettings__FromEmail=${EMAIL_FROM:-your-email@gmail.com}
       - emailSettings__Password=${EMAIL_PASSWORD:-your-app-password}
+      - EmailSettings__DefaultStrategy=Queued
       - RabbitMQSettings__HostName=rabbitmq
       - RabbitMQSettings__Port=5672
       - RabbitMQSettings__UserName=guest

@@ -2,6 +2,7 @@ using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
@@ -14,15 +15,18 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
         private readonly UserManager<User> _userManager;
         private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
         private readonly IEmailService _emailService;
+        private readonly ILogger<RegisterCommandHandler> _logger;
 
         public RegisterCommandHandler(
             UserManager<User> userManager,
             IStringLocalizer<AuthenticationResources> authLocalizer,
-            IEmailService emailService) : base(authLocalizer)
+            IEmailService emailService,
+            ILogger<RegisterCommandHandler> logger) : base(authLocalizer)
         {
             _userManager = userManager;
             _authLocalizer = authLocalizer;
             _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<Response<object>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -74,10 +78,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
 
                 await _emailService.SendEmailAsync(user.Email!, emailSubject, emailBody);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Log error but don't fail registration if email fails
                 // User is already created successfully
+                _logger.LogError(ex, "Failed to send welcome email to {Email} for user {UserId}", user.Email, user.Id);
             }
 
             return Created<object>(

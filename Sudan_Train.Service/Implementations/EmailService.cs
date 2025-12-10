@@ -26,40 +26,83 @@ namespace Sudan_Train.Service.Implementations
 
         public async Task SendEmailAsync(string email, string subject, string message)
         {
+            await SendEmailAsync(email, subject, message, _emailSettings.DefaultStrategy);
+        }
+
+        public async Task SendEmailAsync(string email, string subject, string message, EmailSendingStrategy strategy)
+        {
+            switch (strategy)
+            {
+                case EmailSendingStrategy.Direct:
+                    await SendDirectAsync(email, subject, message);
+                    break;
+
+                case EmailSendingStrategy.Queued:
+                    await QueueEmailAsync(email, subject, message);
+                    break;
+
+                case EmailSendingStrategy.Fallback:
+                    await SendWithFallbackAsync(email, subject, message);
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown email sending strategy: {strategy}");
+            }
+        }
+
+        private async Task SendDirectAsync(string email, string subject, string message)
+        {
+            var emailMessage = new MimeMessage();
+
+            // From
+            emailMessage.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
+
+            // To
+            emailMessage.To.Add(MailboxAddress.Parse(email));
+
+            // Subject
+            emailMessage.Subject = subject;
+
+            // Body
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = message,
+                TextBody = message
+            };
+            emailMessage.Body = bodyBuilder.ToMessageBody();
+
+            // Send email
+            using var smtpClient = new SmtpClient();
+
+            await smtpClient.ConnectAsync(_emailSettings.Host, _emailSettings.Port,
+                _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+
+            await smtpClient.AuthenticateAsync(_emailSettings.UserName, _emailSettings.Password);
+
+            await smtpClient.SendAsync(emailMessage);
+
+            await smtpClient.DisconnectAsync(true);
+
+            _logger.LogInformation($"Email sent successfully (Direct) to: {email}");
+        }
+
+        private async Task QueueEmailAsync(string email, string subject, string message)
+        {
+            await _messageQueueService.QueueEmailAsync(new EmailMessage
+            {
+                To = email,
+                Subject = subject,
+                Body = message
+            });
+
+            _logger.LogInformation($"Email queued for delivery to: {email}");
+        }
+
+        private async Task SendWithFallbackAsync(string email, string subject, string message)
+        {
             try
             {
-                var emailMessage = new MimeMessage();
-
-                // From
-                emailMessage.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
-
-                // To
-                emailMessage.To.Add(MailboxAddress.Parse(email));
-
-                // Subject
-                emailMessage.Subject = subject;
-
-                // Body
-                var bodyBuilder = new BodyBuilder
-                {
-                    HtmlBody = message,
-                    TextBody = message
-                };
-                emailMessage.Body = bodyBuilder.ToMessageBody();
-
-                // Send email
-                using var smtpClient = new SmtpClient();
-
-                await smtpClient.ConnectAsync(_emailSettings.Host, _emailSettings.Port,
-                    _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
-
-                await smtpClient.AuthenticateAsync(_emailSettings.UserName, _emailSettings.Password);
-
-                await smtpClient.SendAsync(emailMessage);
-
-                await smtpClient.DisconnectAsync(true);
-
-                _logger.LogInformation($"Email sent successfully to: {email}");
+                await SendDirectAsync(email, subject, message);
             }
             catch (Exception ex)
             {
@@ -68,14 +111,8 @@ namespace Sudan_Train.Service.Implementations
                 // Fallback: Queue the email for later processing
                 try
                 {
-                    await _messageQueueService.QueueEmailAsync(new EmailMessage
-                    {
-                        To = email,
-                        Subject = subject,
-                        Body = message
-                    });
-
-                    _logger.LogInformation($"Email queued for later delivery to: {email}");
+                    await QueueEmailAsync(email, subject, message);
+                    _logger.LogInformation($"Email queued for later delivery (Fallback) to: {email}");
                 }
                 catch (Exception queueEx)
                 {
