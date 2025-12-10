@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using SchoolProject.Core.MiddleWare;
 using Serilog;
 using Sudan_Train.Core;
@@ -11,6 +12,12 @@ using Sudan_Train.Service;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure host options to prevent crash on background service failure
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
 
 // Add services to the container.
 builder.Services.AddControllers();

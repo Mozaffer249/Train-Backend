@@ -12,11 +12,16 @@ namespace Sudan_Train.Service.Implementations
     {
         private readonly EmailSettings _emailSettings;
         private readonly ILogger<EmailService> _logger;
+        private readonly IMessageQueueService _messageQueueService;
 
-        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+        public EmailService(
+            IOptions<EmailSettings> emailSettings,
+            ILogger<EmailService> logger,
+            IMessageQueueService messageQueueService)
         {
             _emailSettings = emailSettings.Value;
             _logger = logger;
+            _messageQueueService = messageQueueService;
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
@@ -59,7 +64,24 @@ namespace Sudan_Train.Service.Implementations
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to send email to: {email}. Error: {ex.Message}");
-                throw;
+
+                // Fallback: Queue the email for later processing
+                try
+                {
+                    await _messageQueueService.QueueEmailAsync(new EmailMessage
+                    {
+                        To = email,
+                        Subject = subject,
+                        Body = message
+                    });
+
+                    _logger.LogInformation($"Email queued for later delivery to: {email}");
+                }
+                catch (Exception queueEx)
+                {
+                    _logger.LogError(queueEx, $"Failed to queue email to: {email}. Email will be lost.");
+                    throw;
+                }
             }
         }
     }

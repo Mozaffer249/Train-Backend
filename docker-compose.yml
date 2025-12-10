@@ -23,6 +23,28 @@ services:
       retries: 10
       start_period: 10s
 
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: train-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI (http://localhost:15672)
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - train-network
+    restart: unless-stopped
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # Sudan Train API
   train-api:
     build:
@@ -36,6 +58,12 @@ services:
       - jwtSettings__Secret=${JWT_SECRET:-TrainProjectSecretKey123456789TrainProjectSecretKey123456789}
       - emailSettings__FromEmail=${EMAIL_FROM:-your-email@gmail.com}
       - emailSettings__Password=${EMAIL_PASSWORD:-your-app-password}
+      - RabbitMQSettings__HostName=rabbitmq
+      - RabbitMQSettings__Port=5672
+      - RabbitMQSettings__UserName=guest
+      - RabbitMQSettings__Password=guest
+      - RabbitMQSettings__VirtualHost=/
+      - RabbitMQSettings__EmailQueueName=email-queue
     ports:
       - "8080:80"
       - "8443:443"
@@ -44,12 +72,15 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - train-network
     restart: unless-stopped
 
 volumes:
   sqlserver_data:
+  rabbitmq_data:
 
 networks:
   train-network:

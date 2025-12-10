@@ -13,9 +13,18 @@ namespace Sudan_Train.Service
             // Configure Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
+            // Configure RabbitMQ Settings
+            services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQSettings"));
+
+            // Register message queue service
+            services.AddSingleton<IMessageQueueService, RabbitMQService>();
+
             // Register services here
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IAuthenticationService, AuthenticationService>();
+
+            // Register background email consumer
+            services.AddHostedService<EmailConsumerService>();
 
             return services;
         }
