@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # SQL Server Database
   sqlserver:
@@ -45,6 +43,47 @@ services:
       retries: 5
       start_period: 10s
 
+  # Sudan Train Messaging API
+  messaging-api:
+    build:
+      context: .
+      dockerfile: Sudan_Train.MessagingApi/Dockerfile
+    container_name: train-messaging-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__MessagingDb=Server=sqlserver,1433;Database=MessagingDb;User Id=sa;Password=${SQL_PASSWORD:-YourStrong@Passw0rd};TrustServerCertificate=True;
+      - RabbitMQSettings__HostName=rabbitmq
+      - RabbitMQSettings__Port=5672
+      - RabbitMQSettings__UserName=guest
+      - RabbitMQSettings__Password=guest
+      - RabbitMQSettings__VirtualHost=/
+      - RabbitMQSettings__EmailQueueName=email-queue
+      - RabbitMQSettings__SmsQueueName=sms-queue
+      - RabbitMQSettings__PushQueueName=push-queue
+      - EmailSettings__Host=smtp.gmail.com
+      - EmailSettings__Port=587
+      - EmailSettings__FromName=Sudan Train Booking System
+      - EmailSettings__FromEmail=mozafferragab@gmail.com
+      - EmailSettings__UserName=mozafferragab@gmail.com
+      - EmailSettings__Password=ohjgtbdlxxjuhlvk
+      - EmailSettings__EnableSsl=true
+      - EmailSettings__DefaultStrategy=Queued
+      - SmsSettings__AccountSid=${TWILIO_ACCOUNT_SID:-}
+      - SmsSettings__AuthToken=${TWILIO_AUTH_TOKEN:-}
+      - SmsSettings__FromNumber=${TWILIO_FROM_NUMBER:-}
+      - PushSettings__ServiceAccountKeyPath=${FIREBASE_KEY_PATH:-}
+    ports:
+      - "5001:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - train-network
+    restart: unless-stopped
+
   # Sudan Train API
   train-api:
     build:
@@ -56,15 +95,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__dbcontext=Server=sqlserver,1433;Database=TrainsDb;User Id=sa;Password=${SQL_PASSWORD:-YourStrong@Passw0rd};TrustServerCertificate=True;
       - jwtSettings__Secret=${JWT_SECRET:-TrainProjectSecretKey123456789TrainProjectSecretKey123456789}
-      - emailSettings__FromEmail=${EMAIL_FROM:-your-email@gmail.com}
-      - emailSettings__Password=${EMAIL_PASSWORD:-your-app-password}
-      - EmailSettings__DefaultStrategy=Queued
-      - RabbitMQSettings__HostName=rabbitmq
-      - RabbitMQSettings__Port=5672
-      - RabbitMQSettings__UserName=guest
-      - RabbitMQSettings__Password=guest
-      - RabbitMQSettings__VirtualHost=/
-      - RabbitMQSettings__EmailQueueName=email-queue
+      - MessagingApi__BaseUrl=http://messaging-api
     ports:
       - "8080:80"
       - "8443:443"
@@ -75,6 +106,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      messaging-api:
+        condition: service_started
     networks:
       - train-network
     restart: unless-stopped

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trains.Service", "Sudan_Tra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trains.Core", "Sudan_Train.Core\Trains.Core.csproj", "{AA9FCB19-A558-4F68-8D2B-A60628F3595E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudan_Train.MessagingApi", "Sudan_Train.MessagingApi\Sudan_Train.MessagingApi.csproj", "{4E289C93-A6D0-433A-B6C3-4F299F9DEFF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AA9FCB19-A558-4F68-8D2B-A60628F3595E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA9FCB19-A558-4F68-8D2B-A60628F3595E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA9FCB19-A558-4F68-8D2B-A60628F3595E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E289C93-A6D0-433A-B6C3-4F299F9DEFF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E289C93-A6D0-433A-B6C3-4F299F9DEFF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E289C93-A6D0-433A-B6C3-4F299F9DEFF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E289C93-A6D0-433A-B6C3-4F299F9DEFF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

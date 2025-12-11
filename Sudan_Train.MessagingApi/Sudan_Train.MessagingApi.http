@@ -1,0 +1,6 @@
+@Sudan_Train.MessagingApi_HostAddress = http://localhost:5188
+
+GET {{Sudan_Train.MessagingApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
