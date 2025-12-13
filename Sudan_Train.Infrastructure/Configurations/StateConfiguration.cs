@@ -21,6 +21,11 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.HasIndex(s => s.NameEn)
                 .IsUnique();
 
+            builder.HasOne(s => s.Region)
+                .WithMany(r => r.States)
+                .HasForeignKey(s => s.RegionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(s => s.Cities)
                 .WithOne(c => c.State)
                 .HasForeignKey(c => c.StateId)

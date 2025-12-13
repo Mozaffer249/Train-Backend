@@ -17,6 +17,7 @@ namespace Sudan_Train.Infrastructure
             services.AddTransient<DatabaseSeeder>();
             services.AddTransient<RoleSeeder>();
             services.AddTransient<UserSeeder>();
+            services.AddTransient<StateAndCitySeeder>();
 
             //views
 

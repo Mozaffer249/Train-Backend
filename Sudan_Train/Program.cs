@@ -110,6 +110,9 @@ using (var scope = app.Services.CreateScope())
         var userSeeder = services.GetRequiredService<UserSeeder>();
         await userSeeder.SeedAsync();
 
+        var stateAndCitySeeder = services.GetRequiredService<StateAndCitySeeder>();
+        await stateAndCitySeeder.SeedAsync();
+
         Log.Information("Database initialization and seeding completed successfully.");
     }
     catch (Exception ex)

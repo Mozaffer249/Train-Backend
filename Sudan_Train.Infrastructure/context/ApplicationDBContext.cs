@@ -41,6 +41,7 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Route> Routes { get; set; }
         public DbSet<RouteStation> RouteStations { get; set; }
+        public DbSet<Region> Regions { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<Ticket> Tickets { get; set; }

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sudan_Train.Data.Entity
 {
-    public class State
+    public class Region
     {
         [Key]
         public int Id { get; set; }
@@ -15,11 +14,9 @@ namespace Sudan_Train.Data.Entity
         [Required, MaxLength(100)]
         public string NameAr { get; set; } = default!;
 
-        public int RegionId { get; set; }
+        [Required, MaxLength(20)]
+        public string Code { get; set; } = default!;
 
-        [ForeignKey(nameof(RegionId))]
-        public Region Region { get; set; } = default!;
-
-        public ICollection<City> Cities { get; set; } = new List<City>();
+        public ICollection<State> States { get; set; } = new List<State>();
     }
 }

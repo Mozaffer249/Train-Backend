@@ -39,6 +39,24 @@ Concise reference for developers:
 - Troubleshooting guide
 - Enums cheat sheet
 
+### [Sudanese Geographic Data Seeding](./sudanese-geographic-data-seeding.md)
+Comprehensive guide for the geographic hierarchy seeding system:
+- 6 Sudanese regions with codes (KRT, EST, NTH, CNT, KRD, DRF)
+- 18 states organized by region with Arabic names
+- 145+ cities with bilingual support
+- Three-level hierarchy: Region → State → City
+- Automatic seeding on application startup
+- Testing and verification queries
+- Data quality and maintenance guidelines
+
+### [Regional Hierarchy Usage](./regional-hierarchy-usage.md)
+Quick reference for using the regional structure:
+- Query patterns for regions, states, and cities
+- Cascading dropdown implementation
+- Regional analytics examples
+- Region codes reference
+- Performance tips
+
 ## 🗄️ Database Information
 
 ### Database Provider
