@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Sudan_Train.Data.Commons;
 
 namespace Sudan_Train.Data.Entity
 {
-    public class Coach
+    public class Coach : AuditableEntity
     {
         [Key]
         public int Id { get; set; }
@@ -14,6 +15,7 @@ namespace Sudan_Train.Data.Entity
         [ForeignKey(nameof(TrainId))]
         public Train Train { get; set; } = default!;
 
+        [Required, MaxLength(20)]
         public string CoachNumber { get; set; } = default!;
 
         public CoachClass Class { get; set; }

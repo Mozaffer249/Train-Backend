@@ -20,7 +20,7 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(t => t.Route)
-                .WithMany()
+                .WithMany(r => r.Trips)
                 .HasForeignKey(t => t.RouteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -28,6 +28,11 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .WithOne(ts => ts.Trip)
                 .HasForeignKey(ts => ts.TripId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(t => t.BookingPassengers)
+                .WithOne(bp => bp.Trip)
+                .HasForeignKey(bp => bp.TripId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

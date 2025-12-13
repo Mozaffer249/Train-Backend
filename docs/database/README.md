@@ -13,6 +13,32 @@ Complete database setup guide:
 - Seeding data
 - Docker database setup
 
+### [Migration Guide](./migration-guide.md)
+Comprehensive guide for applying the database improvements migration:
+- Pre-migration checklist and backup procedures
+- Migration execution steps
+- Post-migration verification
+- Breaking changes and their impacts
+- Rollback procedures
+- Troubleshooting common issues
+
+### [Entity Relationship Diagram](./entity-relationship-diagram.md)
+Visual and detailed documentation of the complete database schema:
+- Entity relationship diagrams
+- Entity categorization
+- Relationship explanations
+- Common query patterns
+- Performance considerations
+
+### [Quick Reference Guide](./quick-reference.md)
+Concise reference for developers:
+- Quick commands for migrations
+- Code examples for new entities
+- Common query patterns
+- Performance tips
+- Troubleshooting guide
+- Enums cheat sheet
+
 ## 🗄️ Database Information
 
 ### Database Provider
@@ -29,6 +55,16 @@ Complete database setup guide:
 - `dbo` - Main application tables
 
 ## 🔄 Migrations
+
+### Current Migration
+**ComprehensiveDatabaseImprovement** (December 11, 2025)
+- Added 5 new entities (Refund, Notification, TrainSchedule, Promotion, PromotionUsage)
+- Added audit trails to core entities
+- Enhanced security with encryption
+- Performance improvements with 40+ indexes
+- Breaking changes: Removed redundant columns
+
+**⚠️ See [Migration Guide](./migration-guide.md) for detailed instructions**
 
 ### Create Migration
 ```bash

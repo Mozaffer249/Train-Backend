@@ -18,10 +18,9 @@ namespace Sudan_Train.Data.Entity
         [ForeignKey(nameof(SeatId))]
         public Seat Seat { get; set; } = default!;
 
-        public int CoachId { get; set; }
-
-        [ForeignKey(nameof(CoachId))]
-        public Coach Coach { get; set; } = default!;
+        // Computed property - derive from Seat
+        [NotMapped]
+        public Coach Coach => Seat.Coach;
 
         public SeatStatus Status { get; set; } = SeatStatus.Available;
 

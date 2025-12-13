@@ -1,11 +1,15 @@
-﻿using EntityFrameworkCore.EncryptColumn.Extension;
+using EntityFrameworkCore.EncryptColumn.Extension;
 using EntityFrameworkCore.EncryptColumn.Interfaces;
 using EntityFrameworkCore.EncryptColumn.Util;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Sudan_Train.Data.Commons;
 using Sudan_Train.Data.Entity;
 using Sudan_Train.Data.Entity.Identity;
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Sudan_Train.Infrastructure.context
@@ -23,6 +27,7 @@ namespace Sudan_Train.Infrastructure.context
         {
             _encryptionProvider = new GenerateEncryptionProvider("8a4dcaaec64d412380fe4b02193cd26f");
         }
+        // Existing DbSets
         public DbSet<Train> Trains { get; set; }
         public DbSet<Coach> Coaches { get; set; }
         public DbSet<Seat> Seats { get; set; }
@@ -41,6 +46,13 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
+        // New DbSets for enhanced functionality
+        public DbSet<Refund> Refunds { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<TrainSchedule> TrainSchedules { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
+        public DbSet<PromotionUsage> PromotionUsages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -56,7 +68,27 @@ namespace Sudan_Train.Infrastructure.context
             builder.Entity<IdentityUserLogin<int>>().ToTable("UserLogins", "security");
             builder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims", "security");
             builder.Entity<IdentityUserToken<int>>().ToTable("UserTokens", "security");
+
+            // Apply encryption
             builder.UseEncryption(_encryptionProvider);
+
+            // Apply global query filters for soft delete
+            ApplySoftDeleteQueryFilters(builder);
+        }
+
+        private void ApplySoftDeleteQueryFilters(ModelBuilder builder)
+        {
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                if (typeof(SoftDeletableEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var property = Expression.Property(parameter, nameof(SoftDeletableEntity.IsDeleted));
+                    var filter = Expression.Lambda(Expression.Equal(property, Expression.Constant(false)), parameter);
+
+                    entityType.SetQueryFilter(filter);
+                }
+            }
         }
     }
 }

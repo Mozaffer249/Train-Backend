@@ -34,7 +34,10 @@ namespace Sudan_Train.Data.Entity
         public Fare? Fare { get; set; }
 
         public decimal Price { get; set; }
-        public string? SeatNumber { get; set; }
+
+        // Computed property - derive from TripSeat
+        [NotMapped]
+        public string SeatNumber => TripSeat?.Seat?.SeatNumber ?? "N/A";
 
         public Ticket? Ticket { get; set; }
     }

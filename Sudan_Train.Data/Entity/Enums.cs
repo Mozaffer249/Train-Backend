@@ -39,5 +39,54 @@ namespace Sudan_Train.Data.Entity
         Occupied = 2,
         Maintenance = 3
     }
+
+    public enum RefundStatus
+    {
+        Pending = 0,
+        Approved = 1,
+        Rejected = 2,
+        Completed = 3
+    }
+
+    public enum RefundMethod
+    {
+        Original = 0,
+        BankTransfer = 1,
+        Cash = 2
+    }
+
+    public enum NotificationType
+    {
+        BookingConfirmation = 0,
+        BookingCancellation = 1,
+        PaymentReceived = 2,
+        TripDelay = 3,
+        TripCancellation = 4,
+        PromotionalOffer = 5,
+        SystemAlert = 6
+    }
+
+    public enum NotificationChannel
+    {
+        Email = 0,
+        SMS = 1,
+        Push = 2,
+        InApp = 3
+    }
+
+    public enum RecurrenceType
+    {
+        Daily = 0,
+        Weekly = 1,
+        Monthly = 2,
+        Custom = 3
+    }
+
+    public enum PromotionType
+    {
+        Percentage = 0,
+        FixedAmount = 1,
+        BuyOneGetOne = 2
+    }
 }
 

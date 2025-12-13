@@ -14,7 +14,23 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(20);
 
+            // Add unique index on Reference for fast lookups
+            builder.HasIndex(b => b.Reference)
+                .IsUnique();
+
+            // Add index on UserId for user's bookings queries
+            builder.HasIndex(b => b.UserId);
+
+            // Add index on CreatedAt for date range queries
+            builder.HasIndex(b => b.CreatedAt);
+
+            // Add index on Status for filtering by status
+            builder.HasIndex(b => b.Status);
+
             builder.Property(b => b.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(b => b.RefundAmount)
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(b => b.Status)
@@ -22,6 +38,9 @@ namespace Sudan_Train.Infrastructure.Configurations
 
             builder.Property(b => b.CreatedAt)
                 .IsRequired();
+
+            builder.Property(b => b.CancellationReason)
+                .HasMaxLength(500);
 
             builder.HasOne(b => b.User)
                 .WithMany(u => u.Bookings)
@@ -37,6 +56,21 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .WithOne(bp => bp.Booking)
                 .HasForeignKey(bp => bp.BookingId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(b => b.Refunds)
+                .WithOne(r => r.Booking)
+                .HasForeignKey(r => r.BookingId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(b => b.Notifications)
+                .WithOne(n => n.Booking)
+                .HasForeignKey(n => n.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(b => b.PromotionUsages)
+                .WithOne(pu => pu.Booking)
+                .HasForeignKey(pu => pu.BookingId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

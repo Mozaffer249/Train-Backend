@@ -13,11 +13,17 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.HasIndex(ts => new { ts.TripId, ts.SeatId })
                 .IsUnique();
 
+            // Add index on TripId and Status for availability queries
+            builder.HasIndex(ts => new { ts.TripId, ts.Status });
+
             builder.Property(ts => ts.Price)
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(ts => ts.Status)
                 .HasConversion<int>();
+
+            // Ignore computed property Coach (not mapped to database)
+            builder.Ignore(ts => ts.Coach);
 
             builder.HasOne(ts => ts.Trip)
                 .WithMany(t => t.TripSeats)
@@ -27,11 +33,6 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.HasOne(ts => ts.Seat)
                 .WithMany(s => s.TripSeats)
                 .HasForeignKey(ts => ts.SeatId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(ts => ts.Coach)
-                .WithMany()
-                .HasForeignKey(ts => ts.CoachId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

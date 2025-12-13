@@ -30,6 +30,11 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .WithOne(c => c.Train)
                 .HasForeignKey(c => c.TrainId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(t => t.TrainSchedules)
+                .WithOne(ts => ts.Train)
+                .HasForeignKey(ts => ts.TrainId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

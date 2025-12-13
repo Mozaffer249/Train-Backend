@@ -11,6 +11,8 @@ namespace Sudan_Train.Data.Entity.Identity
         {
             UserRefreshTokens = new HashSet<UserRefreshToken>();
             Bookings = new HashSet<Booking>();
+            Notifications = new HashSet<Notification>();
+            PromotionUsages = new HashSet<PromotionUsage>();
         }
 
         public string FirstName { get; set; } = default!;
@@ -27,5 +29,7 @@ namespace Sudan_Train.Data.Entity.Identity
         public ICollection<UserRefreshToken> UserRefreshTokens { get; set; }
 
         public ICollection<Booking> Bookings { get; set; }
+        public ICollection<Notification> Notifications { get; set; }
+        public ICollection<PromotionUsage> PromotionUsages { get; set; }
     }
 }

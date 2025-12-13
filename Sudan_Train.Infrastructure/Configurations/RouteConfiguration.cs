@@ -33,6 +33,16 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .WithOne(rs => rs.Route)
                 .HasForeignKey(rs => rs.RouteId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.Trips)
+                .WithOne(t => t.Route)
+                .HasForeignKey(t => t.RouteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(r => r.TrainSchedules)
+                .WithOne(ts => ts.Route)
+                .HasForeignKey(ts => ts.RouteId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

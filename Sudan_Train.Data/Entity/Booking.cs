@@ -24,7 +24,18 @@ namespace Sudan_Train.Data.Entity
         public decimal TotalAmount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // Cancellation tracking
+        public DateTime? CancelledAt { get; set; }
+
+        [MaxLength(500)]
+        public string? CancellationReason { get; set; }
+        public int? CancelledBy { get; set; }
+        public decimal? RefundAmount { get; set; }
+
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
         public ICollection<BookingPassenger> BookingPassengers { get; set; } = new List<BookingPassenger>();
+        public ICollection<Refund> Refunds { get; set; } = new List<Refund>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public ICollection<PromotionUsage> PromotionUsages { get; set; } = new List<PromotionUsage>();
     }
 }

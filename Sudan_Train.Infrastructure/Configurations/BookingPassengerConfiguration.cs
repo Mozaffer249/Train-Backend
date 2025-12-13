@@ -10,11 +10,20 @@ namespace Sudan_Train.Infrastructure.Configurations
         {
             builder.HasKey(bp => bp.Id);
 
+            // Add composite index for booking-passenger queries
+            builder.HasIndex(bp => new { bp.BookingId, bp.PassengerId });
+
+            // Add index on TripId for trip passenger queries
+            builder.HasIndex(bp => bp.TripId);
+
+            // Add index on TripSeatId for seat assignment queries
+            builder.HasIndex(bp => bp.TripSeatId);
+
             builder.Property(bp => bp.Price)
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(bp => bp.SeatNumber)
-                .HasMaxLength(10);
+            // Ignore computed property SeatNumber (not mapped to database)
+            builder.Ignore(bp => bp.SeatNumber);
 
             builder.HasOne(bp => bp.Booking)
                 .WithMany(b => b.BookingPassengers)
@@ -27,7 +36,7 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(bp => bp.Trip)
-                .WithMany()
+                .WithMany(t => t.BookingPassengers)
                 .HasForeignKey(bp => bp.TripId)
                 .OnDelete(DeleteBehavior.Restrict);
 

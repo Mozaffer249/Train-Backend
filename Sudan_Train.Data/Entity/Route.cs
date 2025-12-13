@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Sudan_Train.Data.Commons;
 
 namespace Sudan_Train.Data.Entity
 {
-    public class Route
+    public class Route : AuditableEntity
     {
         [Key]
         public int Id { get; set; }
@@ -28,6 +29,8 @@ namespace Sudan_Train.Data.Entity
         public decimal? DistanceKm { get; set; }
 
         public ICollection<RouteStation> RouteStations { get; set; } = new List<RouteStation>();
+        public ICollection<Trip> Trips { get; set; } = new List<Trip>();
+        public ICollection<TrainSchedule> TrainSchedules { get; set; } = new List<TrainSchedule>();
     }
 }
 
