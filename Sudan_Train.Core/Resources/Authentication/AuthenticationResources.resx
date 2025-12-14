@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Authentication & Authorization -->
+  <data name="UserNameIsExist" xml:space="preserve">
+    <value>Username already exists</value>
+  </data>
+  <data name="EmailIsExist" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="EmailIsNotExist" xml:space="preserve">
+    <value>Email does not exist</value>
+  </data>
+  <data name="PhoneNumberIsExist" xml:space="preserve">
+    <value>Phone number already exists</value>
+  </data>
+  <data name="FailedToAddUser" xml:space="preserve">
+    <value>Failed to add user</value>
+  </data>
+  <data name="FailedToUpdateUser" xml:space="preserve">
+    <value>Failed to update user</value>
+  </data>
+  <data name="FailedToDeleteUser" xml:space="preserve">
+    <value>Failed to delete user</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found</value>
+  </data>
+  <data name="PasswordNotCorrect" xml:space="preserve">
+    <value>Incorrect password</value>
+  </data>
+  <data name="UserIsNotActive" xml:space="preserve">
+    <value>User account is not active</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>Please confirm your email before logging in</value>
+  </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Your account is locked due to multiple failed login attempts. Please try again later.</value>
+  </data>
+  <data name="UserRegisteredSuccessfully" xml:space="preserve">
+    <value>User registered successfully</value>
+  </data>
+  <data name="WelcomeEmailSubject" xml:space="preserve">
+    <value>Welcome to Sudan Train System</value>
+  </data>
+  <data name="WelcomeEmailBody" xml:space="preserve">
+    <value>Welcome! Thank you for registering.</value>
+  </data>
+
+  <!-- Two-Factor Authentication -->
+  <data name="TwoFactorCodeRequired" xml:space="preserve">
+    <value>Two-factor authentication code is required</value>
+  </data>
+  <data name="InvalidTwoFactorCode" xml:space="preserve">
+    <value>Invalid two-factor authentication code</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>Two-factor authentication enabled successfully</value>
+  </data>
+  <data name="TwoFactorDisabled" xml:space="preserve">
+    <value>Two-factor authentication disabled successfully</value>
+  </data>
+  <data name="TwoFactorNotEnabled" xml:space="preserve">
+    <value>Two-factor authentication is not enabled for this account</value>
+  </data>
+  <data name="RecoveryCodesGenerated" xml:space="preserve">
+    <value>Recovery codes generated successfully</value>
+  </data>
+  <data name="InvalidRecoveryCode" xml:space="preserve">
+    <value>Invalid recovery code</value>
+  </data>
+  <data name="TwoFactorCodeExpired" xml:space="preserve">
+    <value>Two-factor authentication code has expired</value>
+  </data>
+
+  <!-- Session Management -->
+  <data name="SessionTerminated" xml:space="preserve">
+    <value>Session terminated successfully</value>
+  </data>
+  <data name="SessionNotFound" xml:space="preserve">
+    <value>Session not found</value>
+  </data>
+  <data name="AllSessionsTerminated" xml:space="preserve">
+    <value>All sessions terminated successfully</value>
+  </data>
+  <data name="DeviceRemoved" xml:space="preserve">
+    <value>Device removed successfully</value>
+  </data>
+  <data name="DeviceNotFound" xml:space="preserve">
+    <value>Device not found</value>
+  </data>
+
+  <!-- Password Security -->
+  <data name="PasswordInHistory" xml:space="preserve">
+    <value>This password was used recently. Please choose a different password.</value>
+  </data>
+  <data name="WeakPassword" xml:space="preserve">
+    <value>Password is too weak. Please choose a stronger password.</value>
+  </data>
+  <data name="PasswordExpired" xml:space="preserve">
+    <value>Your password has expired. Please change your password.</value>
+  </data>
+  <data name="PasswordChangedSuccessfully" xml:space="preserve">
+    <value>Password changed successfully</value>
+  </data>
+  <data name="CommonPasswordNotAllowed" xml:space="preserve">
+    <value>This is a commonly used password. Please choose a more unique password.</value>
+  </data>
+
+  <!-- Logout -->
+  <data name="LoggedOutSuccessfully" xml:space="preserve">
+    <value>Logged out successfully</value>
+  </data>
+  <data name="LogoutFailed" xml:space="preserve">
+    <value>Failed to logout. Please try again.</value>
+  </data>
+
+  <!-- Rate Limiting -->
+  <data name="TooManyLoginAttempts" xml:space="preserve">
+    <value>Too many login attempts. Please try again later.</value>
+  </data>
+  <data name="TooManyRegistrationAttempts" xml:space="preserve">
+    <value>Too many registration attempts. Please try again later.</value>
+  </data>
+  <data name="TooManyPasswordResetAttempts" xml:space="preserve">
+    <value>Too many password reset attempts. Please try again later.</value>
+  </data>
+
+  <!-- Security Events -->
+  <data name="NewDeviceDetected" xml:space="preserve">
+    <value>Login from a new device detected</value>
+  </data>
+  <data name="NewLocationDetected" xml:space="preserve">
+    <value>Login from a new location detected</value>
+  </data>
+  <data name="SuspiciousActivityDetected" xml:space="preserve">
+    <value>Suspicious activity detected on your account</value>
+  </data>
+
+  <!-- Field-Specific Validation Messages -->
+  <data name="UserNameIsRequired" xml:space="preserve">
+    <value>Username is required</value>
+  </data>
+  <data name="PasswordIsRequired" xml:space="preserve">
+    <value>Password is required</value>
+  </data>
+  <data name="PasswordMinLength" xml:space="preserve">
+    <value>Password must be at least 6 characters long</value>
+  </data>
+  <data name="FirstNameIsRequired" xml:space="preserve">
+    <value>First name is required</value>
+  </data>
+  <data name="LastNameIsRequired" xml:space="preserve">
+    <value>Last name is required</value>
+  </data>
+  <data name="EmailIsRequired" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="EmailInvalidFormat" xml:space="preserve">
+    <value>Invalid email format</value>
+  </data>
+  <data name="ConfirmPasswordIsRequired" xml:space="preserve">
+    <value>Confirm password is required</value>
+  </data>
+  <data name="UserNameMinLength" xml:space="preserve">
+    <value>Username must be at least 3 characters long</value>
+  </data>
+  <data name="UserNameMaxLength" xml:space="preserve">
+    <value>Username cannot exceed 50 characters</value>
+  </data>
+  <data name="FirstNameMaxLength" xml:space="preserve">
+    <value>First name cannot exceed 50 characters</value>
+  </data>
+  <data name="LastNameMaxLength" xml:space="preserve">
+    <value>Last name cannot exceed 50 characters</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Passwords do not match</value>
+  </data>
+  <data name="TwoFactorCodeIsRequired" xml:space="preserve">
+    <value>Two-factor code is required</value>
+  </data>
+  <data name="TwoFactorCodeMustBeSixDigits" xml:space="preserve">
+    <value>Two-factor code must be 6 digits</value>
+  </data>
+</root>

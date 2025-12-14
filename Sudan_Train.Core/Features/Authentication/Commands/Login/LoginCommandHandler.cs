@@ -44,8 +44,27 @@ namespace Trains.Core.Features.Authentication.Commands.Login
                 return Unauthorized<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.UserIsNotActive]);
             }
 
-            // Try to sign in (validation ensures Password is not null)
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password!, false);
+            // Check if email is confirmed
+            if (!user.EmailConfirmed)
+            {
+                return Unauthorized<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.EmailNotConfirmed]);
+            }
+
+            // Try to sign in with lockout enabled (validation ensures Password is not null)
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password!, true);
+
+            // Check if account is locked out
+            if (signInResult.IsLockedOut)
+            {
+                return Unauthorized<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.AccountLockedOut]);
+            }
+
+            // Check if 2FA is required
+            if (signInResult.RequiresTwoFactor || user.TwoFactorEnabled)
+            {
+                return BadRequest<JwtAuthResult>("Two-factor authentication is required. Please use LoginWithTwoFactor endpoint.");
+            }
+
             if (!signInResult.Succeeded)
             {
                 return Unauthorized<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.PasswordNotCorrect]);

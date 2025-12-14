@@ -11,9 +11,17 @@ namespace Sudan_Train.Service
         {
             // Register services here
             services.AddTransient<IAuthenticationService, AuthenticationService>();
+            services.AddTransient<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
+            services.AddSingleton<IRateLimitingService, RateLimitingService>();
+            services.AddTransient<IAuditService, AuditService>();
+            services.AddTransient<ISessionManagementService, SessionManagementService>();
+            services.AddTransient<IPasswordSecurityService, PasswordSecurityService>();
 
             // Register EmailServiceProxy to forward email requests to MessagingApi microservice
             services.AddHttpClient<IEmailService, EmailServiceProxy>();
+
+            // Add memory cache for rate limiting
+            services.AddMemoryCache();
 
             return services;
         }

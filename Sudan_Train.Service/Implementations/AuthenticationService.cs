@@ -161,6 +161,57 @@ namespace Sudan_Train.Service.Implementations
             return result.Succeeded ? "Success" : "Failed";
         }
 
+        public async Task<bool> RevokeTokenAsync(string accessToken, string? refreshToken, int userId, bool allDevices)
+        {
+            try
+            {
+                if (allDevices)
+                {
+                    // Revoke all tokens for the user
+                    var userTokens = await _refreshTokenRepository.GetTableNoTracking()
+                        .Where(x => x.UserId == userId && !x.IsRevoked)
+                        .ToListAsync();
+
+                    foreach (var token in userTokens)
+                    {
+                        token.IsRevoked = true;
+                        await _refreshTokenRepository.UpdateAsync(token);
+                    }
+                }
+                else
+                {
+                    // Revoke specific token
+                    var userRefreshToken = await _refreshTokenRepository.GetTableNoTracking()
+                        .FirstOrDefaultAsync(x => x.Token == accessToken && x.UserId == userId);
+
+                    if (userRefreshToken != null)
+                    {
+                        userRefreshToken.IsRevoked = true;
+                        await _refreshTokenRepository.UpdateAsync(userRefreshToken);
+                    }
+
+                    // If refresh token provided, revoke it too
+                    if (!string.IsNullOrEmpty(refreshToken))
+                    {
+                        var refreshTokenEntity = await _refreshTokenRepository.GetTableNoTracking()
+                            .FirstOrDefaultAsync(x => x.RefreshToken == refreshToken && x.UserId == userId);
+
+                        if (refreshTokenEntity != null)
+                        {
+                            refreshTokenEntity.IsRevoked = true;
+                            await _refreshTokenRepository.UpdateAsync(refreshTokenEntity);
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         #region Private Methods
 
         private async Task<(JwtSecurityToken, string)> GenerateJWTToken(User user)

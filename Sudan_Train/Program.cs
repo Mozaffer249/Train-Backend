@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using SchoolProject.Core.MiddleWare;
 using Serilog;
 using Sudan_Train.Core;
+using Sudan_Train.Core.MiddleWare;
 using Sudan_Train.Infrastructure;
 using Sudan_Train.Infrastructure.context;
 using Sudan_Train.Infrastructure.Seeder;
@@ -74,9 +75,24 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: CORS,
         policy =>
         {
-            policy.AllowAnyHeader();
-            policy.AllowAnyMethod();
-            policy.AllowAnyOrigin();
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[] { "*" };
+
+            if (allowedOrigins.Length == 1 && allowedOrigins[0] == "*")
+            {
+                // Development: Allow any origin
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
+            else
+            {
+                // Production: Restrict to specific origins
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+            }
         });
 });
 
@@ -138,14 +154,25 @@ var options = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(options!.Value);
 #endregion
 
+// Security headers middleware (first)
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 app.UseMiddleware<ErrorHandlerMiddleware>(); // Error Handling Middleware
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseCors(CORS);
+
+// Rate limiting middleware (before authentication)
+app.UseMiddleware<RateLimitingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Audit logging middleware (after authentication)
+app.UseMiddleware<AuditLoggingMiddleware>();
 
 app.MapControllers();
 

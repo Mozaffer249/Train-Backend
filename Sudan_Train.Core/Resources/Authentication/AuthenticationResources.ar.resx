@@ -143,4 +143,110 @@
   <data name="WelcomeEmailBody" xml:space="preserve">
     <value>عزيزي/عزيزتي {0}،&lt;br/&gt;&lt;br/&gt;مرحباً بك في نظام حجز قطارات السودان!&lt;br/&gt;&lt;br/&gt;تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول باستخدام عنوان بريدك الإلكتروني وحجز تذاكر القطار.&lt;br/&gt;&lt;br/&gt;تفاصيل الحساب:&lt;br/&gt;البريد الإلكتروني: {1}&lt;br/&gt;اسم المستخدم: {2}&lt;br/&gt;&lt;br/&gt;شكراً لاختيارك قطارات السودان!&lt;br/&gt;&lt;br/&gt;مع أطيب التحيات،&lt;br/&gt;فريق قطارات السودان</value>
   </data>
+
+  <!-- NEW: Enhanced Security Features -->
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول</value>
+  </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>تم قفل حسابك بسبب محاولات تسجيل دخول فاشلة متعددة. يرجى المحاولة مرة أخرى لاحقاً.</value>
+  </data>
+
+  <!-- Two-Factor Authentication -->
+  <data name="TwoFactorCodeRequired" xml:space="preserve">
+    <value>رمز المصادقة الثنائية مطلوب</value>
+  </data>
+  <data name="InvalidTwoFactorCode" xml:space="preserve">
+    <value>رمز المصادقة الثنائية غير صحيح</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>تم تفعيل المصادقة الثنائية بنجاح</value>
+  </data>
+  <data name="TwoFactorDisabled" xml:space="preserve">
+    <value>تم تعطيل المصادقة الثنائية بنجاح</value>
+  </data>
+  <data name="TwoFactorNotEnabled" xml:space="preserve">
+    <value>المصادقة الثنائية غير مفعلة لهذا الحساب</value>
+  </data>
+  <data name="RecoveryCodesGenerated" xml:space="preserve">
+    <value>تم إنشاء رموز الاسترداد بنجاح</value>
+  </data>
+  <data name="InvalidRecoveryCode" xml:space="preserve">
+    <value>رمز الاسترداد غير صحيح</value>
+  </data>
+  <data name="TwoFactorCodeExpired" xml:space="preserve">
+    <value>رمز المصادقة الثنائية منتهي الصلاحية</value>
+  </data>
+
+  <!-- Session Management -->
+  <data name="SessionTerminated" xml:space="preserve">
+    <value>تم إنهاء الجلسة بنجاح</value>
+  </data>
+  <data name="SessionNotFound" xml:space="preserve">
+    <value>الجلسة غير موجودة</value>
+  </data>
+  <data name="AllSessionsTerminated" xml:space="preserve">
+    <value>تم إنهاء جميع الجلسات بنجاح</value>
+  </data>
+  <data name="DeviceRemoved" xml:space="preserve">
+    <value>تم إزالة الجهاز بنجاح</value>
+  </data>
+  <data name="DeviceNotFound" xml:space="preserve">
+    <value>الجهاز غير موجود</value>
+  </data>
+
+  <!-- Password Security -->
+  <data name="PasswordInHistory" xml:space="preserve">
+    <value>تم استخدام كلمة المرور هذه مؤخراً. يرجى اختيار كلمة مرور مختلفة.</value>
+  </data>
+  <data name="WeakPassword" xml:space="preserve">
+    <value>كلمة المرور ضعيفة جداً. يرجى اختيار كلمة مرور أقوى.</value>
+  </data>
+  <data name="PasswordExpired" xml:space="preserve">
+    <value>انتهت صلاحية كلمة المرور الخاصة بك. يرجى تغيير كلمة المرور.</value>
+  </data>
+  <data name="PasswordChangedSuccessfully" xml:space="preserve">
+    <value>تم تغيير كلمة المرور بنجاح</value>
+  </data>
+  <data name="CommonPasswordNotAllowed" xml:space="preserve">
+    <value>هذه كلمة مرور شائعة الاستخدام. يرجى اختيار كلمة مرور أكثر تفرداً.</value>
+  </data>
+
+  <!-- Logout -->
+  <data name="LoggedOutSuccessfully" xml:space="preserve">
+    <value>تم تسجيل الخروج بنجاح</value>
+  </data>
+  <data name="LogoutFailed" xml:space="preserve">
+    <value>فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.</value>
+  </data>
+
+  <!-- Rate Limiting -->
+  <data name="TooManyLoginAttempts" xml:space="preserve">
+    <value>محاولات تسجيل دخول كثيرة جداً. يرجى المحاولة مرة أخرى لاحقاً.</value>
+  </data>
+  <data name="TooManyRegistrationAttempts" xml:space="preserve">
+    <value>محاولات تسجيل كثيرة جداً. يرجى المحاولة مرة أخرى لاحقاً.</value>
+  </data>
+  <data name="TooManyPasswordResetAttempts" xml:space="preserve">
+    <value>محاولات إعادة تعيين كلمة المرور كثيرة جداً. يرجى المحاولة مرة أخرى لاحقاً.</value>
+  </data>
+
+  <!-- Security Events -->
+  <data name="NewDeviceDetected" xml:space="preserve">
+    <value>تم اكتشاف تسجيل دخول من جهاز جديد</value>
+  </data>
+  <data name="NewLocationDetected" xml:space="preserve">
+    <value>تم اكتشاف تسجيل دخول من موقع جديد</value>
+  </data>
+  <data name="SuspiciousActivityDetected" xml:space="preserve">
+    <value>تم اكتشاف نشاط مشبوه على حسابك</value>
+  </data>
+
+  <!-- Additional Validation -->
+  <data name="TwoFactorCodeIsRequired" xml:space="preserve">
+    <value>رمز المصادقة الثنائية مطلوب</value>
+  </data>
+  <data name="TwoFactorCodeMustBeSixDigits" xml:space="preserve">
+    <value>رمز المصادقة الثنائية يجب أن يكون 6 أرقام</value>
+  </data>
 </root>

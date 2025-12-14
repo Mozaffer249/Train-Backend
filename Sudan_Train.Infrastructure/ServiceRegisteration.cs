@@ -41,11 +41,15 @@ namespace Sudan_Train.Infrastructure
             //JWT Authentication
             var jwtSettings = new JwtSettings();
             var emailSettings = new EmailSettings();
+            var rateLimitSettings = new RateLimitSettings();
             configuration.GetSection(nameof(jwtSettings)).Bind(jwtSettings);
             configuration.GetSection(nameof(emailSettings)).Bind(emailSettings);
+            configuration.GetSection("RateLimiting").Bind(rateLimitSettings);
 
             services.AddSingleton(jwtSettings);
             services.AddSingleton(emailSettings);
+            services.Configure<RateLimitSettings>(configuration.GetSection("RateLimiting"));
+            services.Configure<PasswordPolicySettings>(configuration.GetSection("PasswordPolicy"));
 
             services.AddAuthentication(x =>
             {
@@ -54,7 +58,7 @@ namespace Sudan_Train.Infrastructure
             })
            .AddJwtBearer(x =>
            {
-               x.RequireHttpsMetadata = false;
+               x.RequireHttpsMetadata = true; // Changed to true for production security
                x.SaveToken = true;
                x.TokenValidationParameters = new TokenValidationParameters
                {
@@ -65,6 +69,7 @@ namespace Sudan_Train.Infrastructure
                    ValidAudience = jwtSettings.Audience,
                    ValidateAudience = jwtSettings.ValidateAudience,
                    ValidateLifetime = jwtSettings.ValidateLifeTime,
+                   ClockSkew = TimeSpan.Zero, // Remove default 5-minute tolerance
                };
            });
             //Swagger Gn

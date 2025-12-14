@@ -54,6 +54,14 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<PromotionUsage> PromotionUsages { get; set; }
 
+        // Authentication & Security DbSets
+        public DbSet<LoginSession> LoginSessions { get; set; }
+        public DbSet<TrustedDevice> TrustedDevices { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<SecurityEvent> SecurityEvents { get; set; }
+        public DbSet<PasswordHistory> PasswordHistories { get; set; }
+        public DbSet<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

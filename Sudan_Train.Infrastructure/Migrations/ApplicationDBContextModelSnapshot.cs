@@ -335,6 +335,164 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("Fares");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action");
+
+                    b.HasIndex("IpAddress");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Action");
+
+                    b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastActivityTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("LoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LogoutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessToken");
+
+                    b.HasIndex("LoginTime");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsActive");
+
+                    b.ToTable("LoginSessions");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "ChangedAt");
+
+                    b.ToTable("PasswordHistories");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -365,6 +523,132 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("Roles", "security");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.SecurityEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("WasNotified")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventType");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "EventType");
+
+                    b.HasIndex("UserId", "WasNotified");
+
+                    b.ToTable("SecurityEvents");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TrustedDevice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DeviceFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TrustedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "DeviceId");
+
+                    b.HasIndex("UserId", "IsActive");
+
+                    b.ToTable("TrustedDevices");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TwoFactorRecoveryCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsUsed");
+
+                    b.ToTable("TwoFactorRecoveryCodes");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
                 {
                     b.Property<int>("Id")
@@ -379,6 +663,9 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<string>("Address")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("AppleId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Code")
                         .HasMaxLength(50)
@@ -395,10 +682,16 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FacebookId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GoogleId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -414,6 +707,12 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("MicrosoftId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Nationality")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -426,6 +725,12 @@ namespace Trains.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<DateTime?>("PasswordChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PasswordExpiryDays")
+                        .HasColumnType("int");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -434,6 +739,9 @@ namespace Trains.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -1476,6 +1784,71 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Trip");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("LoginSessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordHistory", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("PasswordHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.SecurityEvent", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("SecurityEvents")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TrustedDevice", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("TrustedDevices")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TwoFactorRecoveryCode", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("TwoFactorRecoveryCodes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.UserRefreshToken", b =>
                 {
                     b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
@@ -1747,11 +2120,23 @@ namespace Trains.Infrastructure.Migrations
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
                 {
+                    b.Navigation("AuditLogs");
+
                     b.Navigation("Bookings");
+
+                    b.Navigation("LoginSessions");
 
                     b.Navigation("Notifications");
 
+                    b.Navigation("PasswordHistories");
+
                     b.Navigation("PromotionUsages");
+
+                    b.Navigation("SecurityEvents");
+
+                    b.Navigation("TrustedDevices");
+
+                    b.Navigation("TwoFactorRecoveryCodes");
 
                     b.Navigation("UserRefreshTokens");
                 });

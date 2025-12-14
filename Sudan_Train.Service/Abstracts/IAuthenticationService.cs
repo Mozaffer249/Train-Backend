@@ -13,5 +13,6 @@ namespace Sudan_Train.Service.Abstracts
         Task<string> ConfirmEmail(int userId, string code);
         Task<string> SendResetPasswordCode(string email);
         Task<string> ResetPassword(string email, string code, string newPassword);
+        Task<bool> RevokeTokenAsync(string accessToken, string? refreshToken, int userId, bool allDevices);
     }
 }
