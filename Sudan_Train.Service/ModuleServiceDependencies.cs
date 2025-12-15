@@ -16,6 +16,7 @@ namespace Sudan_Train.Service
             services.AddTransient<IAuditService, AuditService>();
             services.AddTransient<ISessionManagementService, SessionManagementService>();
             services.AddTransient<IPasswordSecurityService, PasswordSecurityService>();
+            services.AddTransient<ISecurityNotificationService, SecurityNotificationService>();
 
             // Register EmailServiceProxy to forward email requests to MessagingApi microservice
             services.AddHttpClient<IEmailService, EmailServiceProxy>();

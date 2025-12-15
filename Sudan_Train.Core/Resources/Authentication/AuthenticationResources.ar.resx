@@ -249,4 +249,50 @@
   <data name="TwoFactorCodeMustBeSixDigits" xml:space="preserve">
     <value>رمز المصادقة الثنائية يجب أن يكون 6 أرقام</value>
   </data>
+
+  <!-- Account Management -->
+  <data name="ProfileUpdatedSuccessfully" xml:space="preserve">
+    <value>تم تحديث الملف الشخصي بنجاح</value>
+  </data>
+  <data name="EmailChangeRequested" xml:space="preserve">
+    <value>تم طلب تغيير البريد الإلكتروني. يرجى التحقق من عنوان بريدك الإلكتروني الجديد لرابط التأكيد.</value>
+  </data>
+  <data name="EmailChangedSuccessfully" xml:space="preserve">
+    <value>تم تغيير البريد الإلكتروني بنجاح</value>
+  </data>
+  <data name="InvalidEmailChangeToken" xml:space="preserve">
+    <value>رمز تغيير البريد الإلكتروني غير صالح أو منتهي الصلاحية</value>
+  </data>
+  <data name="EmailAlreadyInUse" xml:space="preserve">
+    <value>عنوان البريد الإلكتروني مستخدم بالفعل</value>
+  </data>
+  <data name="SessionNotBelongsToUser" xml:space="preserve">
+    <value>الجلسة لا تخص المستخدم الحالي</value>
+  </data>
+  <data name="DataExportGenerated" xml:space="preserve">
+    <value>تم إنشاء تصدير البيانات بنجاح</value>
+  </data>
+  <data name="AccountDeletedSuccessfully" xml:space="preserve">
+    <value>تم حذف الحساب بنجاح</value>
+  </data>
+  <data name="PasswordRequiredForSensitiveAction" xml:space="preserve">
+    <value>كلمة المرور مطلوبة لهذا الإجراء الحساس</value>
+  </data>
+
+  <!-- Security Notifications -->
+  <data name="SecurityNotificationPasswordChanged" xml:space="preserve">
+    <value>تم تغيير كلمة المرور الخاصة بك. إذا لم تكن أنت، يرجى الاتصال بالدعم فوراً.</value>
+  </data>
+  <data name="SecurityNotificationEmailChanged" xml:space="preserve">
+    <value>تم تغيير عنوان بريدك الإلكتروني. إذا لم تكن أنت، يرجى الاتصال بالدعم فوراً.</value>
+  </data>
+  <data name="SecurityNotificationNewDevice" xml:space="preserve">
+    <value>تم اكتشاف جهاز جديد يسجل الدخول إلى حسابك.</value>
+  </data>
+  <data name="SecurityNotification2FAEnabled" xml:space="preserve">
+    <value>تم تفعيل المصادقة الثنائية على حسابك.</value>
+  </data>
+  <data name="SecurityNotification2FADisabled" xml:space="preserve">
+    <value>تم تعطيل المصادقة الثنائية على حسابك.</value>
+  </data>
 </root>

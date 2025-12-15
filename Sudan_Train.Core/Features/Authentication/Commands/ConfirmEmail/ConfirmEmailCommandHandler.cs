@@ -43,7 +43,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmail
                 return BadRequest<string>(errors);
             }
 
-            return Success<string>(_sharedLocalizer[SharedResourcesKeys.Success]);
+            // Activate user account
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+
+            return Success<string>("Email confirmed successfully. You can now login.");
         }
     }
 }

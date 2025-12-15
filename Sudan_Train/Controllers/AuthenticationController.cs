@@ -14,8 +14,17 @@ using Sudan_Train.Core.Features.Authentication.Commands.VerifyTwoFactor;
 using Sudan_Train.Core.Features.Authentication.Commands.DisableTwoFactor;
 using Sudan_Train.Core.Features.Authentication.Commands.GenerateRecoveryCodes;
 using Sudan_Train.Core.Features.Authentication.Commands.LoginWithTwoFactor;
+using Sudan_Train.Core.Features.Authentication.Commands.UpdateProfile;
+using Sudan_Train.Core.Features.Authentication.Commands.ChangeEmail;
+using Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmailChange;
+using Sudan_Train.Core.Features.Authentication.Commands.TerminateSession;
+using Sudan_Train.Core.Features.Authentication.Commands.TerminateAllSessions;
+using Sudan_Train.Core.Features.Authentication.Commands.DeleteAccount;
 using Sudan_Train.Core.Features.Authentication.Queries.ValidateToken;
 using Sudan_Train.Core.Features.Authentication.Queries.GetTwoFactorStatus;
+using Sudan_Train.Core.Features.Authentication.Queries.GetProfile;
+using Sudan_Train.Core.Features.Authentication.Queries.GetActiveSessions;
+using Sudan_Train.Core.Features.Authentication.Queries.ExportUserData;
 using Sudan_Train.Data.AppMetaData;
 
 namespace Sudan_Train.Api.Controllers
@@ -193,6 +202,117 @@ namespace Sudan_Train.Api.Controllers
         {
             return NewResult(await Mediator.Send(query));
         }
+
+        #region Account Management
+
+        /// <summary>
+        /// Get user profile information
+        /// </summary>
+        /// <param name="query">Get profile query</param>
+        /// <returns>User profile details</returns>
+        [Authorize]
+        [HttpGet(Router.AccountGetProfile)]
+        public async Task<IActionResult> GetProfile([FromQuery] GetProfileQuery query)
+        {
+            return NewResult(await Mediator.Send(query));
+        }
+
+        /// <summary>
+        /// Update user profile information
+        /// </summary>
+        /// <param name="command">Update profile command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpPut(Router.AccountUpdateProfile)]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Request email address change
+        /// </summary>
+        /// <param name="command">Change email command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpPost(Router.AccountChangeEmail)]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Confirm email address change
+        /// </summary>
+        /// <param name="command">Confirm email change command</param>
+        /// <returns>Success message</returns>
+        [HttpPost(Router.AccountConfirmEmailChange)]
+        public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Get all active sessions for current user
+        /// </summary>
+        /// <param name="query">Get active sessions query</param>
+        /// <returns>List of active sessions</returns>
+        [Authorize]
+        [HttpGet(Router.AccountGetSessions)]
+        public async Task<IActionResult> GetActiveSessions([FromQuery] GetActiveSessionsQuery query)
+        {
+            return NewResult(await Mediator.Send(query));
+        }
+
+        /// <summary>
+        /// Terminate a specific session
+        /// </summary>
+        /// <param name="command">Terminate session command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpPost(Router.AccountTerminateSession)]
+        public async Task<IActionResult> TerminateSession([FromBody] TerminateSessionCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Terminate all sessions except current
+        /// </summary>
+        /// <param name="command">Terminate all sessions command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpPost(Router.AccountTerminateAllSessions)]
+        public async Task<IActionResult> TerminateAllSessions([FromBody] TerminateAllSessionsCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Export all user data (GDPR compliance)
+        /// </summary>
+        /// <param name="query">Export user data query</param>
+        /// <returns>User data in JSON format</returns>
+        [Authorize]
+        [HttpGet(Router.AccountExportData)]
+        public async Task<IActionResult> ExportUserData([FromQuery] ExportUserDataQuery query)
+        {
+            return NewResult(await Mediator.Send(query));
+        }
+
+        /// <summary>
+        /// Delete user account permanently
+        /// </summary>
+        /// <param name="command">Delete account command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpDelete(Router.AccountDelete)]
+        public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        #endregion
     }
 
 }

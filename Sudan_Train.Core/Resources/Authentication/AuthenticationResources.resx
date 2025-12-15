@@ -152,6 +152,52 @@
     <value>Suspicious activity detected on your account</value>
   </data>
 
+  <!-- Account Management -->
+  <data name="ProfileUpdatedSuccessfully" xml:space="preserve">
+    <value>Profile updated successfully</value>
+  </data>
+  <data name="EmailChangeRequested" xml:space="preserve">
+    <value>Email change requested. Please check your new email address for confirmation link.</value>
+  </data>
+  <data name="EmailChangedSuccessfully" xml:space="preserve">
+    <value>Email changed successfully</value>
+  </data>
+  <data name="InvalidEmailChangeToken" xml:space="preserve">
+    <value>Invalid or expired email change token</value>
+  </data>
+  <data name="EmailAlreadyInUse" xml:space="preserve">
+    <value>Email address is already in use</value>
+  </data>
+  <data name="SessionNotBelongsToUser" xml:space="preserve">
+    <value>Session does not belong to the current user</value>
+  </data>
+  <data name="DataExportGenerated" xml:space="preserve">
+    <value>Data export generated successfully</value>
+  </data>
+  <data name="AccountDeletedSuccessfully" xml:space="preserve">
+    <value>Account deleted successfully</value>
+  </data>
+  <data name="PasswordRequiredForSensitiveAction" xml:space="preserve">
+    <value>Password is required for this sensitive action</value>
+  </data>
+
+  <!-- Security Notifications -->
+  <data name="SecurityNotificationPasswordChanged" xml:space="preserve">
+    <value>Your password was changed. If this wasn't you, please contact support immediately.</value>
+  </data>
+  <data name="SecurityNotificationEmailChanged" xml:space="preserve">
+    <value>Your email address was changed. If this wasn't you, please contact support immediately.</value>
+  </data>
+  <data name="SecurityNotificationNewDevice" xml:space="preserve">
+    <value>A new device was detected logging into your account.</value>
+  </data>
+  <data name="SecurityNotification2FAEnabled" xml:space="preserve">
+    <value>Two-factor authentication was enabled on your account.</value>
+  </data>
+  <data name="SecurityNotification2FADisabled" xml:space="preserve">
+    <value>Two-factor authentication was disabled on your account.</value>
+  </data>
+
   <!-- Field-Specific Validation Messages -->
   <data name="UserNameIsRequired" xml:space="preserve">
     <value>Username is required</value>

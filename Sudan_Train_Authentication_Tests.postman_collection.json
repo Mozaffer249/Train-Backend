@@ -1,0 +1,1152 @@
+{
+	"info": {
+		"_postman_id": "auth-modules-test-001",
+		"name": "Sudan Train - Authentication Modules Test Suite",
+		"description": "Complete test collection for all authentication modules including core security, 2FA, session management, account management, and security notifications",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Registration & Email Confirmation",
+			"item": [
+				{
+					"name": "Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has success message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.succeeded).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\",\n  \"email\": \"test1@example.com\",\n  \"password\": \"Test@123456\",\n  \"confirmPassword\": \"Test@123456\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phoneNumber\": \"+249123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Register",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Register"]
+						},
+						"description": "Register a new user account. Email confirmation required before login."
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"code\": \"CONFIRMATION_CODE_FROM_EMAIL\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ConfirmEmail",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ConfirmEmail"]
+						},
+						"description": "Confirm user email with code received via email"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Login & Logout",
+			"item": [
+				{
+					"name": "Login (Without 2FA)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.accessToken).to.exist;",
+									"    pm.environment.set(\"auth_token\", jsonData.data.accessToken);",
+									"    pm.environment.set(\"refresh_token\", jsonData.data.refreshToken);",
+									"});",
+									"",
+									"pm.test(\"Token is valid JWT\", function () {",
+									"    var token = pm.response.json().data.accessToken;",
+									"    pm.expect(token.split('.')).to.have.lengthOf(3);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"Test@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Login with username and password. Returns JWT tokens."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Token",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ValidateToken?accessToken={{auth_token}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ValidateToken"],
+							"query": [
+								{
+									"key": "accessToken",
+									"value": "{{auth_token}}"
+								}
+							]
+						},
+						"description": "Validate if JWT token is still valid"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.data.accessToken);",
+									"    pm.environment.set(\"refresh_token\", jsonData.data.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accessToken\": \"{{auth_token}}\",\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/RefreshToken",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "RefreshToken"]
+						},
+						"description": "Refresh access token using refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accessToken\": \"{{auth_token}}\",\n  \"refreshToken\": \"{{refresh_token}}\",\n  \"allDevices\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Logout"]
+						},
+						"description": "Logout and revoke tokens. Set allDevices=true to logout from all devices."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Two-Factor Authentication (2FA)",
+			"item": [
+				{
+					"name": "Enable 2FA - Get QR Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"2fa_manual_key\", jsonData.data.manualEntryKey);",
+									"    console.log(\"QR Code URL: \" + jsonData.data.qrCodeUrl);",
+									"    console.log(\"Manual Key: \" + jsonData.data.manualEntryKey);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/EnableTwoFactor",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "EnableTwoFactor"]
+						},
+						"description": "Get QR code and manual entry key for 2FA setup. Scan with Google Authenticator or similar app."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify 2FA Code (Activate 2FA)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/VerifyTwoFactor",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "VerifyTwoFactor"]
+						},
+						"description": "Verify 6-digit code from authenticator app to activate 2FA. Replace 123456 with actual code."
+					},
+					"response": []
+				},
+				{
+					"name": "Get 2FA Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/GetTwoFactorStatus",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "GetTwoFactorStatus"]
+						},
+						"description": "Check if 2FA is enabled and how many recovery codes remain"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Recovery Codes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    console.log(\"Recovery Codes:\");",
+									"    jsonData.data.recoveryCodes.forEach((code, index) => {",
+									"        console.log((index + 1) + \". \" + code);",
+									"    });",
+									"    pm.environment.set(\"recovery_code_1\", jsonData.data.recoveryCodes[0]);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/GenerateRecoveryCodes",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "GenerateRecoveryCodes"]
+						},
+						"description": "Generate 10 recovery codes for 2FA. Save these codes securely!"
+					},
+					"response": []
+				},
+				{
+					"name": "Login with 2FA Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.data.accessToken);",
+									"    pm.environment.set(\"refresh_token\", jsonData.data.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"Test@123456\",\n  \"code\": \"123456\",\n  \"isRecoveryCode\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/LoginWithTwoFactor",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "LoginWithTwoFactor"]
+						},
+						"description": "Login with username, password, and 2FA code from authenticator app"
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Recovery Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"Test@123456\",\n  \"code\": \"{{recovery_code_1}}\",\n  \"isRecoveryCode\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/LoginWithTwoFactor",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "LoginWithTwoFactor"]
+						},
+						"description": "Login using a recovery code (when 2FA app not available)"
+					},
+					"response": []
+				},
+				{
+					"name": "Disable 2FA",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"Test@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/DisableTwoFactor",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "DisableTwoFactor"]
+						},
+						"description": "Disable 2FA. Requires password confirmation."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. Password Management",
+			"item": [
+				{
+					"name": "Change Password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"Test@123456\",\n  \"newPassword\": \"NewPass@123456\",\n  \"confirmPassword\": \"NewPass@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ChangePassword",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ChangePassword"]
+						},
+						"description": "Change password while authenticated. Sends security notification email."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Password Reset Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test1@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/SendResetPasswordCode",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "SendResetPasswordCode"]
+						},
+						"description": "Send password reset code to email"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test1@example.com\",\n  \"code\": \"RESET_CODE_FROM_EMAIL\",\n  \"password\": \"NewPass@123456\",\n  \"confirmPassword\": \"NewPass@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ResetPassword",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ResetPassword"]
+						},
+						"description": "Reset password using code from email"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05. Account Management",
+			"item": [
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile contains user information\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('userName');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"    pm.expect(jsonData.data).to.have.property('firstName');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Profile"]
+						},
+						"description": "Get current user profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"address\": \"123 Test Street, Khartoum\",\n  \"nationality\": \"Sudanese\",\n  \"phoneNumber\": \"+249123456789\",\n  \"profilePictureUrl\": \"https://example.com/avatar.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Profile/Update",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Profile", "Update"]
+						},
+						"description": "Update user profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Email - Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newEmail\": \"newemail@example.com\",\n  \"currentPassword\": \"Test@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ChangeEmail",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ChangeEmail"]
+						},
+						"description": "Request email change. Confirmation link sent to new email."
+					},
+					"response": []
+				},
+				{
+					"name": "Change Email - Confirm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"token\": \"EMAIL_CHANGE_TOKEN\",\n  \"newEmail\": \"newemail@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ConfirmEmailChange",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ConfirmEmailChange"]
+						},
+						"description": "Confirm email change with token from email. Security notification sent to old email."
+					},
+					"response": []
+				},
+				{
+					"name": "Export User Data (GDPR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/ExportData",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "ExportData"]
+						},
+						"description": "Export all user data in JSON format (GDPR compliance)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"Test@123456\",\n  \"confirmDeletion\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Delete",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Delete"]
+						},
+						"description": "Permanently delete user account. Requires password and confirmation flag. Cannot be undone!"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06. Session Management",
+			"item": [
+				{
+					"name": "Get Active Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Sessions returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    if (jsonData.data.length > 0) {",
+									"        pm.environment.set(\"session_id\", jsonData.data[0].sessionId);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Sessions"]
+						},
+						"description": "Get list of all active login sessions with device info, IP, and login time"
+					},
+					"response": []
+				},
+				{
+					"name": "Terminate Single Session",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sessionId\": {{session_id}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Sessions/Terminate",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Sessions", "Terminate"]
+						},
+						"description": "Terminate a specific session by ID. User will be logged out from that device."
+					},
+					"response": []
+				},
+				{
+					"name": "Terminate All Sessions (Except Current)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"exceptCurrent\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Sessions/TerminateAll",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Sessions", "TerminateAll"]
+						},
+						"description": "Terminate all sessions except current. Set exceptCurrent=false to logout from all devices."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07. Rate Limiting Tests",
+			"item": [
+				{
+					"name": "Test Login Rate Limit (Run 6 times)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"WrongPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Make 6 rapid login attempts to trigger rate limiting. After 5th attempt, you should get 429 Too Many Requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Test Registration Rate Limit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"ratelimit{{$timestamp}}\",\n  \"email\": \"rate{{$timestamp}}@example.com\",\n  \"password\": \"Test@123456\",\n  \"confirmPassword\": \"Test@123456\",\n  \"firstName\": \"Rate\",\n  \"lastName\": \"Limit\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Register",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Register"]
+						},
+						"description": "Run multiple times rapidly to test registration rate limiting"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "08. Error Handling Tests",
+			"item": [
+				{
+					"name": "Invalid Credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"nonexistent\",\n  \"password\": \"WrongPassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Test with invalid credentials"
+					},
+					"response": []
+				},
+				{
+					"name": "Missing Required Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"testuser1\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Test validation with missing password"
+					},
+					"response": []
+				},
+				{
+					"name": "Weak Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"weakpassuser\",\n  \"email\": \"weak@example.com\",\n  \"password\": \"123\",\n  \"confirmPassword\": \"123\",\n  \"firstName\": \"Weak\",\n  \"lastName\": \"Pass\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Register",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Register"]
+						},
+						"description": "Test password strength validation"
+					},
+					"response": []
+				},
+				{
+					"name": "Expired Token",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "EXPIRED_TOKEN_HERE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Profile"]
+						},
+						"description": "Test with expired JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Token Format",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "invalid.token.format",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Profile"]
+						},
+						"description": "Test with malformed JWT token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "09. Localization Tests",
+			"item": [
+				{
+					"name": "Test English (Default)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"nonexistent\",\n  \"password\": \"wrong\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Test error messages in English"
+					},
+					"response": []
+				},
+				{
+					"name": "Test Arabic",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"nonexistent\",\n  \"password\": \"wrong\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authentication/Login",
+							"host": ["{{baseUrl}}"],
+							"path": ["Authentication", "Login"]
+						},
+						"description": "Test error messages in Arabic"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/Api/V1",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "2fa_manual_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "recovery_code_1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "session_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -5,31 +5,27 @@ using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
-using Sudan_Train.Service.Abstracts;
 using System.Security.Claims;
 
-namespace Sudan_Train.Core.Features.Authentication.Commands.ChangePassword
+namespace Sudan_Train.Core.Features.Authentication.Commands.UpdateProfile
 {
-    public class ChangePasswordCommandHandler : ResponseHandler, IRequestHandler<ChangePasswordCommand, Response<string>>
+    public class UpdateProfileCommandHandler : ResponseHandler, IRequestHandler<UpdateProfileCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
-        private readonly ISecurityNotificationService _notificationService;
 
-        public ChangePasswordCommandHandler(
+        public UpdateProfileCommandHandler(
             UserManager<User> userManager,
             IHttpContextAccessor httpContextAccessor,
-            IStringLocalizer<AuthenticationResources> authLocalizer,
-            ISecurityNotificationService notificationService) : base(authLocalizer)
+            IStringLocalizer<AuthenticationResources> authLocalizer) : base(authLocalizer)
         {
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
             _authLocalizer = authLocalizer;
-            _notificationService = notificationService;
         }
 
-        public async Task<Response<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+        public async Task<Response<string>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
         {
             // Get current user from HttpContext
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -46,15 +42,26 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ChangePassword
                 return NotFound<string>(_authLocalizer[AuthenticationResourcesKeys.UserNotFound]);
             }
 
-            // Verify current password
-            var isValidPassword = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
-            if (!isValidPassword)
-            {
-                return BadRequest<string>(_authLocalizer[AuthenticationResourcesKeys.PasswordNotCorrect]);
-            }
+            // Update fields if provided
+            if (!string.IsNullOrWhiteSpace(request.FirstName))
+                user.FirstName = request.FirstName;
+            
+            if (!string.IsNullOrWhiteSpace(request.LastName))
+                user.LastName = request.LastName;
+            
+            if (request.Address != null)
+                user.Address = request.Address;
+            
+            if (request.Nationality != null)
+                user.Nationality = request.Nationality;
+            
+            if (request.PhoneNumber != null)
+                user.PhoneNumber = request.PhoneNumber;
+            
+            if (request.ProfilePictureUrl != null)
+                user.ProfilePictureUrl = request.ProfilePictureUrl;
 
-            // Change password
-            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)
             {
@@ -62,11 +69,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ChangePassword
                 return BadRequest<string>(errors);
             }
 
-            // Send security notification
-            var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
-            await _notificationService.NotifyPasswordChangedAsync(user, ipAddress);
-
-            return Success<string>("Password changed successfully");
+            return Success<string>(_authLocalizer[AuthenticationResourcesKeys.ProfileUpdatedSuccessfully]);
         }
     }
 }

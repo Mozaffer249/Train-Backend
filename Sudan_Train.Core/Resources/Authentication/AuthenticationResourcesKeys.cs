@@ -57,6 +57,24 @@ namespace Sudan_Train.Core.Resources.Authentication
         public const string NewLocationDetected = "NewLocationDetected";
         public const string SuspiciousActivityDetected = "SuspiciousActivityDetected";
 
+        // Account Management
+        public const string ProfileUpdatedSuccessfully = "ProfileUpdatedSuccessfully";
+        public const string EmailChangeRequested = "EmailChangeRequested";
+        public const string EmailChangedSuccessfully = "EmailChangedSuccessfully";
+        public const string InvalidEmailChangeToken = "InvalidEmailChangeToken";
+        public const string EmailAlreadyInUse = "EmailAlreadyInUse";
+        public const string SessionNotBelongsToUser = "SessionNotBelongsToUser";
+        public const string DataExportGenerated = "DataExportGenerated";
+        public const string AccountDeletedSuccessfully = "AccountDeletedSuccessfully";
+        public const string PasswordRequiredForSensitiveAction = "PasswordRequiredForSensitiveAction";
+
+        // Security Notifications
+        public const string SecurityNotificationPasswordChanged = "SecurityNotificationPasswordChanged";
+        public const string SecurityNotificationEmailChanged = "SecurityNotificationEmailChanged";
+        public const string SecurityNotificationNewDevice = "SecurityNotificationNewDevice";
+        public const string SecurityNotification2FAEnabled = "SecurityNotification2FAEnabled";
+        public const string SecurityNotification2FADisabled = "SecurityNotification2FADisabled";
+
         // Field-Specific Validation Messages
         public const string UserNameIsRequired = "UserNameIsRequired";
         public const string PasswordIsRequired = "PasswordIsRequired";

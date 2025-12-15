@@ -30,6 +30,17 @@ namespace Sudan_Train.Data.AppMetaData
         public const string AuthenticationDisableTwoFactor = Authentication + "/DisableTwoFactor";
         public const string AuthenticationGenerateRecoveryCodes = Authentication + "/GenerateRecoveryCodes";
         public const string AuthenticationGetTwoFactorStatus = Authentication + "/GetTwoFactorStatus";
+
+        // Account Management
+        public const string AccountGetProfile = Authentication + "/Profile";
+        public const string AccountUpdateProfile = Authentication + "/Profile/Update";
+        public const string AccountChangeEmail = Authentication + "/ChangeEmail";
+        public const string AccountConfirmEmailChange = Authentication + "/ConfirmEmailChange";
+        public const string AccountGetSessions = Authentication + "/Sessions";
+        public const string AccountTerminateSession = Authentication + "/Sessions/Terminate";
+        public const string AccountTerminateAllSessions = Authentication + "/Sessions/TerminateAll";
+        public const string AccountExportData = Authentication + "/ExportData";
+        public const string AccountDelete = Authentication + "/Delete";
         #endregion
 
     }
