@@ -39,8 +39,70 @@ namespace Sudan_Train.Data.AppMetaData
         public const string AccountGetSessions = Authentication + "/Sessions";
         public const string AccountTerminateSession = Authentication + "/Sessions/Terminate";
         public const string AccountTerminateAllSessions = Authentication + "/Sessions/TerminateAll";
+        public const string AccountGetTrustedDevices = Authentication + "/TrustedDevices";
+        public const string AccountTrustDevice = Authentication + "/TrustDevice";
+        public const string AccountRemoveTrustedDevice = Authentication + "/TrustedDevices/Remove";
+        public const string AccountGetSecurityEvents = Authentication + "/SecurityEvents";
         public const string AccountExportData = Authentication + "/ExportData";
         public const string AccountDelete = Authentication + "/Delete";
+        #endregion
+
+        #region Admin
+        public const string Admin = Rule + "Admin";
+
+        // State Management
+        public const string AdminStates = Admin + "/States";
+        public const string AdminStateById = AdminStates + SignleRoute;
+
+        // City Management
+        public const string AdminCities = Admin + "/Cities";
+        public const string AdminCityById = AdminCities + SignleRoute;
+        public const string AdminCitiesByState = AdminCities + "/ByState/{stateId}";
+
+        // Station Management
+        public const string AdminStations = Admin + "/Stations";
+        public const string AdminStationById = AdminStations + SignleRoute;
+        public const string AdminStationsSearch = AdminStations + "/Search";
+
+        // Train Management
+        public const string AdminTrains = Admin + "/Trains";
+        public const string AdminTrainById = AdminTrains + SignleRoute;
+
+        // Coach Management
+        public const string AdminCoaches = Admin + "/Coaches";
+        public const string AdminCoachById = AdminCoaches + SignleRoute;
+        public const string AdminCoachesByTrain = AdminCoaches + "/ByTrain/{trainId}";
+        public const string AdminCoachesBulkCreate = AdminCoaches + "/Bulk";
+
+        // Seat Management
+        public const string AdminSeats = Admin + "/Seats";
+        public const string AdminSeatById = AdminSeats + SignleRoute;
+        public const string AdminSeatsByCoach = AdminSeats + "/ByCoach/{coachId}";
+        public const string AdminSeatsGenerate = AdminSeats + "/Generate/{coachId}";
+
+        // Route Management
+        public const string AdminRoutes = Admin + "/Routes";
+        public const string AdminRouteById = AdminRoutes + SignleRoute;
+        public const string AdminRoutesSearch = AdminRoutes + "/Search";
+        public const string AdminRouteStations = AdminRoutes + "/{routeId}/Stations";
+        public const string AdminRouteStationById = AdminRouteStations + "/{stationId}";
+
+        // Trip Management
+        public const string AdminTrips = Admin + "/Trips";
+        public const string AdminTripById = AdminTrips + SignleRoute;
+        public const string AdminTripCancel = AdminTrips + "/{id}/Cancel";
+        public const string AdminTripInitializeSeats = AdminTrips + "/{id}/InitializeSeats";
+
+        // Fare Management
+        public const string AdminFares = Admin + "/Fares";
+        public const string AdminFareById = AdminFares + SignleRoute;
+        public const string AdminFaresByTrip = AdminFares + "/ByTrip/{tripId}";
+        public const string AdminFaresActive = AdminFares + "/Active";
+
+        // User Management (SuperAdmin only)
+        public const string AdminUsers = Admin + "/Users";
+        public const string AdminUserById = AdminUsers + SignleRoute;
+        public const string AdminUserRoles = AdminUsers + "/{userId}/Roles";
         #endregion
 
     }

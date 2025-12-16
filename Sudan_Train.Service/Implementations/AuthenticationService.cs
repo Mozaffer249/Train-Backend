@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Data.Helpers;
@@ -21,11 +20,11 @@ namespace Sudan_Train.Service.Implementations
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public AuthenticationService(
-            IOptions<JwtSettings> jwtSettings,
+            JwtSettings jwtSettings,
             UserManager<User> userManager,
             IRefreshTokenRepository refreshTokenRepository)
         {
-            _jwtSettings = jwtSettings.Value;
+            _jwtSettings = jwtSettings;
             _userManager = userManager;
             _refreshTokenRepository = refreshTokenRepository;
         }

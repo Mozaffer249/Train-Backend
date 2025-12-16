@@ -8,5 +8,6 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.RefreshToken
     {
         public string AccessToken { get; set; } = default!;
         public string RefreshToken { get; set; } = default!;
+        public string? DeviceId { get; set; }
     }
 }

@@ -1,26 +1,46 @@
+using System;
+using System.Linq;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
-using Sudan_Train.Service.Abstracts;
+using Sudan_Train.Infrastructure.context;
+using Sudan_Train.Service.Models;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.SendResetPasswordCode
 {
     public class SendResetPasswordCodeCommandHandler : ResponseHandler, IRequestHandler<SendResetPasswordCodeCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager;
-        private readonly IEmailService _emailService;
+        private readonly ApplicationDBContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<SendResetPasswordCodeCommandHandler> _logger;
         private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
+
+        private const string MessagingApiBaseUrlKey = "MessagingApi:BaseUrl";
+        private const string MessagingApiEmailEndpoint = "/api/messaging/email";
 
         public SendResetPasswordCodeCommandHandler(
             IStringLocalizer<AuthenticationResources> authLocalizer,
             UserManager<User> userManager,
-            IEmailService emailService) : base(authLocalizer)
+            ApplicationDBContext context,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            ILogger<SendResetPasswordCodeCommandHandler> logger) : base(authLocalizer)
         {
             _userManager = userManager;
-            _emailService = emailService;
+            _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _logger = logger;
             _authLocalizer = authLocalizer;
         }
 
@@ -39,18 +59,228 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.SendResetPasswordCod
                 return Unauthorized<string>(_authLocalizer[AuthenticationResourcesKeys.UserIsNotActive]);
             }
 
-            // Generate password reset token
-            var resetCode = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // Generate 6-digit OTP
+            var otpCode = GenerateOtpCode();
+            await StoreOtpInDatabaseAsync(user.Id, otpCode);
 
-            // Send email with reset code
-            var emailMessage = $"Your password reset code is: {resetCode}";
+            // Send email with OTP via MessagingApi
+            await SendPasswordResetEmailAsync(user, otpCode, cancellationToken);
 
-            await _emailService.SendEmailAsync(
-                user.Email!,
-                "Password Reset Code - Train Booking System",
-                emailMessage);
+            return Success<string>("Password reset code sent successfully. Check your email.");
+        }
 
-            return Success<string>("Password reset code sent successfully");
+        private string GenerateOtpCode()
+        {
+            var random = new Random();
+            return random.Next(100000, 999999).ToString(); // Generates 100000-999999 (6 digits)
+        }
+
+        private async Task StoreOtpInDatabaseAsync(int userId, string otpCode)
+        {
+            // Delete any existing OTPs for this user
+            var existingOtps = _context.PasswordResetOtps
+                .Where(o => o.UserId == userId);
+            _context.PasswordResetOtps.RemoveRange(existingOtps);
+
+            // Create new OTP
+            var otp = new PasswordResetOtp
+            {
+                UserId = userId,
+                OtpCode = otpCode,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5), // 5 minute expiry
+                IsUsed = false
+            };
+
+            _context.PasswordResetOtps.Add(otp);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task SendPasswordResetEmailAsync(User user, string otpCode, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var messagingApiUrl = _configuration[MessagingApiBaseUrlKey];
+                if (string.IsNullOrEmpty(messagingApiUrl))
+                {
+                    _logger.LogWarning("MessagingApi BaseUrl not configured. Reset email not sent.");
+                    return;
+                }
+
+                var emailRequest = BuildPasswordResetEmailRequest(user, otpCode);
+                await SendEmailRequestAsync(messagingApiUrl, emailRequest, cancellationToken);
+
+                _logger.LogInformation("Password reset email queued for {Email}. User ID: {UserId}, OTP: {OtpCode}",
+                    user.Email, user.Id, otpCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+            }
+        }
+
+        private object BuildPasswordResetEmailRequest(User user, string otpCode)
+        {
+            var emailSubject = "Password Reset Code - Sudan Train";
+            var emailBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .content {{
+            padding: 40px 30px;
+        }}
+        .content h2 {{
+            color: #dc3545;
+            margin-top: 0;
+            font-size: 24px;
+        }}
+        .content p {{
+            margin: 15px 0;
+            font-size: 16px;
+        }}
+        .otp-code {{
+            font-size: 48px;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+            letter-spacing: 15px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 2px dashed #dc3545;
+        }}
+        .warning {{
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }}
+        .warning p {{
+            margin: 5px 0;
+            font-size: 14px;
+            color: #856404;
+        }}
+        .security-notice {{
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }}
+        .security-notice p {{
+            margin: 5px 0;
+            font-size: 14px;
+            color: #721c24;
+        }}
+        .footer {{
+            background: #f8f9fa;
+            padding: 25px 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }}
+        .footer p {{
+            margin: 8px 0;
+            font-size: 13px;
+            color: #6c757d;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🔒 Sudan Train</h1>
+        </div>
+        
+        <div class='content'>
+            <h2>Password Reset Request</h2>
+            <p>Hello {user.FirstName},</p>
+            <p>We received a request to reset your password. Your password reset code is:</p>
+            
+            <div class='otp-code'>{otpCode}</div>
+            
+            <div class='warning'>
+                <p><strong>⏰ Important:</strong> This code will expire in 5 minutes.</p>
+            </div>
+            
+            <p><strong>To reset your password:</strong></p>
+            <ol>
+                <li>Go to the Reset Password page</li>
+                <li>Enter your email: <strong>{user.Email}</strong></li>
+                <li>Enter the 6-digit code shown above</li>
+                <li>Choose your new password</li>
+            </ol>
+            
+            <div class='security-notice'>
+                <p><strong>⚠️ Security Alert:</strong></p>
+                <p>If you didn't request this password reset, please ignore this email and ensure your account is secure. Your password will not be changed unless you complete the reset process.</p>
+            </div>
+        </div>
+        
+        <div class='footer'>
+            <p><strong>Didn't request a password reset?</strong></p>
+            <p>Your account is safe. No changes have been made.</p>
+            <hr style='border: none; border-top: 1px solid #e9ecef; margin: 15px 0;'>
+            <p>© 2024 Sudan Train. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+            return new
+            {
+                to = user.Email,
+                subject = emailSubject,
+                body = emailBody,
+                isHtml = true,
+                strategy = EmailSendingStrategy.Queued.ToIntValue()
+            };
+        }
+
+        private async Task SendEmailRequestAsync(string baseUrl, object emailRequest, CancellationToken cancellationToken)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var endpoint = $"{baseUrl}{MessagingApiEmailEndpoint}";
+            var response = await httpClient.PostAsJsonAsync(endpoint, emailRequest, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning(
+                    "Failed to send password reset email via MessagingApi. Status: {StatusCode}",
+                    response.StatusCode);
+            }
         }
     }
 }

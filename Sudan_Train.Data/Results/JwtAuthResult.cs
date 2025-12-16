@@ -10,6 +10,8 @@ namespace Sudan_Train.Data.Results
         public string AccessToken { get; set; } = default!;
         public RefreshToken RefreshToken { get; set; } = default!;
         public bool RequiresTwoFactor { get; set; } = false;
+        public bool IsNewDevice { get; set; } = false;
+        public string? DeviceId { get; set; }
     }
     public class RefreshToken
     {

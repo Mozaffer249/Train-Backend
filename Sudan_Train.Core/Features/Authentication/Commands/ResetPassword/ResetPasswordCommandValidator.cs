@@ -19,9 +19,9 @@ namespace Trains.Core.Features.Authentication.Commands.ResetPassword
                 .OverridePropertyName(string.Empty);
 
             RuleFor(x => x.ResetCode)
-                .NotEmpty().WithMessage(sharedLocalizer[SharedResourcesKeys.IsRequired])
-                .NotNull().WithMessage(sharedLocalizer[SharedResourcesKeys.IsRequired])
-                .OverridePropertyName(string.Empty);
+                .NotEmpty().WithMessage("Reset code is required.")
+                .Length(6).WithMessage("Reset code must be exactly 6 digits.")
+                .Matches(@"^\d{6}$").WithMessage("Reset code must contain only numbers.");
 
             RuleFor(x => x.NewPassword)
                 .NotEmpty().WithMessage(authLocalizer[AuthenticationResourcesKeys.PasswordIsRequired])

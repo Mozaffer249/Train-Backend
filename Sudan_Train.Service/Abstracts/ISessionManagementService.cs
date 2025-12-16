@@ -8,6 +8,7 @@ namespace Sudan_Train.Service.Abstracts
     {
         Task<LoginSession> CreateSessionAsync(int userId, string deviceId, string deviceName, string ipAddress, string userAgent, string accessToken, string refreshToken, string? location = null);
         Task<List<LoginSession>> GetActiveSessionsAsync(int userId);
+        Task<LoginSession?> GetSessionByIdAsync(int sessionId, int userId);
         Task<bool> TerminateSessionAsync(int sessionId, int userId);
         Task<bool> TerminateAllSessionsExceptCurrentAsync(int userId, string currentAccessToken);
         Task UpdateSessionActivityAsync(string accessToken);

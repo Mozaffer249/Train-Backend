@@ -61,6 +61,9 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<SecurityEvent> SecurityEvents { get; set; }
         public DbSet<PasswordHistory> PasswordHistories { get; set; }
         public DbSet<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
+        public DbSet<EmailConfirmationOtp> EmailConfirmationOtps { get; set; }
+        public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
+        public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sudan_Train.Data.AppMetaData;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Data.Helpers;
 using Sudan_Train.Infrastructure.context;
@@ -105,6 +106,19 @@ namespace Sudan_Train.Infrastructure
 
             services.AddAuthorization(option =>
             {
+                // Admin policy - requires Admin or SuperAdmin role
+                option.AddPolicy(Roles.AdminPolicy, policy =>
+                {
+                    policy.RequireRole(Roles.Admin, Roles.SuperAdmin);
+                });
+
+                // SuperAdmin policy - requires SuperAdmin role only
+                option.AddPolicy(Roles.SuperAdminPolicy, policy =>
+                {
+                    policy.RequireRole(Roles.SuperAdmin);
+                });
+
+                // Booking policies (existing)
                 option.AddPolicy("CreateBooking", policy =>
                 {
                     policy.RequireClaim("Create Booking", "True");

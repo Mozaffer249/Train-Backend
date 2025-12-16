@@ -10,13 +10,16 @@ namespace Trains.Core.Features.Authentication.Commands.ConfirmEmail
         public ConfirmEmailCommandValidator(IStringLocalizer<SharedResources> stringLocalizer)
         {
             RuleFor(x => x.UserId)
-                .GreaterThan(0).WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
-                .OverridePropertyName(string.Empty);
+                .GreaterThan(0)
+                .WithMessage("User ID is required.");
 
             RuleFor(x => x.Code)
-                .NotEmpty().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
-                .NotNull().WithMessage(stringLocalizer[SharedResourcesKeys.IsRequired])
-                .OverridePropertyName(string.Empty);
+                .NotEmpty()
+                .WithMessage("OTP code is required.")
+                .Length(4)
+                .WithMessage("OTP code must be exactly 4 digits.")
+                .Matches(@"^\d{4}$")
+                .WithMessage("OTP code must contain only numbers.");
         }
     }
 }

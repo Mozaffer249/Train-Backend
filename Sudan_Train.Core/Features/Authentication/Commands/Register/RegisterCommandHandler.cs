@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
 using System.Net.Http.Json;
-using System.Web;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Data.Entity.Identity;
+using Sudan_Train.Infrastructure.context;
 using Sudan_Train.Service.Models;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.Register
@@ -20,6 +23,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<RegisterCommandHandler> _logger;
+        private readonly ApplicationDBContext _context;
 
         private const string MessagingApiBaseUrlKey = "MessagingApi:BaseUrl";
         private const string MessagingApiEmailEndpoint = "/api/messaging/email";
@@ -29,13 +33,15 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             IStringLocalizer<AuthenticationResources> authLocalizer,
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
-            ILogger<RegisterCommandHandler> logger) : base(authLocalizer)
+            ILogger<RegisterCommandHandler> logger,
+            ApplicationDBContext context) : base(authLocalizer)
         {
             _userManager = userManager;
             _authLocalizer = authLocalizer;
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
+            _context = context;
         }
 
         public async Task<Response<object>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -48,15 +54,16 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             if (user == null)
                 return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.FailedToAddUser]);
 
-            // Generate confirmation token
-            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            // Generate 4-digit OTP
+            var otpCode = GenerateOtpCode();
+            await StoreOtpInDatabaseAsync(user.Id, otpCode);
 
-            // Send confirmation email (instead of welcome email)
-            await SendConfirmationEmailAsync(user, confirmationToken, cancellationToken);
+            // Send confirmation email with OTP
+            await SendConfirmationEmailAsync(user, otpCode, cancellationToken);
 
             return Created<object>(
                 _authLocalizer[AuthenticationResourcesKeys.UserRegisteredSuccessfully],
-                entity: new { Message = "Please check your email to confirm your account." });
+                entity: new { Message = "Please check your email for your confirmation code." });
         }
 
         private async Task<Response<object>?> ValidateUserDoesNotExist(RegisterCommand request)
@@ -114,7 +121,34 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             return email.Split('@')[0];
         }
 
-        private async Task SendConfirmationEmailAsync(User user, string token, CancellationToken cancellationToken)
+        private string GenerateOtpCode()
+        {
+            var random = new Random();
+            return random.Next(1000, 9999).ToString(); // Generates 1000-9999
+        }
+
+        private async Task StoreOtpInDatabaseAsync(int userId, string otpCode)
+        {
+            // Delete any existing OTPs for this user
+            var existingOtps = _context.EmailConfirmationOtps
+                .Where(o => o.UserId == userId);
+            _context.EmailConfirmationOtps.RemoveRange(existingOtps);
+
+            // Create new OTP
+            var otp = new EmailConfirmationOtp
+            {
+                UserId = userId,
+                OtpCode = otpCode,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5), // 5 minute expiry
+                IsUsed = false
+            };
+
+            _context.EmailConfirmationOtps.Add(otp);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task SendConfirmationEmailAsync(User user, string otpCode, CancellationToken cancellationToken)
         {
             try
             {
@@ -125,11 +159,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
                     return;
                 }
 
-                var emailRequest = BuildConfirmationEmailRequest(user, token);
+                var emailRequest = BuildConfirmationEmailRequest(user, otpCode);
                 await SendEmailRequestAsync(messagingApiUrl, emailRequest, cancellationToken);
 
-                _logger.LogInformation("Confirmation email queued successfully for {Email}. User ID: {UserId}, Token: {Token}",
-                    user.Email, user.Id, token);
+                _logger.LogInformation("Confirmation email queued for {Email}. User ID: {UserId}, OTP: {OtpCode}",
+                    user.Email, user.Id, otpCode);
             }
             catch (Exception ex)
             {
@@ -137,17 +171,8 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             }
         }
 
-        private object BuildConfirmationEmailRequest(User user, string token)
+        private object BuildConfirmationEmailRequest(User user, string otpCode)
         {
-            var encodedToken = HttpUtility.UrlEncode(token);
-            var encodedUserId = user.Id;
-
-            // Frontend confirmation URL
-            // Development: http://localhost:3000/confirm-email
-            // Production: https://yourdomain.com/confirm-email
-            var frontendBaseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:3000";
-            var confirmationUrl = $"{frontendBaseUrl}/confirm-email?userId={encodedUserId}&code={encodedToken}";
-
             var emailSubject = "Confirm Your Email - Sudan Train";
             var emailBody = $@"
 <!DOCTYPE html>
@@ -195,41 +220,32 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             margin: 15px 0;
             font-size: 16px;
         }}
-        .button-container {{
-            text-align: center;
-            margin: 35px 0;
-        }}
-        .confirm-button {{
-            display: inline-block;
-            background: #007bff;
-            color: #ffffff !important;
-            padding: 15px 40px;
-            text-decoration: none;
-            border-radius: 5px;
+        .otp-code {{
+            font-size: 48px;
             font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 4px 6px rgba(0,123,255,0.3);
-            transition: background 0.3s ease;
+            color: #007bff;
+            text-align: center;
+            letter-spacing: 15px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 2px dashed #007bff;
         }}
-        .confirm-button:hover {{
-            background: #0056b3;
-        }}
-        .link-section {{
+        .info-section {{
             background: #f8f9fa;
             padding: 20px;
             border-radius: 5px;
             margin: 25px 0;
             border-left: 4px solid #007bff;
         }}
-        .link-section p {{
+        .info-section p {{
             margin: 5px 0;
             font-size: 14px;
             color: #666;
         }}
-        .link-text {{
-            word-break: break-all;
+        .info-section strong {{
             color: #007bff;
-            font-size: 13px;
         }}
         .footer {{
             background: #f8f9fa;
@@ -254,6 +270,20 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             font-size: 14px;
             color: #856404;
         }}
+        .steps {{
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }}
+        .steps ol {{
+            margin: 10px 0;
+            padding-left: 20px;
+        }}
+        .steps li {{
+            margin: 8px 0;
+            font-size: 15px;
+        }}
     </style>
 </head>
 <body>
@@ -264,21 +294,28 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
         
         <div class='content'>
             <h2>Welcome, {user.FirstName}!</h2>
-            <p>Thank you for registering with Sudan Train. We're excited to have you on board!</p>
-            <p>To complete your registration and activate your account, please confirm your email address by clicking the button below:</p>
+            <p>Thank you for registering with Sudan Train.</p>
+            <p>Your email confirmation code is:</p>
             
-            <div class='button-container'>
-                <a href='{confirmationUrl}' class='confirm-button'>Confirm Email Address</a>
-            </div>
-            
-            <div class='link-section'>
-                <p><strong>Can't click the button?</strong></p>
-                <p>Copy and paste this link into your browser:</p>
-                <p class='link-text'>{confirmationUrl}</p>
-            </div>
+            <div class='otp-code'>{otpCode}</div>
             
             <div class='warning'>
-                <p><strong>⏰ Important:</strong> This confirmation link will expire in 24 hours.</p>
+                <p><strong>⏰ Important:</strong> This code will expire in 5 minutes.</p>
+            </div>
+            
+            <div class='info-section'>
+                <p><strong>Your User ID:</strong> {user.Id}</p>
+                <p><strong>Your Email:</strong> {user.Email}</p>
+            </div>
+            
+            <div class='steps'>
+                <p><strong>How to confirm your email:</strong></p>
+                <ol>
+                    <li>Go to the Confirm Email endpoint</li>
+                    <li>Enter your User ID: <strong>{user.Id}</strong></li>
+                    <li>Enter the 4-digit code shown above</li>
+                    <li>Submit to activate your account</li>
+                </ol>
             </div>
             
             <p>Once confirmed, you'll be able to:</p>
@@ -292,7 +329,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
         
         <div class='footer'>
             <p><strong>Didn't create an account?</strong></p>
-            <p>If you didn't sign up for Sudan Train, please ignore this email. Your email address will not be used.</p>
+            <p>If you didn't sign up for Sudan Train, please ignore this email.</p>
             <hr style='border: none; border-top: 1px solid #e9ecef; margin: 15px 0;'>
             <p>© 2024 Sudan Train. All rights reserved.</p>
             <p>This is an automated message, please do not reply to this email.</p>

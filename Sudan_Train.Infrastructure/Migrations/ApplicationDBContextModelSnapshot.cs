@@ -396,6 +396,82 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.EmailConfirmationOtp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtpCode")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("IX_EmailConfirmationOtp_ExpiresAt");
+
+                    b.HasIndex("UserId", "OtpCode")
+                        .HasDatabaseName("IX_EmailConfirmationOtp_UserId_Code");
+
+                    b.ToTable("EmailConfirmationOtps", "security");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.IpLoginAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("AttemptTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("WasSuccessful")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptTime")
+                        .HasDatabaseName("IX_IpLoginAttempts_AttemptTime");
+
+                    b.HasIndex("IpAddress", "AttemptTime")
+                        .HasDatabaseName("IX_IpLoginAttempts_IpAddress_AttemptTime");
+
+                    b.ToTable("IpLoginAttempts", "security");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
                 {
                     b.Property<int>("Id")
@@ -406,7 +482,8 @@ namespace Trains.Infrastructure.Migrations
 
                     b.Property<string>("AccessToken")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("DeviceId")
                         .IsRequired()
@@ -441,7 +518,8 @@ namespace Trains.Infrastructure.Migrations
 
                     b.Property<string>("RefreshToken")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("UserAgent")
                         .IsRequired()
@@ -491,6 +569,45 @@ namespace Trains.Infrastructure.Migrations
                     b.HasIndex("UserId", "ChangedAt");
 
                     b.ToTable("PasswordHistories");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordResetOtp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtpCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("IX_PasswordResetOtp_ExpiresAt");
+
+                    b.HasIndex("UserId", "OtpCode")
+                        .HasDatabaseName("IX_PasswordResetOtp_UserId_Code");
+
+                    b.ToTable("PasswordResetOtps", "security");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.Role", b =>
@@ -1794,6 +1911,17 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.EmailConfirmationOtp", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
                 {
                     b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
@@ -1809,6 +1937,17 @@ namespace Trains.Infrastructure.Migrations
                 {
                     b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
                         .WithMany("PasswordHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordResetOtp", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

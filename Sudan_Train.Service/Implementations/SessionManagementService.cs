@@ -51,6 +51,12 @@ namespace Sudan_Train.Service.Implementations
                 .ToListAsync();
         }
 
+        public async Task<LoginSession?> GetSessionByIdAsync(int sessionId, int userId)
+        {
+            return await _sessionRepository.GetTableNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == sessionId && x.UserId == userId);
+        }
+
         public async Task<bool> TerminateSessionAsync(int sessionId, int userId)
         {
             var session = await _sessionRepository.GetTableNoTracking()

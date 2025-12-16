@@ -38,11 +38,19 @@ builder.Services.AddDbContext<ApplicationDBContext>(option =>
 
 #region Dependency Injections
 
+// Configure Settings
+builder.Services.Configure<Sudan_Train.Service.Models.SecuritySettings>(
+    builder.Configuration.GetSection("SecuritySettings"));
+
 // Service Registration
 builder.Services.AddInfrastructureDependencies()
                 .AddServiceDependencies(builder.Configuration)
                 .AddCoreDependencies()
                 .AddServiceRegisteration(builder.Configuration);
+
+// Register Background Services
+builder.Services.AddHostedService<Sudan_Train.Service.BackgroundServices.OtpCleanupService>();
+builder.Services.AddHostedService<Sudan_Train.Service.BackgroundServices.SessionCleanupService>();
 
 #endregion
 

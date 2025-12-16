@@ -26,6 +26,14 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(500);
 
+            builder.Property(x => x.AccessToken)
+                .IsRequired()
+                .HasMaxLength(2000); // JWT tokens can be 500-1000+ characters
+
+            builder.Property(x => x.RefreshToken)
+                .IsRequired()
+                .HasMaxLength(500);
+
             builder.Property(x => x.Location)
                 .HasMaxLength(100);
 

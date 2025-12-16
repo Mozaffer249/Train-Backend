@@ -20,11 +20,15 @@ using Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmailChange;
 using Sudan_Train.Core.Features.Authentication.Commands.TerminateSession;
 using Sudan_Train.Core.Features.Authentication.Commands.TerminateAllSessions;
 using Sudan_Train.Core.Features.Authentication.Commands.DeleteAccount;
+using Sudan_Train.Core.Features.Authentication.Commands.TrustDevice;
+using Sudan_Train.Core.Features.Authentication.Commands.RemoveTrustedDevice;
 using Sudan_Train.Core.Features.Authentication.Queries.ValidateToken;
 using Sudan_Train.Core.Features.Authentication.Queries.GetTwoFactorStatus;
 using Sudan_Train.Core.Features.Authentication.Queries.GetProfile;
 using Sudan_Train.Core.Features.Authentication.Queries.GetActiveSessions;
 using Sudan_Train.Core.Features.Authentication.Queries.ExportUserData;
+using Sudan_Train.Core.Features.Authentication.Queries.GetTrustedDevices;
+using Sudan_Train.Core.Features.Authentication.Queries.GetSecurityEvents;
 using Sudan_Train.Data.AppMetaData;
 
 namespace Sudan_Train.Api.Controllers
@@ -310,6 +314,54 @@ namespace Sudan_Train.Api.Controllers
         public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountCommand command)
         {
             return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Get all trusted devices for current user
+        /// </summary>
+        /// <param name="query">Get trusted devices query</param>
+        /// <returns>List of trusted devices</returns>
+        [Authorize]
+        [HttpGet(Router.AccountGetTrustedDevices)]
+        public async Task<IActionResult> GetTrustedDevices([FromQuery] GetTrustedDevicesQuery query)
+        {
+            return NewResult(await Mediator.Send(query));
+        }
+
+        /// <summary>
+        /// Trust current device to skip 2FA on future logins
+        /// </summary>
+        /// <param name="command">Trust device command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpPost(Router.AccountTrustDevice)]
+        public async Task<IActionResult> TrustDevice([FromBody] TrustDeviceCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Remove a trusted device
+        /// </summary>
+        /// <param name="command">Remove trusted device command</param>
+        /// <returns>Success message</returns>
+        [Authorize]
+        [HttpDelete(Router.AccountRemoveTrustedDevice)]
+        public async Task<IActionResult> RemoveTrustedDevice([FromBody] RemoveTrustedDeviceCommand command)
+        {
+            return NewResult(await Mediator.Send(command));
+        }
+
+        /// <summary>
+        /// Get security events (login alerts, password changes, etc.)
+        /// </summary>
+        /// <param name="query">Get security events query</param>
+        /// <returns>List of security events</returns>
+        [Authorize]
+        [HttpGet(Router.AccountGetSecurityEvents)]
+        public async Task<IActionResult> GetSecurityEvents([FromQuery] GetSecurityEventsQuery query)
+        {
+            return NewResult(await Mediator.Send(query));
         }
 
         #endregion

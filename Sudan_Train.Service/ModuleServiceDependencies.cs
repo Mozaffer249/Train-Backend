@@ -17,11 +17,12 @@ namespace Sudan_Train.Service
             services.AddTransient<ISessionManagementService, SessionManagementService>();
             services.AddTransient<IPasswordSecurityService, PasswordSecurityService>();
             services.AddTransient<ISecurityNotificationService, SecurityNotificationService>();
+            services.AddTransient<IRiskAssessmentService, RiskAssessmentService>();
 
             // Register EmailServiceProxy to forward email requests to MessagingApi microservice
             services.AddHttpClient<IEmailService, EmailServiceProxy>();
 
-            // Add memory cache for rate limiting
+            // Add memory cache for rate limiting and IP blocking
             services.AddMemoryCache();
 
             return services;

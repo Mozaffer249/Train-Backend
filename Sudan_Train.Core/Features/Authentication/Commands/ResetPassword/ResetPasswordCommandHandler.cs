@@ -1,34 +1,61 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
 using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Data.Entity.Identity;
+using Sudan_Train.Infrastructure.context;
+using Sudan_Train.Service.Abstracts;
+using Sudan_Train.Service.Models;
 
 namespace Sudan_Train.Core.Features.Authentication.Commands.ResetPassword
 {
     public class ResetPasswordCommandHandler : ResponseHandler, IRequestHandler<ResetPasswordCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager;
+        private readonly ApplicationDBContext _context;
         private readonly IStringLocalizer<AuthenticationResources> _authLocalizer;
         private readonly IStringLocalizer<SharedResources> _sharedLocalizer;
+        private readonly IPasswordSecurityService _passwordSecurityService;
+        private readonly IAuditService _auditService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ISecurityNotificationService _notificationService;
+        private readonly IOptions<SecuritySettings> _securitySettings;
 
         public ResetPasswordCommandHandler(
             IStringLocalizer<SharedResources> sharedLocalizer,
             IStringLocalizer<AuthenticationResources> authLocalizer,
-            UserManager<User> userManager) : base(sharedLocalizer)
+            UserManager<User> userManager,
+            ApplicationDBContext context,
+            IPasswordSecurityService passwordSecurityService,
+            IAuditService auditService,
+            IHttpContextAccessor httpContextAccessor,
+            ISecurityNotificationService notificationService,
+            IOptions<SecuritySettings> securitySettings) : base(sharedLocalizer)
         {
             _userManager = userManager;
+            _context = context;
             _authLocalizer = authLocalizer;
             _sharedLocalizer = sharedLocalizer;
+            _passwordSecurityService = passwordSecurityService;
+            _auditService = auditService;
+            _httpContextAccessor = httpContextAccessor;
+            _notificationService = notificationService;
+            _securitySettings = securitySettings;
         }
 
         public async Task<Response<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
             // Check if user exists
             var user = await _userManager.FindByEmailAsync(request.Email);
-
             if (user == null)
             {
                 return NotFound<string>(_authLocalizer[AuthenticationResourcesKeys.EmailIsNotExist]);
@@ -39,16 +66,79 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ResetPassword
                 return Unauthorized<string>(_authLocalizer[AuthenticationResourcesKeys.UserIsNotActive]);
             }
 
-            // Reset password with token
-            var result = await _userManager.ResetPasswordAsync(user, request.ResetCode, request.NewPassword);
+            // Find OTP in database
+            var otp = await _context.PasswordResetOtps
+                .Where(o => o.UserId == user.Id
+                         && o.OtpCode == request.ResetCode
+                         && !o.IsUsed)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            if (!result.Succeeded)
+            if (otp == null)
             {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest<string>("Invalid reset code.");
+            }
+
+            // Check if expired
+            if (otp.ExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest<string>("Reset code has expired. Please request a new one.");
+            }
+
+            // Check password history
+            var isReused = await _passwordSecurityService.IsPasswordInHistoryAsync(user.Id, request.NewPassword, historyCount: 5);
+            if (isReused)
+            {
+                return BadRequest<string>("Cannot reuse one of your last 5 passwords. Please choose a different password.");
+            }
+
+            // Mark OTP as used
+            otp.IsUsed = true;
+            otp.UsedAt = DateTime.UtcNow;
+            _context.PasswordResetOtps.Update(otp);
+
+            // Reset password (remove old password and set new one)
+            var removePasswordResult = await _userManager.RemovePasswordAsync(user);
+            if (!removePasswordResult.Succeeded)
+            {
+                return BadRequest<string>("Failed to reset password.");
+            }
+
+            var addPasswordResult = await _userManager.AddPasswordAsync(user, request.NewPassword);
+            if (!addPasswordResult.Succeeded)
+            {
+                var errors = string.Join(", ", addPasswordResult.Errors.Select(e => e.Description));
                 return BadRequest<string>(errors);
             }
 
-            return Success<string>(_sharedLocalizer[SharedResourcesKeys.Updated]);
+            // Add old password to history
+            if (!string.IsNullOrEmpty(user.PasswordHash))
+            {
+                await _passwordSecurityService.AddToPasswordHistoryAsync(user.Id, user.PasswordHash);
+            }
+
+            // Update timestamp
+            user.PasswordChangedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            // Log security event
+            var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
+            await _auditService.LogSecurityEventAsync(
+                userId: user.Id,
+                eventType: SecurityEventType.PasswordChanged,
+                ipAddress: ipAddress,
+                details: "Password reset via reset code"
+            );
+
+            // Send email notification
+            if (_securitySettings.Value.EmailNotifications.Enabled &&
+                _securitySettings.Value.EmailNotifications.NotifyOnPasswordChange)
+            {
+                await _notificationService.NotifyPasswordChangedAsync(user, ipAddress);
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Success<string>("Password reset successfully. You can now login with your new password.");
         }
     }
 }
