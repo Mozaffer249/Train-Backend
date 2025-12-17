@@ -28,6 +28,23 @@ Production deployment instructions:
 - Monitoring setup
 - Backup and recovery
 
+### [Localhost Setup Guide](./localhost-setup-guide.md)
+Local development environment setup:
+- Frontend URL configuration
+- Email confirmation links
+- Environment-specific settings
+
+### [Localhost vs Production URL](./localhost-vs-production-url.md)
+URL configuration for different environments:
+- Development URLs
+- Staging configuration
+- Production settings
+
+### [Production Email Template](./production-email-template-update.md)
+Production email template configuration:
+- Email template updates
+- Branding customization
+
 ## 🚀 Quick Commands
 
 ```bash

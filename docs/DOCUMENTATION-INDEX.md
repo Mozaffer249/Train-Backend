@@ -9,17 +9,55 @@ Complete index of all documentation files in the Sudan Train Backend project.
 
 ---
 
-## 🚀 Deployment (3 documents)
+## 🔐 Authentication (9 documents)
+
+Security and authentication system documentation.
+
+| Document | Description |
+|----------|-------------|
+| [Module 1: Core Security](./authentication/module-1-core-security-fixes.md) | Account lockout, email confirmation, logout |
+| [Module 2: Two-Factor Auth](./authentication/module-2-two-factor-authentication.md) | TOTP-based 2FA with recovery codes |
+| [Authentication Final Status](./authentication/authentication-final-status.md) | Complete implementation status report |
+| [Authentication Implementation Status](./authentication/authentication-implementation-status.md) | Detailed implementation progress |
+| [Security Modules Integration](./authentication/security-modules-integration-summary.md) | Security modules integration summary |
+| [Complete OTP System](./authentication/complete-otp-system-summary.md) | OTP system implementation details |
+| [OTP Confirmation](./authentication/otp-confirmation-implementation-summary.md) | Email confirmation with OTP |
+| [Password Reset OTP](./authentication/password-reset-otp-summary.md) | Password reset flow with OTP |
+| [Email Confirmation Flow](./authentication/email-confirmation-flow-summary.md) | Email confirmation workflow |
+
+**Quick Access**: [Authentication Folder](./authentication)
+
+---
+
+## 🚀 Deployment (7 documents)
 
 Deploy and run the application in different environments.
 
 | Document | Description |
 |----------|-------------|
-| [Docker Setup](./deployment/docker-setup.md) | Complete Docker and Docker Compose configuration guide |
+| [Docker Setup](./deployment/docker-setup.md) | Complete Docker and Docker Compose configuration |
 | [Quickstart](./deployment/quickstart.md) | Get the application running in 5 minutes |
 | [Deployment Guide](./deployment/deployment-guide.md) | Production deployment best practices |
+| [Deployment Guide (Main)](./deployment/deployment-guide-main.md) | Main deployment instructions |
+| [Localhost Setup](./deployment/localhost-setup-guide.md) | Local development environment setup |
+| [Localhost vs Production](./deployment/localhost-vs-production-url.md) | URL configuration for different environments |
+| [Production Email Template](./deployment/production-email-template-update.md) | Production email template configuration |
 
 **Quick Access**: [Deployment Folder](./deployment)
+
+---
+
+## 🧪 Testing (3 documents)
+
+Testing guides and resources.
+
+| Document | Description |
+|----------|-------------|
+| [Postman Testing Guide](./testing/postman-testing-guide.md) | Complete guide for testing with Postman |
+| [Postman Collection Summary](./testing/postman-collection-summary.md) | Overview of Postman collection structure |
+| [Testing Quick Reference](./testing/testing-quick-reference.md) | Quick reference for common testing tasks |
+
+**Quick Access**: [Testing Folder](./testing)
 
 ---
 
@@ -50,13 +88,17 @@ Understand the system architecture and design patterns.
 
 ---
 
-## 💻 Development (4 documents)
+## 💻 Development (9 documents)
 
-Development guidelines, refactoring examples, and fixes.
+Development guidelines, implementation summaries, and fixes.
 
 | Document | Description |
 |----------|-------------|
-| [Register Handler Refactoring](./development/register-handler-refactoring.md) | Clean code refactoring example with metrics |
+| [Implementation Progress](./development/implementation-progress.md) | Overall project implementation progress |
+| [Complete Implementation Status](./development/complete-implementation-status.md) | Comprehensive implementation status |
+| [Next Steps Guide](./development/next-steps-guide.md) | Recommended next steps and priorities |
+| [Module 6-8 Summary](./development/module-6-8-implementation-summary.md) | Account management & notifications |
+| [Register Handler Refactoring](./development/register-handler-refactoring.md) | Clean code refactoring example |
 | [Localization Refactoring](./development/localization-refactoring.md) | Multi-language support implementation |
 | [Property Name Fix](./development/property-name-fix.md) | Property naming convention fixes |
 | [Missing Fields Fix](./development/missing-fields-fix.md) | Database schema and field fixes |
@@ -65,13 +107,21 @@ Development guidelines, refactoring examples, and fixes.
 
 ---
 
-## 🗄️ Database (1 document)
+## 🗄️ Database (8 documents)
 
 Database setup, migrations, and schema documentation.
 
 | Document | Description |
 |----------|-------------|
 | [Database Setup](./database/database-setup.md) | SQL Server setup, migrations, and seeding |
+| [Migration Guide](./database/migration-guide.md) | Database migration procedures |
+| [Quick Reference](./database/quick-reference.md) | Common database commands |
+| [Entity Relationship Diagram](./database/entity-relationship-diagram.md) | Database ERD |
+| [Database Improvements](./database/database-improvement-summary.md) | Schema improvement summary |
+| [Sudanese Geographic Data](./database/sudanese-geographic-data-implementation.md) | Geographic data implementation |
+| [Geographic Data Seeding](./database/sudanese-geographic-data-seeding.md) | Seeding geographic data |
+| [Region Entity](./database/region-entity-implementation-summary.md) | Regional hierarchy implementation |
+| [Regional Hierarchy Usage](./database/regional-hierarchy-usage.md) | Using the regional hierarchy |
 
 **Quick Access**: [Database Folder](./database)
 
@@ -91,10 +141,9 @@ Internationalization and multi-language support.
 
 ## 📊 Documentation Statistics
 
-- **Total Documents**: 14 markdown files
-- **Total Folders**: 6 domain-specific folders
-- **README Files**: 7 (1 main + 6 folder READMEs)
-- **Documentation Files**: 14 content documents
+- **Total Documents**: 42+ markdown files
+- **Total Folders**: 8 domain-specific folders
+- **README Files**: 9 (1 main + 8 folder READMEs)
 
 ## 🎯 Quick References by Task
 
@@ -102,6 +151,15 @@ Internationalization and multi-language support.
 
 **Deploy the application**
 → [Docker Quickstart](./deployment/quickstart.md)
+
+**Set up local development**
+→ [Localhost Setup Guide](./deployment/localhost-setup-guide.md)
+
+**Understand authentication**
+→ [Authentication Status](./authentication/authentication-final-status.md)
+
+**Test the APIs**
+→ [Postman Testing Guide](./testing/postman-testing-guide.md)
 
 **Configure email settings**
 → [AppSettings Guide](./configuration/appsettings-guide.md) → Email Settings
@@ -131,7 +189,7 @@ Internationalization and multi-language support.
 All documents follow **kebab-case** naming:
 - ✅ `docker-setup.md`
 - ✅ `email-strategy.md`
-- ✅ `register-handler-refactoring.md`
+- ✅ `postman-testing-guide.md`
 - ❌ ~~`DockerSetup.md`~~
 - ❌ ~~`Email_Strategy.md`~~
 
@@ -150,17 +208,18 @@ To find documentation quickly:
 
 ```bash
 # Search all docs for a keyword
-grep -r "keyword" docs/
+rg "keyword" docs/
 
 # List all markdown files
 find docs/ -name "*.md"
 
 # Search by category
+ls docs/authentication/
 ls docs/deployment/
-ls docs/architecture/
+ls docs/testing/
 ```
 
 ---
 
-**Last Updated**: December 11, 2025
-**Documentation Version**: 1.0
+**Last Updated**: December 17, 2025
+**Documentation Version**: 2.0

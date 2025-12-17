@@ -57,6 +57,25 @@ Quick reference for using the regional structure:
 - Region codes reference
 - Performance tips
 
+### [Database Improvements](./database-improvement-summary.md)
+Summary of database schema improvements:
+- Entity enhancements
+- Performance optimizations
+- Index additions
+- Audit trail implementation
+
+### [Region Entity Implementation](./region-entity-implementation-summary.md)
+Region entity implementation details:
+- Region model structure
+- Relationships and constraints
+- Usage patterns
+
+### [Sudanese Geographic Data Implementation](./sudanese-geographic-data-implementation.md)
+Implementation of Sudanese geographic data:
+- Data structure design
+- Import procedures
+- Data validation
+
 ## 🗄️ Database Information
 
 ### Database Provider
