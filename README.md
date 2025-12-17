@@ -1,107 +1,140 @@
-# 🚂 Sudan Train Backend
+# 🚂 Sudan Train Platform
 
-A comprehensive train booking system backend built with .NET 8, featuring microservices architecture, multi-language support, and real-time messaging capabilities.
+Full-stack train booking platform with .NET backend and React frontend.
+
+## 📁 Project Structure
+
+```
+Sudan-Train-Platform/
+├── apps/
+│   ├── backend/                  # .NET 8 API and microservices
+│   │   ├── Sudan_Train/          # Main API project
+│   │   ├── Sudan_Train.Core/     # Business logic
+│   │   ├── Sudan_Train.Data/     # Data entities
+│   │   ├── Sudan_Train.Infrastructure/
+│   │   ├── Sudan_Train.Service/
+│   │   ├── Sudan_Train.MessagingApi/
+│   │   ├── docs/                 # Backend documentation
+│   │   ├── _Trains.sln
+│   │   └── Dockerfile
+│   │
+│   └── frontend/                 # React web application
+│       ├── src/
+│       ├── public/
+│       ├── package.json
+│       └── Dockerfile
+│
+├── docs/                         # Platform/deployment documentation
+│   └── deployment/               # Docker, deployment guides
+├── docker-compose.yml
+└── README.md
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker & Docker Compose
+- .NET 8 SDK (for backend development)
+- Node.js 18+ (for frontend development)
+
+### Run Everything with Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd Sudan-Train-Platform
+
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+### Access the Applications
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Frontend** | http://localhost:3000 | React web application |
+| **Backend API** | http://localhost:8080/swagger | .NET API with Swagger docs |
+| **Messaging API** | http://localhost:5001 | Email/SMS/Push microservice |
+| **RabbitMQ** | http://localhost:15672 | Message queue management (guest/guest) |
+| **SQL Server** | localhost:1433 | Database |
+
+## 🛠️ Development
+
+### Backend Development
+
+```bash
+cd apps/backend
+
+# Restore dependencies
+dotnet restore _Trains.sln
+
+# Build the solution
+dotnet build _Trains.sln
+
+# Run the API
+dotnet run --project Sudan_Train
+```
+
+See [Backend README](./apps/backend/README.md) for detailed instructions.
+
+### Frontend Development
+
+```bash
+cd apps/frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+See [Frontend README](./apps/frontend/README.md) for detailed instructions.
+
+## 📚 Documentation
+
+Documentation is organized by scope:
+
+### Platform Documentation (`/docs`)
+
+Shared documentation for deployment and Docker:
+
+- 🚀 **[Deployment](./docs/deployment)** - Docker setup, quickstart, production deployment
+
+### Backend Documentation (`/apps/backend/docs`)
+
+Backend-specific documentation:
+
+- 🔐 **[Authentication](./apps/backend/docs/authentication)** - Auth system, 2FA, security
+- 🏗️ **[Architecture](./apps/backend/docs/architecture)** - System design, messaging API
+- ⚙️ **[Configuration](./apps/backend/docs/configuration)** - AppSettings, environment
+- 🗄️ **[Database](./apps/backend/docs/database)** - Schema, migrations
+- 💻 **[Development](./apps/backend/docs/development)** - Implementation guides
+- 🌍 **[Localization](./apps/backend/docs/localization)** - Multi-language support
+- 🧪 **[Testing](./apps/backend/docs/testing)** - Postman, API testing
+
+### Frontend Documentation
+
+- [Frontend README](./apps/frontend/README.md) - Setup and development
 
 ## 🌟 Features
 
+### Backend (.NET 8)
 - **RESTful API** - Clean Architecture with CQRS pattern
 - **Microservices** - Standalone Messaging API for Email/SMS/Push notifications
 - **Multi-Language Support** - English and Arabic localization
 - **Authentication & Authorization** - JWT-based with role management
 - **Message Queue** - RabbitMQ for async processing
 - **Email Service** - Multiple sending strategies (Direct, Queued, Fallback)
-- **Docker Support** - Containerized deployment with Docker Compose
-- **Clean Code** - SOLID principles and best practices
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Docker & Docker Compose
-- .NET 8 SDK (for local development)
-- SQL Server 2022 or Azure SQL Edge
-
-### Run with Docker (Recommended)
-```bash
-# Clone the repository
-git clone <repository-url>
-cd Train-Backend
-
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f train-api
-
-# Access the API
-open http://localhost:8080/swagger
-```
-
-### Services URLs
-- **Main API**: http://localhost:8080/swagger
-- **Messaging API**: http://localhost:5001
-- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
-- **SQL Server**: localhost:1433
-
-## 📚 Documentation
-
-Comprehensive documentation is organized by domain in the [`/docs`](./docs) folder:
-
-### 🚀 [Deployment](./docs/deployment)
-- [Docker Setup](./docs/deployment/docker-setup.md) - Complete Docker guide
-- [Quickstart](./docs/deployment/quickstart.md) - Get running in 5 minutes
-- [Deployment Guide](./docs/deployment/deployment-guide.md) - Production deployment
-
-### ⚙️ [Configuration](./docs/configuration)
-- [AppSettings Guide](./docs/configuration/appsettings-guide.md) - All configuration options
-- [Configuration Overview](./docs/configuration/configuration.md) - Configuration best practices
-
-### 🏗️ [Architecture](./docs/architecture)
-- [Messaging API](./docs/architecture/messaging-api.md) - Microservice documentation
-- [Email Service](./docs/architecture/email-service.md) - Email implementation
-- [Email Strategy](./docs/architecture/email-strategy.md) - Sending strategies
-
-### 💻 [Development](./docs/development)
-- [Clean Code Refactoring](./docs/development/register-handler-refactoring.md) - Best practices
-- [Localization Guide](./docs/development/localization-refactoring.md) - i18n implementation
-- [Fix Summaries](./docs/development) - Common fixes and solutions
-
-### 🗄️ [Database](./docs/database)
-- [Database Setup](./docs/database/database-setup.md) - Schema and migrations
-
-### 🌍 [Localization](./docs/localization)
-- [Validator Localization](./docs/localization/validator-localization.md) - Multi-language support
-
-## 🛠️ Tech Stack
-
-### Backend
-- **.NET 8** - Latest .NET framework
-- **ASP.NET Core** - Web API framework
-- **Entity Framework Core** - ORM for database access
-- **MediatR** - CQRS pattern implementation
-- **FluentValidation** - Input validation
-- **Serilog** - Structured logging
-
-### Infrastructure
-- **SQL Server 2022** - Primary database
-- **RabbitMQ** - Message queue
-- **Docker & Docker Compose** - Containerization
-- **MailKit** - Email sending
-- **Twilio** - SMS service
-- **Firebase** - Push notifications
-
-## 📁 Project Structure
-
-```
-Train-Backend/
-├── Sudan_Train/              # Main API project
-├── Sudan_Train.Core/         # Business logic & MediatR handlers
-├── Sudan_Train.Data/         # Data entities
-├── Sudan_Train.Infrastructure/ # Infrastructure layer
-├── Sudan_Train.Service/      # Service layer
-├── Sudan_Train.MessagingApi/ # Messaging microservice
-├── docs/                     # Documentation
-└── docker-compose.yml        # Docker orchestration
-```
+### Frontend (React + Vite)
+- **Modern UI** - React with TypeScript
+- **Responsive Design** - Tailwind CSS styling
+- **Internationalization** - Arabic and English support
+- **API Integration** - Connected to backend services
 
 ## 🔐 Environment Variables
 
@@ -122,23 +155,26 @@ EMAIL_PASSWORD=your-app-password
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
+
+# Firebase (Optional)
+FIREBASE_KEY_PATH=
 ```
 
 ## 🧪 Testing
 
-```bash
-# Run unit tests
-dotnet test
+### Backend Tests
 
-# Run with coverage
-dotnet test /p:CollectCoverage=true
+```bash
+cd apps/backend
+dotnet test
 ```
 
-## 📊 API Documentation
+### Frontend Tests
 
-Once running, access the interactive API documentation:
-- **Swagger UI**: http://localhost:8080/swagger
-- **Messaging API Docs**: http://localhost:5001
+```bash
+cd apps/frontend
+npm test
+```
 
 ## 🤝 Contributing
 
@@ -149,8 +185,8 @@ Once running, access the interactive API documentation:
 5. Open a Pull Request
 
 ### Development Guidelines
-- Follow [Clean Code Principles](./docs/development/register-handler-refactoring.md)
-- Write unit tests for new features
+- Follow Clean Code principles
+- Write tests for new features
 - Update documentation as needed
 - Use conventional commit messages
 
@@ -162,19 +198,6 @@ Once running, access the interactive API documentation:
 
 - **Muzafar Ragab** - Initial work
 
-## 🙏 Acknowledgments
-
-- .NET Team for the amazing framework
-- Community contributors
-- Open source libraries used in this project
-
-## 📞 Support
-
-For issues and questions:
-- 📖 Check the [Documentation](./docs)
-- 🐛 Report bugs via [Issues](../../issues)
-- 💬 Ask questions in [Discussions](../../discussions)
-
 ---
 
-**Built with ❤️ using .NET 8**
+**Built with ❤️ using .NET 8 and React**

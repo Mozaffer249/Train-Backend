@@ -1,12 +1,13 @@
 # 🚀 Docker Quick Start Guide
 
-One-page reference for common Docker operations.
+One-page reference for common Docker operations in the Sudan Train Platform monorepo.
 
 ## ⚡ Quick Commands
 
 ### Start Everything
 
 ```bash
+# From project root
 docker-compose up -d
 ```
 
@@ -22,8 +23,14 @@ docker-compose down
 # All services
 docker-compose logs -f
 
-# API only
+# Backend API only
 docker logs train-api -f
+
+# Frontend only
+docker logs train-frontend -f
+
+# Messaging API only
+docker logs train-messaging-api -f
 
 # SQL Server only
 docker logs train-sqlserver -f
@@ -43,9 +50,14 @@ docker-compose down -v && docker-compose up --build -d
 
 ## 🌐 Access URLs
 
-- **Swagger UI**: http://localhost:8080/swagger
-- **API Base**: http://localhost:8080
-- **SQL Server**: localhost:1433
+| Service | URL |
+|---------|-----|
+| **Frontend** | http://localhost:3000 |
+| **Swagger UI** | http://localhost:8080/swagger |
+| **API Base** | http://localhost:8080 |
+| **Messaging API** | http://localhost:5001 |
+| **RabbitMQ UI** | http://localhost:15672 |
+| **SQL Server** | localhost:1433 |
 
 ## 📊 Check Status
 
@@ -74,17 +86,57 @@ docker exec -it train-sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
 docker exec -it train-api bash
 ```
 
+### Access Frontend Container Shell
+
+```bash
+docker exec -it train-frontend sh
+```
+
 ### Restart a Service
 
 ```bash
 docker-compose restart train-api
+docker-compose restart train-frontend
 docker-compose restart train-sqlserver
+docker-compose restart messaging-api
 ```
 
 ### View Environment Variables
 
 ```bash
+# Backend
 docker exec train-api env | grep -E "ASPNETCORE|ConnectionStrings|jwt"
+
+# Frontend
+docker exec train-frontend env | grep VITE
+```
+
+## 🏗️ Development Workflow
+
+### Backend Development (without Docker)
+
+```bash
+cd apps/backend
+dotnet restore _Trains.sln
+dotnet run --project Sudan_Train
+```
+
+### Frontend Development (without Docker)
+
+```bash
+cd apps/frontend
+npm install
+npm run dev
+```
+
+### Build Individual Images
+
+```bash
+# Backend
+docker build -t train-api:dev ./apps/backend
+
+# Frontend
+docker build -t train-frontend:dev ./apps/frontend
 ```
 
 ## ⚠️ Troubleshooting
@@ -92,8 +144,9 @@ docker exec train-api env | grep -E "ASPNETCORE|ConnectionStrings|jwt"
 ### Port Already in Use
 
 ```bash
-# Find what's using port 8080
+# Find what's using the port
 lsof -i :8080
+lsof -i :3000
 
 # Kill the process
 kill -9 <PID>
@@ -119,7 +172,17 @@ docker logs train-api --tail 100
 docker ps
 
 # Rebuild
-docker-compose up --build -d
+docker-compose up --build -d train-api
+```
+
+### Frontend Won't Start
+
+```bash
+# Check logs
+docker logs train-frontend --tail 100
+
+# Rebuild
+docker-compose up --build -d frontend
 ```
 
 ### Complete Reset
@@ -137,15 +200,20 @@ docker-compose up --build -d
   - Username: `sa`
   - Password: `YourStrong@Passw0rd`
   
+- **RabbitMQ**:
+  - Username: `guest`
+  - Password: `guest`
+
 - **API**: Check seeded users in logs
 
 ## 🔗 Related Docs
 
-- Full Guide: [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md)
-- Docker Details: [README.Docker.md](./README.Docker.md)
-- Configuration: [CONFIGURATION.md](./CONFIGURATION.md)
+- Full Guide: [docker-setup.md](./docker-setup.md)
+- Deployment: [deployment-guide.md](./deployment-guide.md)
+- Configuration: [appsettings-guide.md](../../apps/backend/docs/configuration/appsettings-guide.md)
+- Backend README: [apps/backend/README.md](../../apps/backend/README.md)
+- Frontend README: [apps/frontend/README.md](../../apps/frontend/README.md)
 
 ---
 
 **Quick Tip**: Keep this file open in a terminal while developing! 🎯
-
