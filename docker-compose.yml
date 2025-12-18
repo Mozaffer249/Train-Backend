@@ -1,8 +1,10 @@
+name: sudan-train-platform
+
 services:
   # SQL Server Database
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: train-sqlserver
+    container_name: sudan-train-db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${SQL_PASSWORD:-YourStrong@Passw0rd} # ⚠️ Change in production
@@ -12,7 +14,7 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
     networks:
-      - train-network
+      - sudan-train-network
     restart: unless-stopped
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -Q "SELECT 1" -C || exit 1
@@ -24,7 +26,7 @@ services:
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: train-rabbitmq
+    container_name: sudan-train-rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
@@ -34,7 +36,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - train-network
+      - sudan-train-network
     restart: unless-stopped
     healthcheck:
       test: rabbitmq-diagnostics -q ping
@@ -48,7 +50,8 @@ services:
     build:
       context: ./apps/backend
       dockerfile: Sudan_Train.MessagingApi/Dockerfile
-    container_name: train-messaging-api
+    image: sudan-train-messaging-api:latest
+    container_name: sudan-train-messaging-api
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:80
@@ -81,15 +84,16 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - train-network
+      - sudan-train-network
     restart: unless-stopped
 
-  # Sudan Train API
-  train-api:
+  # Sudan Train Backend API
+  backend-api:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
-    container_name: train-api
+    image: sudan-train-backend-api:latest
+    container_name: sudan-train-backend-api
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:80
@@ -109,7 +113,7 @@ services:
       messaging-api:
         condition: service_started
     networks:
-      - train-network
+      - sudan-train-network
     restart: unless-stopped
 
   # Sudan Train Frontend
@@ -117,16 +121,17 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-    container_name: train-frontend
+    image: sudan-train-frontend:latest
+    container_name: sudan-train-frontend
     environment:
       - VITE_API_URL=http://localhost:8080
       - VITE_MESSAGING_API_URL=http://localhost:5001
     ports:
       - "3000:80"
     depends_on:
-      - train-api
+      - backend-api
     networks:
-      - train-network
+      - sudan-train-network
     restart: unless-stopped
 
 volumes:
@@ -134,5 +139,5 @@ volumes:
   rabbitmq_data:
 
 networks:
-  train-network:
+  sudan-train-network:
     driver: bridge
