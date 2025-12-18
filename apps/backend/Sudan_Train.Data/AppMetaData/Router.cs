@@ -105,5 +105,45 @@ namespace Sudan_Train.Data.AppMetaData
         public const string AdminUserRoles = AdminUsers + "/{userId}/Roles";
         #endregion
 
+        #region Infrastructure
+        public const string Infrastructure = Rule + "Infrastructure";
+
+        // Region Management
+        public const string InfraRegions = Infrastructure + "/Regions";
+        public const string InfraRegionById = InfraRegions + SignleRoute;
+
+        // State Management
+        public const string InfraStates = Infrastructure + "/States";
+        public const string InfraStateById = InfraStates + SignleRoute;
+
+        // City Management
+        public const string InfraCities = Infrastructure + "/Cities";
+        public const string InfraCityById = InfraCities + SignleRoute;
+
+        // Station Management
+        public const string InfraStations = Infrastructure + "/Stations";
+        public const string InfraStationById = InfraStations + SignleRoute;
+
+        // Route Management
+        public const string InfraRoutes = Infrastructure + "/Routes";
+        public const string InfraRouteById = InfraRoutes + SignleRoute;
+
+        // Train Management
+        public const string InfraTrains = Infrastructure + "/Trains";
+        public const string InfraTrainById = InfraTrains + SignleRoute;
+
+        // Coach Management
+        public const string InfraCoaches = Infrastructure + "/Coaches";
+        public const string InfraCoachById = InfraCoaches + SignleRoute;
+
+        // Seat Management
+        public const string InfraSeats = Infrastructure + "/Seats";
+        public const string InfraSeatById = InfraSeats + SignleRoute;
+
+        // Trip Management
+        public const string InfraTrips = Infrastructure + "/Trips";
+        public const string InfraTripById = InfraTrips + SignleRoute;
+        #endregion
+
     }
 }

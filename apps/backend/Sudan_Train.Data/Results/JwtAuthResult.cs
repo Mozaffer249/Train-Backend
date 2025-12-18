@@ -12,6 +12,13 @@ namespace Sudan_Train.Data.Results
         public bool RequiresTwoFactor { get; set; } = false;
         public bool IsNewDevice { get; set; } = false;
         public string? DeviceId { get; set; }
+
+        // User information
+        public int UserId { get; set; }
+        public string UserName { get; set; } = default!;
+        public string Email { get; set; } = default!;
+        public string? FullName { get; set; }
+        public List<string> Roles { get; set; } = new();
     }
     public class RefreshToken
     {

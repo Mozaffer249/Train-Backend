@@ -67,12 +67,18 @@ namespace Trains.Core.Features.Authentication.Commands.Login
                 return Unauthorized<JwtAuthResult>("Access temporarily blocked due to suspicious activity. Please try again later.");
             }
 
-            // Check if user exists (validation ensures UserName is not null)
-            var user = await _userManager.FindByNameAsync(request.UserName!);
+            // Detect if input is email or username
+            bool isEmail = IsEmailFormat(request.UserNameOrEmail!);
+
+            // Find user by email or username
+            User? user = isEmail
+                ? await _userManager.FindByEmailAsync(request.UserNameOrEmail!)
+                : await _userManager.FindByNameAsync(request.UserNameOrEmail!);
+
             if (user == null)
             {
-                // Record failed attempt
-                await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, null, request.UserName, false);
+                // Record failed attempt (without revealing whether username/email exists)
+                await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, null, request.UserNameOrEmail, false);
                 return NotFound<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.UserNotFound]);
             }
 
@@ -150,6 +156,13 @@ namespace Trains.Core.Features.Authentication.Commands.Login
             // Generate JWT token
             var result = await _authenticationService.GetJWTToken(user);
 
+            // Populate user information
+            result.UserId = user.Id;
+            result.UserName = user.UserName!;
+            result.Email = user.Email!;
+            result.FullName = $"{user.FirstName} {user.LastName}".Trim();
+            result.Roles = (await _userManager.GetRolesAsync(user)).ToList();
+
             // Get device and IP info
             var userAgent = httpContext?.Request.Headers["User-Agent"].ToString() ?? "Unknown";
             var deviceId = request.DeviceId ?? Guid.NewGuid().ToString();
@@ -214,6 +227,20 @@ namespace Trains.Core.Features.Authentication.Commands.Login
             if (userAgent.Contains("Windows")) return "Windows PC";
             if (userAgent.Contains("Mac")) return "Mac";
             return "Unknown Device";
+        }
+
+        /// <summary>
+        /// Determines if the input is an email address format
+        /// </summary>
+        private bool IsEmailFormat(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            // Check if input contains @ symbol and has valid email structure
+            return input.Contains('@') &&
+                   input.Split('@').Length == 2 &&
+                   input.Split('@')[1].Contains('.');
         }
     }
 }

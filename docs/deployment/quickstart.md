@@ -24,16 +24,19 @@ docker-compose down
 docker-compose logs -f
 
 # Backend API only
-docker logs train-api -f
+docker logs sudan-train-backend-api -f
 
-# Frontend only
-docker logs train-frontend -f
+# Customer app only
+docker logs sudan-train-customer -f
+
+# Admin dashboard only
+docker logs sudan-train-admin -f
 
 # Messaging API only
-docker logs train-messaging-api -f
+docker logs sudan-train-messaging-api -f
 
 # SQL Server only
-docker logs train-sqlserver -f
+docker logs sudan-train-db -f
 ```
 
 ### Rebuild & Restart
@@ -52,7 +55,8 @@ docker-compose down -v && docker-compose up --build -d
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | http://localhost:3000 |
+| **Customer App** | http://localhost:3000 |
+| **Admin Dashboard** | http://localhost:3001 |
 | **Swagger UI** | http://localhost:8080/swagger |
 | **API Base** | http://localhost:8080 |
 | **Messaging API** | http://localhost:5001 |
@@ -83,21 +87,27 @@ docker exec -it train-sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
 ### Access API Container Shell
 
 ```bash
-docker exec -it train-api bash
+docker exec -it sudan-train-backend-api bash
 ```
 
-### Access Frontend Container Shell
+### Access Customer App Container Shell
 
 ```bash
-docker exec -it train-frontend sh
+docker exec -it sudan-train-customer sh
+```
+
+### Access Admin Container Shell
+
+```bash
+docker exec -it sudan-train-admin sh
 ```
 
 ### Restart a Service
 
 ```bash
-docker-compose restart train-api
-docker-compose restart train-frontend
-docker-compose restart train-sqlserver
+docker-compose restart backend-api
+docker-compose restart customer
+docker-compose restart admin
 docker-compose restart messaging-api
 ```
 
@@ -105,10 +115,13 @@ docker-compose restart messaging-api
 
 ```bash
 # Backend
-docker exec train-api env | grep -E "ASPNETCORE|ConnectionStrings|jwt"
+docker exec sudan-train-backend-api env | grep -E "ASPNETCORE|ConnectionStrings|jwt"
 
-# Frontend
-docker exec train-frontend env | grep VITE
+# Customer app
+docker exec sudan-train-customer env | grep VITE
+
+# Admin
+docker exec sudan-train-admin env | grep VITE
 ```
 
 ## 🏗️ Development Workflow
@@ -124,7 +137,15 @@ dotnet run --project Sudan_Train
 ### Frontend Development (without Docker)
 
 ```bash
-cd apps/frontend
+cd apps/frontend/customer
+npm install
+npm run dev
+```
+
+### Admin Development (without Docker)
+
+```bash
+cd apps/frontend/admin
 npm install
 npm run dev
 ```
@@ -133,10 +154,13 @@ npm run dev
 
 ```bash
 # Backend
-docker build -t train-api:dev ./apps/backend
+docker build -t sudan-train-backend-api:dev ./apps/backend
 
-# Frontend
-docker build -t train-frontend:dev ./apps/frontend
+# Customer app
+docker build -t sudan-train-customer:dev ./apps/frontend/customer
+
+# Admin
+docker build -t sudan-train-admin:dev ./apps/admin
 ```
 
 ## ⚠️ Troubleshooting
@@ -166,23 +190,33 @@ docker-compose restart train-sqlserver
 
 ```bash
 # Check logs
-docker logs train-api --tail 100
+docker logs sudan-train-backend-api --tail 100
 
 # Ensure SQL is healthy first
 docker ps
 
 # Rebuild
-docker-compose up --build -d train-api
+docker-compose up --build -d backend-api
 ```
 
-### Frontend Won't Start
+### Customer App Won't Start
 
 ```bash
 # Check logs
-docker logs train-frontend --tail 100
+docker logs sudan-train-customer --tail 100
 
 # Rebuild
-docker-compose up --build -d frontend
+docker-compose up --build -d customer
+```
+
+### Admin Won't Start
+
+```bash
+# Check logs
+docker logs sudan-train-admin --tail 100
+
+# Rebuild
+docker-compose up --build -d admin
 ```
 
 ### Complete Reset
@@ -205,6 +239,8 @@ docker-compose up --build -d
   - Password: `guest`
 
 - **API**: Check seeded users in logs
+
+- **Admin Access**: Admin/Staff roles required
 
 ## 🔗 Related Docs
 

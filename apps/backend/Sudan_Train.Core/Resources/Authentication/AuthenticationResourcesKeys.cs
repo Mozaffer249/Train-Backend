@@ -77,6 +77,7 @@ namespace Sudan_Train.Core.Resources.Authentication
 
         // Field-Specific Validation Messages
         public const string UserNameIsRequired = "UserNameIsRequired";
+        public const string UserNameOrEmailIsRequired = "UserNameOrEmailIsRequired";
         public const string PasswordIsRequired = "PasswordIsRequired";
         public const string PasswordMinLength = "PasswordMinLength";
         public const string FirstNameIsRequired = "FirstNameIsRequired";

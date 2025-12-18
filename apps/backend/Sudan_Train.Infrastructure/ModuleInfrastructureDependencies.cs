@@ -13,6 +13,19 @@ namespace Sudan_Train.Infrastructure
             services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
 
+            // Infrastructure Repositories
+            services.AddTransient<IRegionRepository, RegionRepository>();
+            services.AddTransient<IStateRepository, StateRepository>();
+            services.AddTransient<ICityRepository, CityRepository>();
+            services.AddTransient<IStationRepository, StationRepository>();
+            services.AddTransient<IRouteRepository, RouteRepository>();
+            services.AddTransient<IRouteStationRepository, RouteStationRepository>();
+            services.AddTransient<ITrainRepository, TrainRepository>();
+            services.AddTransient<ICoachRepository, CoachRepository>();
+            services.AddTransient<ISeatRepository, SeatRepository>();
+            services.AddTransient<ITripRepository, TripRepository>();
+            services.AddTransient<ITripSeatRepository, TripSeatRepository>();
+
             // Database Seeder
             services.AddTransient<DatabaseSeeder>();
             services.AddTransient<RoleSeeder>();

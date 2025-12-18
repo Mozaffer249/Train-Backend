@@ -17,12 +17,19 @@ Sudan-Train-Platform/
 │   │   ├── _Trains.sln
 │   │   └── Dockerfile
 │   │
-│   └── frontend/             # React web application
-│       ├── src/
-│       ├── public/
-│       ├── package.json
-│       ├── Dockerfile
-│       └── .env.example
+│   └── frontend/             # Web applications
+│       ├── customer/         # Public booking site
+│       │   ├── src/
+│       │   ├── public/
+│       │   ├── package.json
+│       │   ├── Dockerfile
+│       │   └── .env.example
+│       │
+│       └── admin/            # Admin dashboard
+│           ├── src/
+│           ├── public/
+│           ├── package.json
+│           └── Dockerfile
 │
 ├── docs/                     # Documentation
 ├── docker-compose.yml        # Docker orchestration
@@ -36,22 +43,25 @@ Sudan-Train-Platform/
 
 ### Step 1: Copy Your React Project
 
-Copy your existing React application files into `apps/frontend/`:
+Copy your existing React application files into `apps/frontend/customer/` (or `apps/frontend/admin/` for admin applications):
 
 ```bash
-# Option A: Fresh copy (replaces existing frontend)
-rm -rf apps/frontend/*
-cp -r /path/to/your-react-app/* apps/frontend/
+# For customer-facing applications
+# Option A: Fresh copy (replaces existing)
+rm -rf apps/frontend/customer/*
+cp -r /path/to/your-react-app/* apps/frontend/customer/
 
 # Option B: Selective copy (preserve existing config)
-cp -r /path/to/your-react-app/src apps/frontend/
-cp -r /path/to/your-react-app/public apps/frontend/
-cp /path/to/your-react-app/package.json apps/frontend/
+cp -r /path/to/your-react-app/src apps/frontend/customer/
+cp -r /path/to/your-react-app/public apps/frontend/customer/
+cp /path/to/your-react-app/package.json apps/frontend/customer/
+
+# For admin applications, use apps/frontend/admin/ instead
 ```
 
 ### Step 2: Update Environment Configuration
 
-Create or update `apps/frontend/.env.local` for local development:
+Create or update `apps/frontend/customer/.env.local` for local development:
 
 ```env
 # API Configuration
@@ -121,7 +131,7 @@ For Create React App with proxy:
 
 ### Step 5: Update Dockerfile (if needed)
 
-The frontend Dockerfile should be in `apps/frontend/Dockerfile`:
+The frontend Dockerfile should be in `apps/frontend/customer/Dockerfile`:
 
 **For Vite projects:**
 ```dockerfile
@@ -161,7 +171,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ### Step 6: Create Nginx Configuration
 
-Create `apps/frontend/nginx.conf` for production:
+Create `apps/frontend/customer/nginx.conf` for production:
 
 ```nginx
 server {
@@ -195,7 +205,7 @@ server {
 
 ```bash
 # Install dependencies
-cd apps/frontend
+cd apps/frontend/customer
 npm install
 
 # Start development server
@@ -277,11 +287,12 @@ const response = await fetch(`${API_URL}/api/data`, {
 If you modified the frontend structure, ensure `docker-compose.yml` is updated:
 
 ```yaml
-frontend:
+customer:
   build:
-    context: ./apps/frontend
+    context: ./apps/frontend/customer
     dockerfile: Dockerfile
-  container_name: train-frontend
+  image: sudan-train-customer:latest
+  container_name: sudan-train-customer
   environment:
     - VITE_API_URL=http://localhost:8080
     - VITE_MESSAGING_API_URL=http://localhost:5001
@@ -311,7 +322,7 @@ docker-compose up --build -d
 
 ## ✅ Post-Migration Checklist
 
-- [ ] All source files copied to `apps/frontend/`
+- [ ] All source files copied to `apps/frontend/customer/` (or `apps/frontend/admin/` for admin apps)
 - [ ] Environment variables configured (`.env.local`)
 - [ ] API calls use environment variables
 - [ ] `package.json` scripts are correct
@@ -366,4 +377,6 @@ Failed to fetch: ERR_CONNECTION_REFUSED
 - [Quickstart](./docs/deployment/quickstart.md) - Quick commands
 - [Backend README](./apps/backend/README.md) - Backend setup
 - [Backend Docs](./apps/backend/docs) - Backend documentation
-- [Frontend README](./apps/frontend/README.md) - Frontend setup
+- [Frontend Overview](./apps/frontend/README.md) - Web applications overview
+- [Customer App](./apps/frontend/customer/README.md) - Public booking site
+- [Admin App](./apps/frontend/admin/README.md) - Admin dashboard

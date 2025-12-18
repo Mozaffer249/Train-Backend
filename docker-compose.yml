@@ -116,18 +116,36 @@ services:
       - sudan-train-network
     restart: unless-stopped
 
-  # Sudan Train Frontend
-  frontend:
+  # Sudan Train Customer App (Public Booking Site)
+  customer:
     build:
-      context: ./apps/frontend
+      context: ./apps/frontend/customer
       dockerfile: Dockerfile
-    image: sudan-train-frontend:latest
-    container_name: sudan-train-frontend
+    image: sudan-train-customer:latest
+    container_name: sudan-train-customer
     environment:
       - VITE_API_URL=http://localhost:8080
       - VITE_MESSAGING_API_URL=http://localhost:5001
     ports:
       - "3000:80"
+    depends_on:
+      - backend-api
+    networks:
+      - sudan-train-network
+    restart: unless-stopped
+
+  # Sudan Train Admin Dashboard (Management Portal)
+  admin:
+    build:
+      context: ./apps/frontend/admin
+      dockerfile: Dockerfile
+    image: sudan-train-admin:latest
+    container_name: sudan-train-admin
+    environment:
+      - VITE_API_URL=http://localhost:8080
+      - VITE_MESSAGING_API_URL=http://localhost:5001
+    ports:
+      - "3001:80"
     depends_on:
       - backend-api
     networks:

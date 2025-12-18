@@ -137,6 +137,11 @@ using (var scope = app.Services.CreateScope())
         var stateAndCitySeeder = services.GetRequiredService<StateAndCitySeeder>();
         await stateAndCitySeeder.SeedAsync();
 
+        // Seed infrastructure data (trains, routes, trips)
+        var context = services.GetRequiredService<ApplicationDBContext>();
+        var infrastructureSeeder = new InfrastructureSeeder(context, services.GetRequiredService<ILogger<InfrastructureSeeder>>());
+        await infrastructureSeeder.SeedAsync();
+
         Log.Information("Database initialization and seeding completed successfully.");
     }
     catch (Exception ex)

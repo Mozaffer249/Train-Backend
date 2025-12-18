@@ -6,7 +6,10 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Login
 {
     public class LoginCommand : IRequest<Response<JwtAuthResult>>
     {
-        public string? UserName { get; set; }
+        /// <summary>
+        /// User's username or email address for authentication
+        /// </summary>
+        public string? UserNameOrEmail { get; set; }
         public string? Password { get; set; }
 
         // Device tracking for session management

@@ -18,11 +18,18 @@ Sudan-Train-Platform/
 │   │   ├── _Trains.sln
 │   │   └── Dockerfile
 │   │
-│   └── frontend/                 # React web application
-│       ├── src/
-│       ├── public/
-│       ├── package.json
-│       └── Dockerfile
+│   └── frontend/                 # Web applications
+│       ├── customer/             # Public-facing booking site
+│       │   ├── src/
+│       │   ├── public/
+│       │   ├── package.json
+│       │   └── Dockerfile
+│       │
+│       └── admin/                # Admin dashboard
+│           ├── src/
+│           ├── public/
+│           ├── package.json
+│           └── Dockerfile
 │
 ├── docs/                         # Platform/deployment documentation
 │   └── deployment/               # Docker, deployment guides
@@ -55,7 +62,8 @@ docker-compose logs -f
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **Frontend** | http://localhost:3000 | React web application |
+| **Customer App** | http://localhost:3000 | Public-facing booking site |
+| **Admin Dashboard** | http://localhost:3001 | Admin management portal |
 | **Backend API** | http://localhost:8080/swagger | .NET API with Swagger docs |
 | **Messaging API** | http://localhost:5001 | Email/SMS/Push microservice |
 | **RabbitMQ** | http://localhost:15672 | Message queue management (guest/guest) |
@@ -83,16 +91,30 @@ See [Backend README](./apps/backend/README.md) for detailed instructions.
 ### Frontend Development
 
 ```bash
-cd apps/frontend
+cd apps/frontend/customer
 
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (runs on port 5173)
 npm run dev
 ```
 
-See [Frontend README](./apps/frontend/README.md) for detailed instructions.
+See [Customer Frontend README](./apps/frontend/customer/README.md) for detailed instructions.
+
+### Admin Dashboard Development
+
+```bash
+cd apps/frontend/admin
+
+# Install dependencies
+npm install
+
+# Start development server (runs on port 3001)
+npm run dev
+```
+
+See [Admin README](./apps/frontend/admin/README.md) for detailed instructions.
 
 ## 📚 Documentation
 
@@ -118,7 +140,9 @@ Backend-specific documentation:
 
 ### Frontend Documentation
 
-- [Frontend README](./apps/frontend/README.md) - Setup and development
+- [Frontend Overview](./apps/frontend/README.md) - Web applications overview
+- [Customer App](./apps/frontend/customer/README.md) - Public booking site
+- [Admin App](./apps/frontend/admin/README.md) - Admin dashboard
 
 ## 🌟 Features
 
@@ -135,6 +159,13 @@ Backend-specific documentation:
 - **Responsive Design** - Tailwind CSS styling
 - **Internationalization** - Arabic and English support
 - **API Integration** - Connected to backend services
+
+### Admin Dashboard (React + Vite)
+- **Management Portal** - Separate admin interface
+- **Role-Based Access** - Admin/Staff authentication
+- **User Management** - User CRUD operations
+- **Booking Management** - View and manage bookings
+- **Train & Trip Management** - Fleet and schedule management
 
 ## 🔐 Environment Variables
 
@@ -172,7 +203,12 @@ dotnet test
 ### Frontend Tests
 
 ```bash
-cd apps/frontend
+# Customer app tests
+cd apps/frontend/customer
+npm test
+
+# Admin app tests
+cd apps/frontend/admin
 npm test
 ```
 

@@ -9,7 +9,7 @@ namespace Sudan_Train.Service
     {
         public static IServiceCollection AddServiceDependencies(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register services here
+            // Authentication & Security services
             services.AddTransient<IAuthenticationService, AuthenticationService>();
             services.AddTransient<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
             services.AddSingleton<IRateLimitingService, RateLimitingService>();
@@ -18,6 +18,13 @@ namespace Sudan_Train.Service
             services.AddTransient<IPasswordSecurityService, PasswordSecurityService>();
             services.AddTransient<ISecurityNotificationService, SecurityNotificationService>();
             services.AddTransient<IRiskAssessmentService, RiskAssessmentService>();
+
+            // Infrastructure services
+            services.AddTransient<IGeographyService, GeographyService>();
+            services.AddTransient<IStationService, StationService>();
+            services.AddTransient<IRouteService, RouteService>();
+            services.AddTransient<ITrainService, TrainService>();
+            services.AddTransient<ITripService, TripService>();
 
             // Register EmailServiceProxy to forward email requests to MessagingApi microservice
             services.AddHttpClient<IEmailService, EmailServiceProxy>();

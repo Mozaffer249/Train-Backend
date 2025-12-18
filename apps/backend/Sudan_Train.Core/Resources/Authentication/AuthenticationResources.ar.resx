@@ -101,6 +101,9 @@
   <data name="UserNameIsRequired" xml:space="preserve">
     <value>اسم المستخدم مطلوب</value>
   </data>
+  <data name="UserNameOrEmailIsRequired" xml:space="preserve">
+    <value>اسم المستخدم أو البريد الإلكتروني مطلوب</value>
+  </data>
   <data name="PasswordIsRequired" xml:space="preserve">
     <value>كلمة المرور مطلوبة</value>
   </data>

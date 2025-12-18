@@ -8,9 +8,9 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Login
     {
         public LoginCommandValidator(IStringLocalizer<AuthenticationResources> stringLocalizer)
         {
-            RuleFor(x => x.UserName)
-                .NotNull().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameIsRequired])
-                .NotEmpty().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameIsRequired])
+            RuleFor(x => x.UserNameOrEmail)
+                .NotNull().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameOrEmailIsRequired])
+                .NotEmpty().WithMessage(stringLocalizer[AuthenticationResourcesKeys.UserNameOrEmailIsRequired])
                 .OverridePropertyName(string.Empty);
 
             RuleFor(x => x.Password)

@@ -1,208 +1,157 @@
-# Sudan Train Frontend
+# Sudan Train Frontend Applications
 
-React + TypeScript + Vite frontend application for the Sudan Train booking system.
+This directory contains all web-based client applications for the Sudan Train Platform.
+
+## Applications
+
+### 🌐 Customer App (`/customer`)
+
+Public-facing booking website for customers to search, book, and manage train tickets.
+
+**Features:**
+- Train search and booking
+- User registration and authentication
+- Booking history
+- Ticket management
+- Responsive design (mobile & desktop)
+
+**Quick Start:**
+```bash
+cd customer
+npm install
+npm run dev  # Runs on http://localhost:5173
+```
+
+📖 [Customer App Documentation](./customer/README.md)
+
+### 🔐 Admin Dashboard (`/admin`)
+
+Administrative portal for staff and administrators to manage the train booking system.
+
+**Features:**
+- User management
+- Booking management
+- Train fleet management
+- Trip scheduling
+- Statistics dashboard
+- Role-based access control (Admin/Staff only)
+
+**Quick Start:**
+```bash
+cd admin
+npm install
+npm run dev  # Runs on http://localhost:3001
+```
+
+📖 [Admin Dashboard Documentation](./admin/README.md)
 
 ## Tech Stack
 
-- **React 18** - UI library
+Both applications share the same technology stack:
+
+- **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
+- **Tailwind CSS** - Utility-first styling
 - **React Router** - Client-side routing
-- **Lucide React** - Icons
+- **Lucide React** - Icon library
 
-## Prerequisites
+## Development
 
-- Node.js 18+ 
+### Prerequisites
+
+- Node.js 18+
 - npm or yarn
 
-## Getting Started
-
-### 1. Install Dependencies
+### Run Both Apps Simultaneously
 
 ```bash
-npm install
+# Terminal 1 - Customer App
+cd customer && npm run dev
+
+# Terminal 2 - Admin App
+cd admin && npm run dev
 ```
 
-### 2. Configure Environment
+### Docker Deployment
 
-Copy the example environment file and update with your settings:
+Both apps are containerized and can be run via Docker Compose:
 
 ```bash
-cp .env.example .env.local
+# From project root
+docker-compose up -d
+
+# Access apps:
+# Customer: http://localhost:3000
+# Admin: http://localhost:3001
 ```
 
-Edit `.env.local`:
+## Environment Variables
 
+Both apps require environment configuration:
+
+**`.env.local` (Customer & Admin):**
 ```env
 VITE_API_URL=http://localhost:8080
 VITE_MESSAGING_API_URL=http://localhost:5001
 ```
 
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:5173` (Vite's default port)
-
-### 4. Build for Production
-
-```bash
-npm run build
-```
-
-The production build will be in the `dist/` directory.
-
-### 5. Preview Production Build
-
-```bash
-npm run preview
-```
-
-## Docker
-
-### Build Docker Image
-
-```bash
-docker build -t sudan-train-frontend .
-```
-
-### Run Docker Container
-
-```bash
-docker run -p 3000:80 sudan-train-frontend
-```
-
-Access at `http://localhost:3000`
-
-## Project Structure
-
-```
-apps/frontend/
-├── src/
-│   ├── components/       # React components
-│   │   ├── AdminPanel.tsx
-│   │   ├── BookingPage.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── Header.tsx
-│   │   ├── Homepage.tsx
-│   │   ├── Login.tsx
-│   │   └── SearchResults.tsx
-│   ├── contexts/         # React contexts
-│   │   ├── AuthContext.tsx
-│   │   └── LanguageContext.tsx
-│   ├── App.tsx          # Main app component
-│   ├── main.tsx         # Entry point
-│   └── index.css        # Global styles
-├── public/              # Static assets
-├── index.html           # HTML template
-├── vite.config.ts       # Vite configuration
-├── tailwind.config.js   # Tailwind configuration
-├── tsconfig.json        # TypeScript configuration
-├── Dockerfile           # Docker configuration
-├── nginx.conf           # Nginx configuration for production
-└── package.json         # Dependencies and scripts
-```
-
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build locally
-
-## API Integration
-
-The frontend communicates with the backend API using environment variables:
-
-```typescript
-const API_URL = import.meta.env.VITE_API_URL;
-
-// Example API call
-const response = await fetch(`${API_URL}/Api/V1/Authentication/Login`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ username, password }),
-});
-```
-
-## Environment Variables
-
-All environment variables must be prefixed with `VITE_` to be exposed to the frontend:
-
-- `VITE_API_URL` - Backend API base URL
-- `VITE_MESSAGING_API_URL` - Messaging API base URL
-- `VITE_ENV` - Environment name (development/staging/production)
-- `VITE_DEBUG` - Enable debug mode
-
-## Development with Backend
-
-When running with the backend via Docker Compose:
-
-```bash
-# From the root directory
-docker-compose up -d
-
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8080/swagger
-# Messaging API: http://localhost:5001
-```
-
 ## Building for Production
 
-1. Set production environment variables
-2. Build the app: `npm run build`
-3. Deploy the `dist/` directory to your web server
-4. Or use the Docker image for containerized deployment
+```bash
+# Customer App
+cd customer
+npm run build  # Output: customer/dist/
 
-## Troubleshooting
-
-### CORS Issues
-
-If you encounter CORS errors, ensure the backend's CORS configuration includes your frontend URL:
-
-```json
-{
-  "Cors": {
-    "AllowedOrigins": [
-      "http://localhost:5173",
-      "http://localhost:3000"
-    ]
-  }
-}
+# Admin App
+cd admin
+npm run build  # Output: admin/dist/
 ```
 
-### API Connection
+## Architecture
 
-If the frontend can't connect to the API:
+```
+frontend/
+├── customer/          # Public booking site
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   ├── pages/
+│   │   └── services/
+│   ├── public/
+│   ├── Dockerfile
+│   └── nginx.conf
+│
+└── admin/            # Admin dashboard
+    ├── src/
+    │   ├── components/
+    │   │   └── layout/
+    │   ├── contexts/
+    │   ├── pages/
+    │   └── services/
+    ├── public/
+    ├── Dockerfile
+    └── nginx.conf
+```
 
-1. Check that `VITE_API_URL` is set correctly
-2. Ensure the backend is running
-3. Verify the backend port matches the URL
-4. Check browser console for specific error messages
+## Related Documentation
 
-### Hot Reload Not Working
+- [Backend API Documentation](../backend/docs)
+- [Deployment Guide](../../docs/deployment)
+- [Docker Setup](../../docs/deployment/docker-setup.md)
+- [Migration Guide](../../MIGRATION_GUIDE.md)
 
-If hot reload stops working:
+## Access URLs
 
-1. Restart the dev server
-2. Clear browser cache
-3. Check for ESLint errors
-4. Ensure you're saving files in the `src/` directory
+| Application | Development | Production (Docker) |
+|------------|-------------|---------------------|
+| Customer | http://localhost:5173 | http://localhost:3000 |
+| Admin | http://localhost:3001 | http://localhost:3001 |
 
-## Contributing
+## Notes
 
-1. Create a feature branch
-2. Make your changes
-3. Run linting: `npm run lint`
-4. Build successfully: `npm run build`
-5. Submit a pull request
-
-## License
-
-[Add your license here]
+- The customer app is accessible to all users
+- The admin app requires Admin or Staff role authentication
+- Both apps share the same backend API
+- CORS is configured in the backend for both origins
 

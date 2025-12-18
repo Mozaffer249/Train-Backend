@@ -101,6 +101,9 @@
   <data name="UserNameIsRequired" xml:space="preserve">
     <value>User name is required</value>
   </data>
+  <data name="UserNameOrEmailIsRequired" xml:space="preserve">
+    <value>Username or email is required</value>
+  </data>
   <data name="PasswordIsRequired" xml:space="preserve">
     <value>Password is required</value>
   </data>
