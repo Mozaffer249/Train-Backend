@@ -1,0 +1,2566 @@
+{
+	"info": {
+		"_postman_id": "sudan-train-complete-api-tests",
+		"name": "Sudan Train - Complete API Test Suite",
+		"description": "Complete API test suite organized by user type: Customer (27 endpoints) and Admin (44 endpoints) with logical subfolders for each domain.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Customer",
+			"description": "Customer-facing APIs: Registration, Login, Profile, 2FA, Account Management",
+			"item": [
+				{
+					"name": "Authentication",
+					"description": "Customer registration, login, and email confirmation",
+					"item": [
+						{
+							"name": "Register New User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200 or 201\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Register"
+									]
+								},
+								"description": "Register a new user account",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"testuser1\",\n  \"email\": \"test1@example.com\",\n  \"password\": \"Test@123456\",\n  \"confirmPassword\": \"Test@123456\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phoneNumber\": \"+249123456789\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Confirm Email",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/ConfirmEmail",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"ConfirmEmail"
+									]
+								},
+								"description": "Confirm user email with code",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userId\": \"user-id-here\",\n  \"code\": \"confirmation-code\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"auth_token\", jsonData.data.accessToken);",
+											"    pm.environment.set(\"refresh_token\", jsonData.data.refreshToken);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Login"
+									]
+								},
+								"description": "User login",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"Test@123456\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validate Token",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/ValidateToken?accessToken={{auth_token}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"ValidateToken"
+									],
+									"query": [
+										{
+											"key": "accessToken",
+											"value": "{{auth_token}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Refresh Token",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/RefreshToken",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"RefreshToken"
+									]
+								},
+								"description": "",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"{{auth_token}}\",\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Logout",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Logout"
+									]
+								},
+								"description": "Logout and revoke tokens"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Security",
+					"description": "Two-Factor Authentication, Password Management, and Session Control",
+					"item": [
+						{
+							"name": "Enable Two-Factor Authentication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"2fa_manual_key\", jsonData.data.manualEntryKey);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/EnableTwoFactor",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"EnableTwoFactor"
+									]
+								},
+								"description": "Get QR code for 2FA setup"
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Two-Factor Code",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/VerifyTwoFactor",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"VerifyTwoFactor"
+									]
+								},
+								"description": "Verify and activate 2FA",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"code\": \"123456\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Disable Two-Factor",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/DisableTwoFactor",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"DisableTwoFactor"
+									]
+								},
+								"description": "Disable 2FA"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Two-Factor Status",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/GetTwoFactorStatus",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"GetTwoFactorStatus"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Generate Recovery Codes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.length > 0) {",
+											"        pm.environment.set(\"recovery_code_1\", jsonData.data[0]);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/GenerateRecoveryCodes",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"GenerateRecoveryCodes"
+									]
+								},
+								"description": "Generate new recovery codes"
+							},
+							"response": []
+						},
+						{
+							"name": "Login with Two-Factor",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/LoginWithTwoFactor",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"LoginWithTwoFactor"
+									]
+								},
+								"description": "Login with 2FA code",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"testuser1\",\n  \"password\": \"Test@123456\",\n  \"twoFactorCode\": \"123456\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change Password",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/ChangePassword",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"ChangePassword"
+									]
+								},
+								"description": "",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"currentPassword\": \"Test@123456\",\n  \"newPassword\": \"NewPass@123456\",\n  \"confirmPassword\": \"NewPass@123456\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send Password Reset Code",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/SendResetPasswordCode",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"SendResetPasswordCode"
+									]
+								},
+								"description": "Request password reset",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"test1@example.com\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Password",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/ResetPassword",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"ResetPassword"
+									]
+								},
+								"description": "",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"test1@example.com\",\n  \"code\": \"reset-code\",\n  \"newPassword\": \"NewPass@123456\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Active Sessions",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.length > 0) {",
+											"        pm.environment.set(\"session_id\", jsonData.data[0].id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Account/ActiveSessions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"ActiveSessions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Terminate Session",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Account/TerminateSession/{{session_id}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"TerminateSession",
+										"{{session_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Terminate All Sessions",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Account/TerminateAllSessions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"TerminateAllSessions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Account Management",
+					"description": "User profile, email changes, data export, account deletion",
+					"item": [
+						{
+							"name": "Get Profile",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Account/Profile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"Profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Profile",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Account/UpdateProfile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"UpdateProfile"
+									]
+								},
+								"description": "",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"phoneNumber\": \"+249987654321\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change Email - Request",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Account/ChangeEmail",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"ChangeEmail"
+									]
+								},
+								"description": "",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"newEmail\": \"newemail@example.com\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change Email - Confirm",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Account/ConfirmEmailChange",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"ConfirmEmailChange"
+									]
+								},
+								"description": "",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userId\": \"user-id\",\n  \"newEmail\": \"newemail@example.com\",\n  \"code\": \"confirmation-code\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export User Data (GDPR)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Account/ExportData",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"ExportData"
+									]
+								},
+								"description": "Export all user data"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Account",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Account/DeleteAccount",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Account",
+										"DeleteAccount"
+									]
+								},
+								"description": "Permanently delete account",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"password\": \"Test@123456\",\n  \"confirmDeletion\": true\n}"
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Testing & Validation",
+					"description": "Rate limiting, error handling, and localization tests",
+					"item": [
+						{
+							"name": "Test Login Rate Limit",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Login"
+									]
+								},
+								"description": "Run this 6 times to trigger rate limit",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"testuser\",\n  \"password\": \"wrongpassword\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Test Invalid Credentials",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Login"
+									]
+								},
+								"description": "",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"nonexistent\",\n  \"password\": \"wrong\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Test Missing Required Fields",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Register"
+									]
+								},
+								"description": "",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"test\"\n}"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Test Arabic Localization",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept-Language",
+										"value": "ar"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"nonexistent\",\n  \"password\": \"wrong\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Login"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Admin APIs: Infrastructure & Fleet Management (Regions, Stations, Routes, Trains, Trips)",
+			"item": [
+				{
+					"name": "Authentication",
+					"description": "Admin login to get admin_token for protected endpoints",
+					"item": [
+						{
+							"name": "Login as Admin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"admin_token\", jsonData.data.accessToken);",
+											"    pm.environment.set(\"admin_refresh_token\", jsonData.data.refreshToken);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/Authentication/Login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Authentication",
+										"Login"
+									]
+								},
+								"description": "Login as admin user",
+								"auth": {
+									"type": "noauth"
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"Admin@123456\"\n}"
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Geography",
+					"description": "Geographic hierarchy: Regions → States → Cities",
+					"item": [
+						{
+							"name": "Regions",
+							"item": [
+								{
+									"name": "Get All Regions",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Regions",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Regions"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Region by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Regions/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Regions",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Region",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"region_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Central Region\",\n  \"nameAr\": \"الوسطى\",\n  \"code\": \"CNT\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Regions",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Regions"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Region",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Central Region Updated\",\n  \"nameAr\": \"المنطقة الوسطى المحدثة\",\n  \"code\": \"CNT\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Regions/{{region_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Regions",
+												"{{region_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Region",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Regions/{{region_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Regions",
+												"{{region_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "States",
+							"item": [
+								{
+									"name": "Get All States",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get States by Region",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States?regionId={{region_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States"
+											],
+											"query": [
+												{
+													"key": "regionId",
+													"value": "{{region_id}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get State by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create State",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"state_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum\",\n  \"nameAr\": \"الخرطوم\",\n  \"regionId\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update State",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum State\",\n  \"nameAr\": \"ولاية الخرطوم\",\n  \"regionId\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States/{{state_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States",
+												"{{state_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete State",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/States/{{state_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"States",
+												"{{state_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Cities",
+							"item": [
+								{
+									"name": "Get All Cities",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Cities by State",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities?stateId={{state_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities"
+											],
+											"query": [
+												{
+													"key": "stateId",
+													"value": "{{state_id}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get City by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create City",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"city_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum North\",\n  \"nameAr\": \"الخرطوم بحري\",\n  \"stateId\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update City",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum North City\",\n  \"nameAr\": \"مدينة الخرطوم بحري\",\n  \"stateId\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities/{{city_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities",
+												"{{city_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete City",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities/{{city_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities",
+												"{{city_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Infrastructure",
+					"description": "Railway infrastructure: Train Stations and Routes",
+					"item": [
+						{
+							"name": "Stations",
+							"item": [
+								{
+									"name": "Get All Stations (Public)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Station",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"station_id\", jsonData.data.id);",
+													"        pm.environment.set(\"origin_station_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station\",\n  \"nameAr\": \"محطة الخرطوم المركزية\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599,\n  \"addressEn\": \"Al-Neel Street\",\n  \"addressAr\": \"شارع النيل\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Station by ID (Public)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Destination Station",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"destination_station_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"code\": \"PRT\",\n  \"nameEn\": \"Port Sudan Station\",\n  \"nameAr\": \"محطة بورتسودان\",\n  \"cityId\": 1,\n  \"latitude\": 19.6158,\n  \"longitude\": 37.2163,\n  \"addressEn\": \"Port Sudan Center\",\n  \"addressAr\": \"وسط بورتسودان\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Station",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station Updated\",\n  \"nameAr\": \"محطة الخرطوم المركزية المحدثة\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations/{{station_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations",
+												"{{station_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Station",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Stations/{{station_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Stations",
+												"{{station_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Routes",
+							"item": [
+								{
+									"name": "Get All Routes (Public)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Route by ID (Public)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Route",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"route_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Route\",\n  \"nameAr\": \"خط الخرطوم - بورتسودان\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Route",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Express\",\n  \"nameAr\": \"خط الخرطوم - بورتسودان السريع\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes/{{route_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes",
+												"{{route_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add Intermediate Station",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"stationId\": 3,\n  \"stopOrder\": 1,\n  \"arrivalMinutesFromStart\": 120,\n  \"departureMinutesFromStart\": 130\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes/{{route_id}}/Stations",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes",
+												"{{route_id}}",
+												"Stations"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Remove Station from Route",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes/{{route_id}}/Stations/3",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes",
+												"{{route_id}}",
+												"Stations",
+												"3"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Route",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Routes/{{route_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Routes",
+												"{{route_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Fleet Management",
+					"description": "Train fleet, coaches, and seating configuration",
+					"item": [
+						{
+							"name": "Trains",
+							"item": [
+								{
+									"name": "Get All Trains",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Train",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.id) {",
+													"        pm.environment.set(\"train_id\", jsonData.data.id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express\",\n  \"nameAr\": \"السودان السريع\",\n  \"type\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Train by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains/1",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains",
+												"1"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Train",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express Updated\",\n  \"nameAr\": \"السودان السريع المحدث\",\n  \"type\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains/{{train_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains",
+												"{{train_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Coaches by Train",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains/{{train_id}}/Coaches",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains",
+												"{{train_id}}",
+												"Coaches"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Train",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains/{{train_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains",
+												"{{train_id}}"
+											]
+										},
+										"description": "SuperAdmin only"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Coaches & Seats",
+							"item": [
+								{
+									"name": "Bulk Create Coaches",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 200) {",
+													"    var jsonData = pm.response.json();",
+													"    if (jsonData.data && jsonData.data.length > 0) {",
+													"        pm.environment.set(\"coach_id\", jsonData.data[0].id);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"trainId\": {{train_id}},\n  \"numberOfCoaches\": 10,\n  \"class\": 1,\n  \"capacityPerCoach\": 40,\n  \"autoGenerateSeats\": true\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Trains/{{train_id}}/Coaches/Bulk",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Trains",
+												"{{train_id}}",
+												"Coaches",
+												"Bulk"
+											]
+										},
+										"description": "Class: 1=First, 2=Second, 3=Third"
+									},
+									"response": []
+								},
+								{
+									"name": "Get Seats by Coach",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Coaches/{{coach_id}}/Seats",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Coaches",
+												"{{coach_id}}",
+												"Seats"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Operations",
+					"description": "Trip scheduling and management",
+					"item": [
+						{
+							"name": "Get All Trips (Public)",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Infrastructure/Trips",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Infrastructure",
+										"Trips"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Trip",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.id) {",
+											"        pm.environment.set(\"trip_id\", jsonData.data.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trainId\": \"{{train_id}}\",\n  \"routeId\": \"{{route_id}}\",\n  \"departureTime\": \"2024-12-25T08:00:00Z\",\n  \"arrivalTime\": \"2024-12-25T18:00:00Z\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/Infrastructure/Trips",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Infrastructure",
+										"Trips"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Trip by ID (Public)",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Infrastructure/Trips/1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Infrastructure",
+										"Trips",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Trip",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trainId\": {{train_id}},\n  \"routeId\": {{route_id}},\n  \"departureTime\": \"2024-12-25T09:00:00Z\",\n  \"arrivalTime\": \"2024-12-25T19:00:00Z\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/Infrastructure/Trips/{{trip_id}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Infrastructure",
+										"Trips",
+										"{{trip_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Trip",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/Infrastructure/Trips/{{trip_id}}/Cancel",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"Infrastructure",
+										"Trips",
+										"{{trip_id}}",
+										"Cancel"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/Api/V1",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "2fa_manual_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "recovery_code_1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "session_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "region_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "state_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "city_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "station_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "origin_station_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "destination_station_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "route_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "train_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coach_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "trip_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

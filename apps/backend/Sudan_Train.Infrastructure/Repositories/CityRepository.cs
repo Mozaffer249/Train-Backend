@@ -23,4 +23,3 @@ namespace Sudan_Train.Infrastructure.Repositories
         #endregion
     }
 }
-

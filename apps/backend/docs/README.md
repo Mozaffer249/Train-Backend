@@ -82,13 +82,14 @@ Internationalization and localization.
 
 ### 🧪 [Testing](./testing)
 
-Testing guides and resources.
+Testing guides and Postman collections. **[📦 Postman Collection](../postman/)** files are ready to import.
 
 | Document | Description |
 |----------|-------------|
-| [Postman Testing Guide](./testing/postman-testing-guide.md) | Complete testing workflow |
-| [Postman Collection Summary](./testing/postman-collection-summary.md) | Collection structure |
-| [Testing Quick Reference](./testing/testing-quick-reference.md) | Common tasks |
+| [Testing Overview](./testing/README.md) | Complete testing guide with Postman setup |
+| [Postman Testing Guide](./testing/postman-testing-guide.md) | Step-by-step testing workflow |
+| [Postman Collection Summary](./testing/postman-collection-summary.md) | Collection structure details |
+| [Testing Quick Reference](./testing/testing-quick-reference.md) | Common testing commands |
 
 ## 🎯 Quick Links
 

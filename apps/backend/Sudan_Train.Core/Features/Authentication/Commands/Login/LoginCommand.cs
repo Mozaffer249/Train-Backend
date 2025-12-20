@@ -17,4 +17,3 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Login
         public string? DeviceName { get; set; } // e.g., "iPhone 14 Pro", "Chrome on Windows"
     }
 }
-
