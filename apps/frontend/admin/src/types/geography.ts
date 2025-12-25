@@ -9,6 +9,11 @@ export interface City {
   longitude: number;
   googlePlaceId?: string;
   formattedAddress?: string;
+  boundaryPolygon?: string;
+  boundingBoxNorth?: number;
+  boundingBoxSouth?: number;
+  boundingBoxEast?: number;
+  boundingBoxWest?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -20,6 +25,11 @@ export interface CityFormData {
   longitude: number;
   googlePlaceId?: string;
   formattedAddress?: string;
+  boundaryPolygon?: string;
+  boundingBoxNorth?: number;
+  boundingBoxSouth?: number;
+  boundingBoxEast?: number;
+  boundingBoxWest?: number;
 }
 
 // Station interface
@@ -79,6 +89,11 @@ export interface CityValidationResult {
     nameEn: string;
     formattedAddress: string;
     googlePlaceId?: string;
+    boundaryPolygon?: string;
+    boundingBoxNorth?: number;
+    boundingBoxSouth?: number;
+    boundingBoxEast?: number;
+    boundingBoxWest?: number;
   };
   distanceKm?: number;
 }

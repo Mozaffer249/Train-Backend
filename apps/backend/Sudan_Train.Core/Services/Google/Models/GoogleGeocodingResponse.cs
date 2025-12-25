@@ -41,6 +41,9 @@ namespace Sudan_Train.Core.Services.Google.Models
         [JsonPropertyName("location")]
         public GoogleLocation Location { get; set; } = new GoogleLocation();
 
+        [JsonPropertyName("bounds")]
+        public GoogleViewport? Bounds { get; set; }
+
         [JsonPropertyName("viewport")]
         public GoogleViewport? Viewport { get; set; }
 

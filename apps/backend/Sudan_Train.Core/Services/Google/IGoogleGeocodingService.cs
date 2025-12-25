@@ -28,5 +28,12 @@ namespace Sudan_Train.Core.Services.Google
         /// <param name="longitude">Longitude</param>
         /// <returns>Google result with address details or null if not found</returns>
         Task<GoogleResult?> ReverseGeocode(double latitude, double longitude);
+
+        /// <summary>
+        /// Extract boundary information from geocode result
+        /// </summary>
+        /// <param name="result">Google geocode result</param>
+        /// <returns>Tuple containing polygon, north, south, east, west boundaries</returns>
+        (string? polygon, double? north, double? south, double? east, double? west) ExtractBoundaries(GoogleResult result);
     }
 }

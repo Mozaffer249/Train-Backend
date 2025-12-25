@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Core.Services.Google;
+using Sudan_Train.Core.Services.Spatial;
 using Sudan_Train.Data.DTOs.Infrastructure;
 using Sudan_Train.Infrastructure.Abstracts;
 using System.Linq;
@@ -14,14 +15,17 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
     {
         private readonly IGoogleGeocodingService _googleGeocodingService;
         private readonly ICityRepository _cityRepository;
+        private readonly SpatialUtilityService _spatialUtility;
 
         public ValidateCityLocationQueryHandler(
             IGoogleGeocodingService googleGeocodingService,
             ICityRepository cityRepository,
+            SpatialUtilityService spatialUtility,
             IStringLocalizer<SharedResources> localizer) : base(localizer)
         {
             _googleGeocodingService = googleGeocodingService;
             _cityRepository = cityRepository;
+            _spatialUtility = spatialUtility;
         }
 
         public async Task<Response<CityValidationDto>> Handle(
@@ -43,12 +47,56 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                     {
                         NameEn = "",
                         FormattedAddress = "",
-                        GooglePlaceId = null
+                        GooglePlaceId = null,
+                        BoundaryPolygon = null,
+                        BoundingBoxNorth = null,
+                        BoundingBoxSouth = null,
+                        BoundingBoxEast = null,
+                        BoundingBoxWest = null
                     }
                 });
             }
 
-            // Step 2: Extract city name from address components
+            // Step 2: Extract boundaries from geocode result
+            var (polygon, north, south, east, west) =
+                _googleGeocodingService.ExtractBoundaries(geocodeResult);
+
+            // Step 3: Check if point is within ANY existing city's boundary polygon
+            var citiesWithBoundaries = await _cityRepository.GetAllWithBoundariesAsync();
+
+            foreach (var existingCity in citiesWithBoundaries)
+            {
+                if (_spatialUtility.IsPointInPolygon(
+                    request.Latitude,
+                    request.Longitude,
+                    existingCity.BoundaryPolygon!))
+                {
+                    // Point is inside this city's boundary - DUPLICATE!
+                    return Success<CityValidationDto>(null, new CityValidationDto
+                    {
+                        IsValid = false,
+                        Message = $"Location is within '{existingCity.NameEn}' city boundaries. Cannot create duplicate city.",
+                        ExistingCity = new CityDto
+                        {
+                            Id = existingCity.Id,
+                            NameEn = existingCity.NameEn,
+                            NameAr = existingCity.NameAr,
+                            Latitude = existingCity.Latitude,
+                            Longitude = existingCity.Longitude,
+                            GooglePlaceId = existingCity.GooglePlaceId,
+                            FormattedAddress = existingCity.FormattedAddress,
+                            BoundaryPolygon = existingCity.BoundaryPolygon,
+                            BoundingBoxNorth = existingCity.BoundingBoxNorth,
+                            BoundingBoxSouth = existingCity.BoundingBoxSouth,
+                            BoundingBoxEast = existingCity.BoundingBoxEast,
+                            BoundingBoxWest = existingCity.BoundingBoxWest,
+                            StationsCount = 0
+                        }
+                    });
+                }
+            }
+
+            // Step 4: Extract city name from address components
             var cityName = ExtractCityName(geocodeResult);
 
             if (string.IsNullOrEmpty(cityName))
@@ -61,15 +109,20 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                     {
                         NameEn = "",
                         FormattedAddress = geocodeResult.FormattedAddress,
-                        GooglePlaceId = geocodeResult.PlaceId
+                        GooglePlaceId = geocodeResult.PlaceId,
+                        BoundaryPolygon = polygon,
+                        BoundingBoxNorth = north,
+                        BoundingBoxSouth = south,
+                        BoundingBoxEast = east,
+                        BoundingBoxWest = west
                     }
                 });
             }
 
-            // Step 3: Check if city with this name already exists
-            var existingCity = await _cityRepository.GetByNameAsync(cityName);
+            // Step 5: Check if city with this name already exists
+            var existingCityByName = await _cityRepository.GetByNameAsync(cityName);
 
-            if (existingCity == null)
+            if (existingCityByName == null)
             {
                 // City doesn't exist, validation passed
                 return Success<CityValidationDto>(null, new CityValidationDto
@@ -80,17 +133,22 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                     {
                         NameEn = cityName,
                         FormattedAddress = geocodeResult.FormattedAddress,
-                        GooglePlaceId = geocodeResult.PlaceId
+                        GooglePlaceId = geocodeResult.PlaceId,
+                        BoundaryPolygon = polygon,
+                        BoundingBoxNorth = north,
+                        BoundingBoxSouth = south,
+                        BoundingBoxEast = east,
+                        BoundingBoxWest = west
                     }
                 });
             }
 
-            // Step 4: City exists, calculate distance
+            // Step 6: City with this name exists, calculate distance
             var distance = CalculateDistance(
                 request.Latitude, request.Longitude,
-                existingCity.Latitude, existingCity.Longitude);
+                existingCityByName.Latitude, existingCityByName.Longitude);
 
-            // Step 5: Check if within 50km radius (same city)
+            // Step 7: Check if within 50km radius (same city)
             if (distance < 50)
             {
                 return Success<CityValidationDto>(null, new CityValidationDto
@@ -99,13 +157,13 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                     Message = $"City '{cityName}' already exists {distance:F1}km away from this location.",
                     ExistingCity = new CityDto
                     {
-                        Id = existingCity.Id,
-                        NameEn = existingCity.NameEn,
-                        NameAr = existingCity.NameAr,
-                        Latitude = existingCity.Latitude,
-                        Longitude = existingCity.Longitude,
-                        GooglePlaceId = existingCity.GooglePlaceId,
-                        FormattedAddress = existingCity.FormattedAddress,
+                        Id = existingCityByName.Id,
+                        NameEn = existingCityByName.NameEn,
+                        NameAr = existingCityByName.NameAr,
+                        Latitude = existingCityByName.Latitude,
+                        Longitude = existingCityByName.Longitude,
+                        GooglePlaceId = existingCityByName.GooglePlaceId,
+                        FormattedAddress = existingCityByName.FormattedAddress,
                         StationsCount = 0
                     },
                     DistanceKm = distance
@@ -119,20 +177,25 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                 Message = $"Warning: A city named '{cityName}' exists {distance:F1}km away. Confirm this is a different city.",
                 ExistingCity = new CityDto
                 {
-                    Id = existingCity.Id,
-                    NameEn = existingCity.NameEn,
-                    NameAr = existingCity.NameAr,
-                    Latitude = existingCity.Latitude,
-                    Longitude = existingCity.Longitude,
-                    GooglePlaceId = existingCity.GooglePlaceId,
-                    FormattedAddress = existingCity.FormattedAddress,
+                    Id = existingCityByName.Id,
+                    NameEn = existingCityByName.NameEn,
+                    NameAr = existingCityByName.NameAr,
+                    Latitude = existingCityByName.Latitude,
+                    Longitude = existingCityByName.Longitude,
+                    GooglePlaceId = existingCityByName.GooglePlaceId,
+                    FormattedAddress = existingCityByName.FormattedAddress,
                     StationsCount = 0
                 },
                 SuggestedData = new CityLocationSuggestion
                 {
                     NameEn = cityName,
                     FormattedAddress = geocodeResult.FormattedAddress,
-                    GooglePlaceId = geocodeResult.PlaceId
+                    GooglePlaceId = geocodeResult.PlaceId,
+                    BoundaryPolygon = polygon,
+                    BoundingBoxNorth = north,
+                    BoundingBoxSouth = south,
+                    BoundingBoxEast = east,
+                    BoundingBoxWest = west
                 },
                 DistanceKm = distance
             });

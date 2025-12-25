@@ -30,6 +30,13 @@ namespace Sudan_Train.Infrastructure.Repositories
         {
             return await cities.ToListAsync();
         }
+
+        public async Task<List<City>> GetAllWithBoundariesAsync()
+        {
+            return await cities
+                .Where(c => c.BoundaryPolygon != null && c.BoundaryPolygon != "")
+                .ToListAsync();
+        }
         #endregion
     }
 }

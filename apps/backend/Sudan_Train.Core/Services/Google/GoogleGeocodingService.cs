@@ -172,5 +172,50 @@ namespace Sudan_Train.Core.Services.Google
                 return null;
             }
         }
+
+        public (string? polygon, double? north, double? south, double? east, double? west)
+            ExtractBoundaries(GoogleResult result)
+        {
+            var viewport = result.Geometry.Bounds ?? result.Geometry.Viewport;
+
+            if (viewport == null)
+                return (null, null, null, null, null);
+
+            // Create polygon from viewport (rectangle)
+            var polygon = CreatePolygonFromViewport(viewport);
+
+            return (
+                polygon,
+                viewport.Northeast.Lat,
+                viewport.Southwest.Lat,
+                viewport.Northeast.Lng,
+                viewport.Southwest.Lng
+            );
+        }
+
+        private string CreatePolygonFromViewport(GoogleViewport viewport)
+        {
+            // Create GeoJSON polygon from bounding box
+            var ne = viewport.Northeast;
+            var sw = viewport.Southwest;
+
+            var polygon = new
+            {
+                type = "Polygon",
+                coordinates = new[]
+                {
+                    new[]
+                    {
+                        new[] { sw.Lng, ne.Lat }, // NW
+                        new[] { ne.Lng, ne.Lat }, // NE
+                        new[] { ne.Lng, sw.Lat }, // SE
+                        new[] { sw.Lng, sw.Lat }, // SW
+                        new[] { sw.Lng, ne.Lat }  // Close polygon
+                    }
+                }
+            };
+
+            return JsonSerializer.Serialize(polygon);
+        }
     }
 }

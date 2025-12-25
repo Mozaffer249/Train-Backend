@@ -98,11 +98,6 @@ export const citiesApi = {
 
   delete: (id: number) => api.delete<void>(`/Infrastructure/Cities/${id}`),
 
-  checkDuplicate: (nameEn: string, nameAr: string, excludeId?: number) => {
-    const params = new URLSearchParams({ nameEn, nameAr });
-    if (excludeId) params.append('excludeId', excludeId.toString());
-    return api.get<boolean>(`/Infrastructure/Cities/CheckDuplicate?${params.toString()}`);
-  },
 
   validateLocation: (lat: number, lng: number) =>
     api.post<CityValidationResult>('/Infrastructure/Cities/ValidateLocation', {

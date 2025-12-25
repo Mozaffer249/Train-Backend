@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, MapPin, Search, AlertCircle } from 'lucide-react';
-import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, Marker, Autocomplete, Polygon } from '@react-google-maps/api';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 import { City, CityFormData, CityValidationResult } from '../../types/geography';
 import { citiesApi } from '../../services/api';
@@ -34,11 +34,10 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
   });
   const [mapCenter, setMapCenter] = useState(sudanCenter);
   const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral | null>(null);
+  const [boundaryPaths, setBoundaryPaths] = useState<google.maps.LatLngLiteral[]>([]);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
-  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [isValidatingLocation, setIsValidatingLocation] = useState(false);
   const [validationResult, setValidationResult] = useState<CityValidationResult | null>(null);
 
@@ -54,9 +53,19 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
         longitude: city.longitude,
         googlePlaceId: city.googlePlaceId,
         formattedAddress: city.formattedAddress,
+        boundaryPolygon: city.boundaryPolygon,
+        boundingBoxNorth: city.boundingBoxNorth,
+        boundingBoxSouth: city.boundingBoxSouth,
+        boundingBoxEast: city.boundingBoxEast,
+        boundingBoxWest: city.boundingBoxWest,
       });
       setMarkerPosition({ lat: city.latitude, lng: city.longitude });
       setMapCenter({ lat: city.latitude, lng: city.longitude });
+      
+      // Draw existing boundary if available
+      if (city.boundaryPolygon) {
+        drawBoundaryPolygon(city.boundaryPolygon);
+      }
     } else {
       setFormData({
         nameAr: '',
@@ -65,44 +74,33 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
         longitude: 0,
         googlePlaceId: '',
         formattedAddress: '',
+        boundaryPolygon: '',
+        boundingBoxNorth: undefined,
+        boundingBoxSouth: undefined,
+        boundingBoxEast: undefined,
+        boundingBoxWest: undefined,
       });
       setMarkerPosition(null);
       setMapCenter(sudanCenter);
+      setBoundaryPaths([]);
     }
     setError(null);
-    setDuplicateWarning(null);
     setValidationResult(null);
   }, [city, isOpen]);
 
-  // Debounced duplicate check
-  useEffect(() => {
-    if (!formData.nameEn.trim() || !formData.nameAr.trim()) {
-      setDuplicateWarning(null);
-      return;
+  const drawBoundaryPolygon = (polygonJson: string) => {
+    try {
+      const geoJson = JSON.parse(polygonJson);
+      const coordinates = geoJson.coordinates[0].map((coord: [number, number]) => ({
+        lat: coord[1],
+        lng: coord[0]
+      }));
+      setBoundaryPaths(coordinates);
+    } catch (err) {
+      console.error('Error parsing boundary polygon:', err);
+      setBoundaryPaths([]);
     }
-
-    const timer = setTimeout(async () => {
-      setIsCheckingDuplicate(true);
-      try {
-        const isDuplicate = await citiesApi.checkDuplicate(
-          formData.nameEn,
-          formData.nameAr,
-          isEditMode && city ? city.id : undefined
-        );
-        if (isDuplicate) {
-          setDuplicateWarning('A city with this name already exists');
-        } else {
-          setDuplicateWarning(null);
-        }
-      } catch (err) {
-        setDuplicateWarning(null);
-      } finally {
-        setIsCheckingDuplicate(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [formData.nameEn, formData.nameAr, isEditMode, city]);
+  };
 
   const validateAndSetLocation = async (lat: number, lng: number, placeData?: any) => {
     setIsValidatingLocation(true);
@@ -111,6 +109,14 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
 
     try {
       const validation = await citiesApi.validateLocation(lat, lng);
+      console.log('🔍 Validation Response:', validation);
+      console.log('📍 Boundary Data:', {
+        polygon: validation.suggestedData?.boundaryPolygon,
+        north: validation.suggestedData?.boundingBoxNorth,
+        south: validation.suggestedData?.boundingBoxSouth,
+        east: validation.suggestedData?.boundingBoxEast,
+        west: validation.suggestedData?.boundingBoxWest,
+      });
       setValidationResult(validation);
 
       if (!validation.isValid) {
@@ -122,6 +128,7 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
           latitude: lat,
           longitude: lng,
         });
+        setBoundaryPaths([]);
       } else {
         // Valid location - auto-fill with suggested data
         setMarkerPosition({ lat, lng });
@@ -133,8 +140,18 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
           longitude: lng,
           googlePlaceId: validation.suggestedData?.googlePlaceId || placeData?.place_id || '',
           formattedAddress: validation.suggestedData?.formattedAddress || placeData?.formatted_address || '',
+          boundaryPolygon: validation.suggestedData?.boundaryPolygon,
+          boundingBoxNorth: validation.suggestedData?.boundingBoxNorth,
+          boundingBoxSouth: validation.suggestedData?.boundingBoxSouth,
+          boundingBoxEast: validation.suggestedData?.boundingBoxEast,
+          boundingBoxWest: validation.suggestedData?.boundingBoxWest,
         });
         setMapCenter({ lat, lng });
+        
+        // Draw boundary on map
+        if (validation.suggestedData?.boundaryPolygon) {
+          drawBoundaryPolygon(validation.suggestedData.boundaryPolygon);
+        }
       }
     } catch (err: any) {
       console.error('Validation error:', err);
@@ -149,6 +166,7 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
         formattedAddress: placeData?.formatted_address || '',
       });
       setMapCenter({ lat, lng });
+      setBoundaryPaths([]);
     } finally {
       setIsValidatingLocation(false);
     }
@@ -192,6 +210,15 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
     }
 
     setIsSubmitting(true);
+
+    console.log('📤 Submitting formData:', formData);
+    console.log('🗺️ Boundary fields in formData:', {
+      boundaryPolygon: formData.boundaryPolygon,
+      boundingBoxNorth: formData.boundingBoxNorth,
+      boundingBoxSouth: formData.boundingBoxSouth,
+      boundingBoxEast: formData.boundingBoxEast,
+      boundingBoxWest: formData.boundingBoxWest,
+    });
 
     try {
       if (isEditMode && city) {
@@ -247,12 +274,6 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
               {error}
-            </div>
-          )}
-
-          {duplicateWarning && !error && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
-              ⚠️ {duplicateWarning}
             </div>
           )}
 
@@ -435,9 +456,7 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
               type="submit"
               disabled={
                 isSubmitting || 
-                isCheckingDuplicate || 
                 isValidatingLocation ||
-                !!duplicateWarning || 
                 !formData.latitude || 
                 !formData.longitude ||
                 (validationResult && !validationResult.isValid)
@@ -445,7 +464,6 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
               className="flex-1 px-4 py-2 bg-admin-primary-600 text-white rounded-lg hover:bg-admin-primary-700 transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : 
-               isCheckingDuplicate ? 'Checking...' : 
                isValidatingLocation ? 'Validating...' :
                isEditMode ? 'Update City' : 'Create City'}
             </button>

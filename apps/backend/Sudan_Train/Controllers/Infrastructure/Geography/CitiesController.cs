@@ -6,7 +6,6 @@ using Sudan_Train.Core.Features.Infrastructure.Cities.Commands.UpdateCity;
 using Sudan_Train.Core.Features.Infrastructure.Cities.Commands.DeleteCity;
 using Sudan_Train.Core.Features.Infrastructure.Cities.Queries.GetAllCities;
 using Sudan_Train.Core.Features.Infrastructure.Cities.Queries.GetCityById;
-using Sudan_Train.Core.Features.Infrastructure.Cities.Queries.CheckDuplicate;
 using Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocation;
 using Sudan_Train.Data.AppMetaData;
 using Sudan_Train.Infrastructure.InfrastructureBases;
@@ -83,25 +82,6 @@ namespace Sudan_Train.Controllers.Infrastructure.Geography
         public async Task<IActionResult> DeleteCity(int id)
         {
             var response = await _mediator.Send(new DeleteCityCommand { Id = id });
-            return Ok(response);
-        }
-
-        /// <summary>
-        /// Check if city name is duplicate
-        /// </summary>
-        [HttpGet("CheckDuplicate")]
-        [Authorize(Roles = Roles.AdminOrStaff)]
-        public async Task<IActionResult> CheckDuplicate(
-            [FromQuery] string nameEn,
-            [FromQuery] string nameAr,
-            [FromQuery] int? excludeId)
-        {
-            var response = await _mediator.Send(new CheckCityDuplicateQuery
-            {
-                NameEn = nameEn,
-                NameAr = nameAr,
-                ExcludeId = excludeId
-            });
             return Ok(response);
         }
 

@@ -26,7 +26,12 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.CreateCity
                 request.Latitude,
                 request.Longitude,
                 request.GooglePlaceId,
-                request.FormattedAddress);
+                request.FormattedAddress,
+                request.BoundaryPolygon,
+                request.BoundingBoxNorth,
+                request.BoundingBoxSouth,
+                request.BoundingBoxEast,
+                request.BoundingBoxWest);
 
             return Success("City created successfully", cityDto);
         }

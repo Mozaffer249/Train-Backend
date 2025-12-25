@@ -7,6 +7,7 @@ namespace Sudan_Train.Infrastructure.Abstracts
     {
         Task<City?> GetByNameAsync(string nameEn);
         Task<List<City>> GetAllAsync();
+        Task<List<City>> GetAllWithBoundariesAsync();
     }
 }
 

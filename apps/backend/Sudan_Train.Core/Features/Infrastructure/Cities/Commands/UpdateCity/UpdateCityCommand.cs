@@ -13,6 +13,13 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.UpdateCity
         public double? Longitude { get; set; }
         public string? GooglePlaceId { get; set; }
         public string? FormattedAddress { get; set; }
+
+        // Boundary fields
+        public string? BoundaryPolygon { get; set; }
+        public double? BoundingBoxNorth { get; set; }
+        public double? BoundingBoxSouth { get; set; }
+        public double? BoundingBoxEast { get; set; }
+        public double? BoundingBoxWest { get; set; }
     }
 }
 

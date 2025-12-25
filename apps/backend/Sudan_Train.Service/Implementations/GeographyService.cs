@@ -17,7 +17,7 @@ namespace Sudan_Train.Service.Implementations
 
         #region City Operations
 
-        public async Task<CityDto> CreateCityAsync(string nameEn, string nameAr, double latitude, double longitude, string? googlePlaceId, string? formattedAddress)
+        public async Task<CityDto> CreateCityAsync(string nameEn, string nameAr, double latitude, double longitude, string? googlePlaceId, string? formattedAddress, string? boundaryPolygon, double? boundingBoxNorth, double? boundingBoxSouth, double? boundingBoxEast, double? boundingBoxWest)
         {
             var city = new City
             {
@@ -27,6 +27,11 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = longitude,
                 GooglePlaceId = googlePlaceId,
                 FormattedAddress = formattedAddress,
+                BoundaryPolygon = boundaryPolygon,
+                BoundingBoxNorth = boundingBoxNorth,
+                BoundingBoxSouth = boundingBoxSouth,
+                BoundingBoxEast = boundingBoxEast,
+                BoundingBoxWest = boundingBoxWest,
                 IsFromGoogle = !string.IsNullOrEmpty(googlePlaceId),
                 GoogleSyncedAt = !string.IsNullOrEmpty(googlePlaceId) ? DateTime.UtcNow : null
             };
@@ -42,6 +47,11 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = city.Longitude,
                 GooglePlaceId = city.GooglePlaceId,
                 FormattedAddress = city.FormattedAddress,
+                BoundaryPolygon = city.BoundaryPolygon,
+                BoundingBoxNorth = city.BoundingBoxNorth,
+                BoundingBoxSouth = city.BoundingBoxSouth,
+                BoundingBoxEast = city.BoundingBoxEast,
+                BoundingBoxWest = city.BoundingBoxWest,
                 StationsCount = 0
             };
         }
@@ -64,6 +74,11 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = city.Longitude,
                 GooglePlaceId = city.GooglePlaceId,
                 FormattedAddress = city.FormattedAddress,
+                BoundaryPolygon = city.BoundaryPolygon,
+                BoundingBoxNorth = city.BoundingBoxNorth,
+                BoundingBoxSouth = city.BoundingBoxSouth,
+                BoundingBoxEast = city.BoundingBoxEast,
+                BoundingBoxWest = city.BoundingBoxWest,
                 StationsCount = city.Stations.Count
             };
         }
@@ -82,6 +97,11 @@ namespace Sudan_Train.Service.Implementations
                     Longitude = c.Longitude,
                     GooglePlaceId = c.GooglePlaceId,
                     FormattedAddress = c.FormattedAddress,
+                    BoundaryPolygon = c.BoundaryPolygon,
+                    BoundingBoxNorth = c.BoundingBoxNorth,
+                    BoundingBoxSouth = c.BoundingBoxSouth,
+                    BoundingBoxEast = c.BoundingBoxEast,
+                    BoundingBoxWest = c.BoundingBoxWest,
                     StationsCount = c.Stations.Count
                 })
                 .ToListAsync();
@@ -89,7 +109,7 @@ namespace Sudan_Train.Service.Implementations
             return cities;
         }
 
-        public async Task<CityDto> UpdateCityAsync(int id, string? nameEn, string? nameAr, double? latitude, double? longitude, string? googlePlaceId, string? formattedAddress)
+        public async Task<CityDto> UpdateCityAsync(int id, string? nameEn, string? nameAr, double? latitude, double? longitude, string? googlePlaceId, string? formattedAddress, string? boundaryPolygon, double? boundingBoxNorth, double? boundingBoxSouth, double? boundingBoxEast, double? boundingBoxWest)
         {
             var city = await _cityRepository.GetTableNoTracking()
                 .Include(c => c.Stations)
@@ -120,6 +140,21 @@ namespace Sudan_Train.Service.Implementations
             if (formattedAddress != null)
                 city.FormattedAddress = formattedAddress;
 
+            if (boundaryPolygon != null)
+                city.BoundaryPolygon = boundaryPolygon;
+
+            if (boundingBoxNorth.HasValue)
+                city.BoundingBoxNorth = boundingBoxNorth.Value;
+
+            if (boundingBoxSouth.HasValue)
+                city.BoundingBoxSouth = boundingBoxSouth.Value;
+
+            if (boundingBoxEast.HasValue)
+                city.BoundingBoxEast = boundingBoxEast.Value;
+
+            if (boundingBoxWest.HasValue)
+                city.BoundingBoxWest = boundingBoxWest.Value;
+
             await _cityRepository.UpdateAsync(city);
 
             return new CityDto
@@ -131,6 +166,11 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = city.Longitude,
                 GooglePlaceId = city.GooglePlaceId,
                 FormattedAddress = city.FormattedAddress,
+                BoundaryPolygon = city.BoundaryPolygon,
+                BoundingBoxNorth = city.BoundingBoxNorth,
+                BoundingBoxSouth = city.BoundingBoxSouth,
+                BoundingBoxEast = city.BoundingBoxEast,
+                BoundingBoxWest = city.BoundingBoxWest,
                 StationsCount = city.Stations.Count
             };
         }
@@ -147,18 +187,6 @@ namespace Sudan_Train.Service.Implementations
 
             await _cityRepository.DeleteAsync(city);
             return true;
-        }
-
-        public async Task<bool> IsCityNameUniqueAsync(string nameEn, string nameAr, int? excludeId = null)
-        {
-            var query = _cityRepository.GetTableNoTracking();
-
-            if (excludeId.HasValue)
-                query = query.Where(c => c.Id != excludeId.Value);
-
-            return !await query.AnyAsync(c =>
-                c.NameEn.ToLower() == nameEn.ToLower() ||
-                c.NameAr == nameAr);
         }
 
         public async Task<bool> CityHasStationsAsync(int id)

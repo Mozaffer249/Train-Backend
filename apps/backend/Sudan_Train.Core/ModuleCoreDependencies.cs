@@ -32,6 +32,9 @@ namespace Sudan_Train.Core
             // Register Spatial Validation service
             services.AddTransient<ISpatialValidationService, SpatialValidationService>();
 
+            // Register Spatial Utility service
+            services.AddSingleton<SpatialUtilityService>();
+
             return services;
         }
     }

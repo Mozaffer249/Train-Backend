@@ -14,6 +14,13 @@ namespace Sudan_Train.Data.DTOs.Infrastructure
         public string NameEn { get; set; } = string.Empty;
         public string FormattedAddress { get; set; } = string.Empty;
         public string? GooglePlaceId { get; set; }
+
+        // Boundary data
+        public string? BoundaryPolygon { get; set; }
+        public double? BoundingBoxNorth { get; set; }
+        public double? BoundingBoxSouth { get; set; }
+        public double? BoundingBoxEast { get; set; }
+        public double? BoundingBoxWest { get; set; }
     }
 
     public class ValidateCityLocationRequest

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow, Polygon } from '@react-google-maps/api';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 import { City, Station } from '../../types/geography';
 import CityModal from '../geography/CityModal';
@@ -28,6 +28,7 @@ const GeographyMap = ({ cities, stations, onRefresh }: GeographyMapProps) => {
   const [layerVisibility, setLayerVisibility] = useState({
     cities: true,
     stations: true,
+    boundaries: true,
   });
 
   // Modal states
@@ -114,6 +115,17 @@ const GeographyMap = ({ cities, stations, onRefresh }: GeographyMapProps) => {
             <span className="text-sm text-gray-700">Stations</span>
             <span className="text-xs text-gray-500">({stations.length})</span>
           </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={layerVisibility.boundaries}
+              onChange={(e) =>
+                setLayerVisibility({ ...layerVisibility, boundaries: e.target.checked })
+              }
+              className="rounded text-admin-primary-600 focus:ring-admin-primary-500"
+            />
+            <span className="text-sm text-gray-700">City Boundaries</span>
+          </label>
         </div>
       </div>
 
@@ -164,6 +176,36 @@ const GeographyMap = ({ cities, stations, onRefresh }: GeographyMapProps) => {
               onClick={() => handleStationClick(station)}
             />
           ))}
+
+        {/* City Boundaries */}
+        {layerVisibility.boundaries &&
+          cities.map((city) => {
+            if (!city.boundaryPolygon) return null;
+
+            try {
+              const geoJson = JSON.parse(city.boundaryPolygon);
+              const coordinates = geoJson.coordinates[0].map((coord: [number, number]) => ({
+                lat: coord[1],
+                lng: coord[0],
+              }));
+
+              return (
+                <Polygon
+                  key={`boundary-${city.id}`}
+                  paths={coordinates}
+                  options={{
+                    strokeColor: '#10B981',
+                    strokeOpacity: 0.6,
+                    strokeWeight: 2,
+                    fillColor: '#10B981',
+                    fillOpacity: 0.1,
+                  }}
+                />
+              );
+            } catch {
+              return null;
+            }
+          })}
 
         {/* InfoWindow */}
         {selectedMarker && (
