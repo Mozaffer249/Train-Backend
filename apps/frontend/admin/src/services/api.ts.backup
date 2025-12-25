@@ -1,0 +1,248 @@
+// API Service Layer for Sudan Train Admin
+// Handles all API communication with authentication
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_PREFIX = '/Api/V1';
+
+// Generic API Response type matching backend Response<T>
+export interface ApiResponse<T> {
+  statusCode: number;
+  succeeded: boolean;
+  message: string | null;
+  data: T;
+  errors: string[] | null;
+  meta: any;
+}
+
+// Base fetch wrapper with authentication
+async function fetchWithAuth<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const token = localStorage.getItem('admin_token');
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    // 
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${API_PREFIX}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 401) {
+    // Unauthorized - clear auth and redirect to login
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    window.location.href = '/login';
+    throw new Error('Unauthorized - Please login again');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || 
+      errorData.errors?.join(', ') || 
+      `Request failed with status ${response.status}`
+    );
+  }
+
+  const result: ApiResponse<T> = await response.json();
+  
+  if (!result.succeeded) {
+    throw new Error(result.message || result.errors?.join(', ') || 'Request failed');
+  }
+
+  return result.data;
+}
+
+// Generic CRUD operations
+export const api = {
+  get: <T>(endpoint: string) => fetchWithAuth<T>(endpoint, { method: 'GET' }),
+  
+  post: <T>(endpoint: string, data: any) =>
+    fetchWithAuth<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  
+  put: <T>(endpoint: string, data: any) =>
+    fetchWithAuth<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  
+  delete: <T>(endpoint: string) =>
+    fetchWithAuth<T>(endpoint, { method: 'DELETE' }),
+};
+
+// Geography API - Regions
+export const regionsApi = {
+  getAll: () => api.get<any[]>('/Infrastructure/Regions'),
+  
+  getById: (id: number) => api.get<any>(`/Infrastructure/Regions/${id}`),
+  
+  create: (data: { nameAr: string; nameEn: string }) =>
+    api.post<any>('/Infrastructure/Regions', data),
+  
+  update: (id: number, data: { nameAr: string; nameEn: string }) =>
+    api.put<any>(`/Infrastructure/Regions/${id}`, data),
+
+  checkDuplicate: (nameEn: string, nameAr: string, excludeId?: number) => {
+    const params = new URLSearchParams({ nameEn, nameAr });
+    if (excludeId) params.append('excludeId', excludeId.toString());
+    return api.get<boolean>(`/Infrastructure/Regions/CheckDuplicate?${params.toString()}`);
+  },
+};
+
+// Geography API - States
+export const statesApi = {
+  getAll: (regionId?: number) => {
+    const endpoint = regionId
+      ? `/Infrastructure/States?regionId=${regionId}`
+      : '/Infrastructure/States';
+    return api.get<any[]>(endpoint);
+  },
+  
+  getById: (id: number) => api.get<any>(`/Infrastructure/States/${id}`),
+  
+  create: (data: { nameAr: string; nameEn: string; regionId: number }) =>
+    api.post<any>('/Infrastructure/States', data),
+  
+  update: (id: number, data: { nameAr: string; nameEn: string; regionId: number }) =>
+    api.put<any>(`/Infrastructure/States/${id}`, data),
+
+  checkDuplicate: (nameEn: string, nameAr: string, regionId: number, excludeId?: number) => {
+    const params = new URLSearchParams({ nameEn, nameAr, regionId: regionId.toString() });
+    if (excludeId) params.append('excludeId', excludeId.toString());
+    return api.get<boolean>(`/Infrastructure/States/CheckDuplicate?${params.toString()}`);
+  },
+};
+
+// Geography API - Cities
+export const citiesApi = {
+  getAll: (stateId?: number) => {
+    const endpoint = stateId
+      ? `/Infrastructure/Cities?stateId=${stateId}`
+      : '/Infrastructure/Cities';
+    return api.get<any[]>(endpoint);
+  },
+  
+  getById: (id: number) => api.get<any>(`/Infrastructure/Cities/${id}`),
+  
+  create: (data: { nameAr: string; nameEn: string; stateId: number }) =>
+    api.post<any>('/Infrastructure/Cities', data),
+  
+  update: (id: number, data: { nameAr: string; nameEn: string; stateId: number }) =>
+    api.put<any>(`/Infrastructure/Cities/${id}`, data),
+
+  checkDuplicate: (nameEn: string, nameAr: string, stateId: number, excludeId?: number) => {
+    const params = new URLSearchParams({ nameEn, nameAr, stateId: stateId.toString() });
+    if (excludeId) params.append('excludeId', excludeId.toString());
+    return api.get<boolean>(`/Infrastructure/Cities/CheckDuplicate?${params.toString()}`);
+  },
+};
+
+// Geography API - Stations
+export const stationsApi = {
+  getAll: (cityId?: number) => {
+    const endpoint = cityId
+      ? `/Infrastructure/Stations?cityId=${cityId}`
+      : '/Infrastructure/Stations';
+    return api.get<any[]>(endpoint);
+  },
+  
+  getById: (id: number) => api.get<any>(`/Infrastructure/Stations/${id}`),
+  
+  create: (data: {
+    nameAr: string;
+    nameEn: string;
+    cityId: number;
+    latitude?: number;
+    longitude?: number;
+    stationType?: string;
+    serviceRadiusKm?: number;
+  }) => api.post<any>('/Infrastructure/Stations', data),
+  
+  bulkCreate: (stations: Array<{
+    nameAr: string;
+    nameEn: string;
+    cityId: number;
+    latitude?: number;
+    longitude?: number;
+    stationType?: string;
+    serviceRadiusKm?: number;
+  }>) => api.post<any>('/Infrastructure/Stations/Bulk', { stations }),
+
+  update: (id: number, data: {
+    nameAr: string;
+    nameEn: string;
+    cityId: number;
+    latitude?: number;
+    longitude?: number;
+    stationType?: string;
+    serviceRadiusKm?: number;
+  }) => api.put<any>(`/Infrastructure/Stations/${id}`, data),
+};
+
+// Spatial API
+export const spatialApi = {
+  validateLocation: (data: {
+    latitude: number;
+    longitude: number;
+    parentType: string;
+    parentId: number;
+  }) => api.post<{ isValid: boolean; message: string }>('/Infrastructure/Spatial/ValidateLocation', data),
+
+  reverseGeocode: (lat: number, lng: number) =>
+    api.post<any>('/Infrastructure/Spatial/ReverseGeocode', { latitude: lat, longitude: lng }),
+
+  getNearbyStations: (lat: number, lng: number, radiusKm: number) =>
+    api.get<any[]>(`/Infrastructure/Spatial/NearbyStations?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`),
+
+  calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) =>
+    api.post<{ distanceKm: number }>('/Infrastructure/Spatial/CalculateDistance', {
+      lat1,
+      lng1,
+      lat2,
+      lng2,
+    }),
+};
+
+// Boundary API
+export interface BoundaryData {
+  boundaryPolygon?: string | null;
+  boundingBoxNorth?: number | null;
+  boundingBoxSouth?: number | null;
+  boundingBoxEast?: number | null;
+  boundingBoxWest?: number | null;
+}
+
+export const boundaryApi = {
+  // Region boundaries
+  getRegionBoundary: (id: number) =>
+    api.get<BoundaryData>(`/Infrastructure/Regions/${id}/Boundary`),
+
+  updateRegionBoundary: (id: number, data: BoundaryData) =>
+    api.put<void>(`/Infrastructure/Regions/${id}/Boundary`, data),
+
+  // State boundaries
+  getStateBoundary: (id: number) =>
+    api.get<BoundaryData>(`/Infrastructure/States/${id}/Boundary`),
+
+  updateStateBoundary: (id: number, data: BoundaryData) =>
+    api.put<void>(`/Infrastructure/States/${id}/Boundary`, data),
+
+  // City boundaries
+  getCityBoundary: (id: number) =>
+    api.get<BoundaryData>(`/Infrastructure/Cities/${id}/Boundary`),
+
+  updateCityBoundary: (id: number, data: BoundaryData) =>
+    api.put<void>(`/Infrastructure/Cities/${id}/Boundary`, data),
+};

@@ -2,17 +2,17 @@
 	"info": {
 		"_postman_id": "sudan-train-complete-api-tests",
 		"name": "Sudan Train - Complete API Test Suite",
-		"description": "Complete API test suite organized by user type: Customer (27 endpoints) and Admin (44 endpoints) with logical subfolders for each domain.",
+		"description": "Complete API test suite for Sudan Train Backend - organized by user type and mapped to refactored controllers.\n\n\ud83c\udfd7\ufe0f BACKEND ARCHITECTURE:\nRoute Base: Api/V1/\n- Authentication endpoints: Api/V1/Authentication/*\n- Infrastructure endpoints: Api/V1/Infrastructure/*\n\n\ud83d\udcc1 CONTROLLER STRUCTURE (14 Controllers):\n\nAuthentication/ (6 controllers, 28 endpoints)\n\u251c\u2500\u2500 Core/\n\u2502   \u2514\u2500\u2500 AuthController.cs (6 endpoints)\n\u251c\u2500\u2500 Security/\n\u2502   \u251c\u2500\u2500 TwoFactorAuthController.cs (6 endpoints)\n\u2502   \u2514\u2500\u2500 PasswordController.cs (3 endpoints)\n\u2514\u2500\u2500 Account/\n    \u251c\u2500\u2500 ProfileController.cs (6 endpoints)\n    \u251c\u2500\u2500 SessionController.cs (3 endpoints)\n    \u2514\u2500\u2500 DeviceController.cs (4 endpoints)\n\nInfrastructure/ (8 controllers, 41 endpoints)\n\u251c\u2500\u2500 Geography/\n\u2502   \u251c\u2500\u2500 AreasController.cs (5 endpoints)\n\u2502   \u251c\u2500\u2500 GovernoratesController.cs (5 endpoints)\n\u2502   \u2514\u2500\u2500 CitiesController.cs (5 endpoints)\n\u251c\u2500\u2500 RailwayNetwork/\n\u2502   \u251c\u2500\u2500 StationsController.cs (5 endpoints)\n\u2502   \u2514\u2500\u2500 RoutesController.cs (7 endpoints)\n\u251c\u2500\u2500 Fleet/\n\u2502   \u251c\u2500\u2500 TrainsController.cs (8 endpoints)\n\u2502   \u2514\u2500\u2500 CoachesController.cs (1 endpoint)\n\u2514\u2500\u2500 Operations/\n    \u2514\u2500\u2500 TripsController.cs (5 endpoints)\n\n\u2705 All routes unchanged - refactored for maintainability only",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Customer",
-			"description": "Customer-facing APIs: Registration, Login, Profile, 2FA, Account Management",
+			"description": "Customer-facing APIs - mapped to Authentication controllers\n\n\ud83d\udcc2 Controllers/Authentication/Core/AuthController.cs (6 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 POST /Register - Create new user account\n   \u2022 POST /ConfirmEmail - Verify email with code\n   \u2022 POST /Login - Authenticate user\n   \u2022 POST /Logout - Revoke tokens [Requires Auth]\n   \u2022 POST /RefreshToken - Get new access token\n   \u2022 GET /ValidateToken - Check token validity\n\n\ud83d\udcc2 Controllers/Authentication/Security/TwoFactorAuthController.cs (6 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 POST /EnableTwoFactor - Get QR code [Requires Auth]\n   \u2022 POST /VerifyTwoFactor - Activate 2FA [Requires Auth]\n   \u2022 POST /DisableTwoFactor - Turn off 2FA [Requires Auth]\n   \u2022 POST /GenerateRecoveryCodes - Get backup codes [Requires Auth]\n   \u2022 POST /LoginWithTwoFactor - Login with 2FA code\n   \u2022 GET /GetTwoFactorStatus - Check 2FA status [Requires Auth]\n\n\ud83d\udcc2 Controllers/Authentication/Security/PasswordController.cs (3 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 POST /ChangePassword - Update password [Requires Auth]\n   \u2022 POST /SendResetPasswordCode - Request password reset\n   \u2022 POST /ResetPassword - Reset with email code\n\n\ud83d\udcc2 Controllers/Authentication/Account/ProfileController.cs (6 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 GET /Profile - Get user profile [Requires Auth]\n   \u2022 PUT /Profile/Update - Update profile [Requires Auth]\n   \u2022 POST /ChangeEmail - Request email change [Requires Auth]\n   \u2022 POST /ConfirmEmailChange - Verify new email\n   \u2022 GET /ExportData - Download user data [Requires Auth]\n   \u2022 DELETE /Delete - Delete account [Requires Auth]\n\n\ud83d\udcc2 Controllers/Authentication/Account/SessionController.cs (3 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 GET /Sessions - View active sessions [Requires Auth]\n   \u2022 POST /Sessions/Terminate - End session [Requires Auth]\n   \u2022 POST /Sessions/TerminateAll - Logout all devices [Requires Auth]\n\n\ud83d\udcc2 Controllers/Authentication/Account/DeviceController.cs (4 endpoints)\n   All routes: Api/V1/Authentication/*\n   \n   \u2022 GET /TrustedDevices - List trusted devices [Requires Auth]\n   \u2022 POST /TrustDevice - Mark device as trusted [Requires Auth]\n   \u2022 DELETE /TrustedDevices/Remove - Untrust device [Requires Auth]\n   \u2022 GET /SecurityEvents - View security history [Requires Auth]\n\n\u2705 Total: 28 endpoints across 6 controllers",
 			"item": [
 				{
 					"name": "Authentication",
-					"description": "Customer registration, login, and email confirmation",
+					"description": "Core authentication operations\n\nController: Controllers/Authentication/Core/AuthController.cs\nRoute Base: Api/V1/Authentication\nEndpoints: Register, ConfirmEmail, Login, Logout, RefreshToken, ValidateToken",
 					"item": [
 						{
 							"name": "Register New User",
@@ -47,7 +47,7 @@
 										"Register"
 									]
 								},
-								"description": "Register a new user account",
+								"description": "Controller: Authentication/Core/AuthController.cs\n\nRegister a new user account",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"userName\": \"testuser1\",\n  \"email\": \"test1@example.com\",\n  \"password\": \"Test@123456\",\n  \"confirmPassword\": \"Test@123456\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phoneNumber\": \"+249123456789\"\n}"
@@ -75,7 +75,7 @@
 										"ConfirmEmail"
 									]
 								},
-								"description": "Confirm user email with code",
+								"description": "Controller: Authentication/Core/AuthController.cs\n\nConfirm user email with code",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"userId\": \"user-id-here\",\n  \"code\": \"confirmation-code\"\n}"
@@ -118,7 +118,7 @@
 										"Login"
 									]
 								},
-								"description": "User login",
+								"description": "Controller: Authentication/Core/AuthController.cs\n\nUser login",
 								"auth": {
 									"type": "noauth"
 								},
@@ -149,7 +149,8 @@
 											"value": "{{auth_token}}"
 										}
 									]
-								}
+								},
+								"description": "Controller: Authentication/Core/AuthController.cs\n\n"
 							},
 							"response": []
 						},
@@ -173,7 +174,7 @@
 										"RefreshToken"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Core/AuthController.cs\n\n",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"accessToken\": \"{{auth_token}}\",\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
@@ -196,7 +197,7 @@
 										"Logout"
 									]
 								},
-								"description": "Logout and revoke tokens"
+								"description": "Controller: Authentication/Core/AuthController.cs\n\nLogout and revoke tokens"
 							},
 							"response": []
 						}
@@ -204,7 +205,7 @@
 				},
 				{
 					"name": "Security",
-					"description": "Two-Factor Authentication, Password Management, and Session Control",
+					"description": "Two-Factor Authentication and Password Management\n\nControllers:\n  \u2022 Controllers/Authentication/Security/TwoFactorAuthController.cs (6 endpoints)\n  \u2022 Controllers/Authentication/Security/PasswordController.cs (3 endpoints)\n\nRoute Base: Api/V1/Authentication\nFeatures: TOTP 2FA, Recovery codes, Password reset",
 					"item": [
 						{
 							"name": "Enable Two-Factor Authentication",
@@ -235,7 +236,7 @@
 										"EnableTwoFactor"
 									]
 								},
-								"description": "Get QR code for 2FA setup"
+								"description": "Controller: Authentication/Security/\n\nGet QR code for 2FA setup"
 							},
 							"response": []
 						},
@@ -259,7 +260,7 @@
 										"VerifyTwoFactor"
 									]
 								},
-								"description": "Verify and activate 2FA",
+								"description": "Controller: Authentication/Security/\n\nVerify and activate 2FA",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"code\": \"123456\"\n}"
@@ -282,7 +283,7 @@
 										"DisableTwoFactor"
 									]
 								},
-								"description": "Disable 2FA"
+								"description": "Controller: Authentication/Security/\n\nDisable 2FA"
 							},
 							"response": []
 						},
@@ -300,7 +301,8 @@
 										"Authentication",
 										"GetTwoFactorStatus"
 									]
-								}
+								},
+								"description": "Controller: Authentication/Security/\n\n"
 							},
 							"response": []
 						},
@@ -335,7 +337,7 @@
 										"GenerateRecoveryCodes"
 									]
 								},
-								"description": "Generate new recovery codes"
+								"description": "Controller: Authentication/Security/\n\nGenerate new recovery codes"
 							},
 							"response": []
 						},
@@ -359,7 +361,7 @@
 										"LoginWithTwoFactor"
 									]
 								},
-								"description": "Login with 2FA code",
+								"description": "Controller: Authentication/Security/\n\nLogin with 2FA code",
 								"auth": {
 									"type": "noauth"
 								},
@@ -390,7 +392,7 @@
 										"ChangePassword"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Security/\n\n",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"currentPassword\": \"Test@123456\",\n  \"newPassword\": \"NewPass@123456\",\n  \"confirmPassword\": \"NewPass@123456\"\n}"
@@ -418,7 +420,7 @@
 										"SendResetPasswordCode"
 									]
 								},
-								"description": "Request password reset",
+								"description": "Controller: Authentication/Security/\n\nRequest password reset",
 								"auth": {
 									"type": "noauth"
 								},
@@ -449,7 +451,7 @@
 										"ResetPassword"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Security/\n\n",
 								"auth": {
 									"type": "noauth"
 								},
@@ -490,7 +492,8 @@
 										"Account",
 										"ActiveSessions"
 									]
-								}
+								},
+								"description": "Controller: Authentication/Security/\n\n"
 							},
 							"response": []
 						},
@@ -509,7 +512,8 @@
 										"TerminateSession",
 										"{{session_id}}"
 									]
-								}
+								},
+								"description": "Controller: Authentication/Security/\n\n"
 							},
 							"response": []
 						},
@@ -527,7 +531,8 @@
 										"Account",
 										"TerminateAllSessions"
 									]
-								}
+								},
+								"description": "Controller: Authentication/Security/\n\n"
 							},
 							"response": []
 						}
@@ -535,7 +540,7 @@
 				},
 				{
 					"name": "Account Management",
-					"description": "User profile, email changes, data export, account deletion",
+					"description": "User profile, sessions, and device management\n\nControllers:\n  \u2022 Controllers/Authentication/Account/ProfileController.cs (6 endpoints)\n  \u2022 Controllers/Authentication/Account/SessionController.cs (3 endpoints)\n  \u2022 Controllers/Authentication/Account/DeviceController.cs (4 endpoints)\n\nRoute Base: Api/V1/Authentication\nFeatures: Profile CRUD, Multi-device sessions, Trusted devices, Security audit log",
 					"item": [
 						{
 							"name": "Get Profile",
@@ -551,7 +556,8 @@
 										"Account",
 										"Profile"
 									]
-								}
+								},
+								"description": "Controller: Authentication/Account/\n\n"
 							},
 							"response": []
 						},
@@ -575,7 +581,7 @@
 										"UpdateProfile"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Account/\n\n",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"phoneNumber\": \"+249987654321\"\n}"
@@ -603,7 +609,7 @@
 										"ChangeEmail"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Account/\n\n",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"newEmail\": \"newemail@example.com\"\n}"
@@ -631,7 +637,7 @@
 										"ConfirmEmailChange"
 									]
 								},
-								"description": "",
+								"description": "Controller: Authentication/Account/\n\n",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"userId\": \"user-id\",\n  \"newEmail\": \"newemail@example.com\",\n  \"code\": \"confirmation-code\"\n}"
@@ -654,7 +660,7 @@
 										"ExportData"
 									]
 								},
-								"description": "Export all user data"
+								"description": "Controller: Authentication/Account/\n\nExport all user data"
 							},
 							"response": []
 						},
@@ -678,7 +684,7 @@
 										"DeleteAccount"
 									]
 								},
-								"description": "Permanently delete account",
+								"description": "Controller: Authentication/Account/\n\nPermanently delete account",
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"password\": \"Test@123456\",\n  \"confirmDeletion\": true\n}"
@@ -690,7 +696,7 @@
 				},
 				{
 					"name": "Testing & Validation",
-					"description": "Rate limiting, error handling, and localization tests",
+					"description": "API testing scenarios and validation\n\nTests: Rate limiting, Error handling, Localization (EN/AR)\nNote: Uses various endpoints for testing purposes",
 					"item": [
 						{
 							"name": "Test Login Rate Limit",
@@ -822,11 +828,11 @@
 		},
 		{
 			"name": "Admin",
-			"description": "Admin APIs: Infrastructure & Fleet Management (Regions, Stations, Routes, Trains, Trips)",
+			"description": "Admin APIs for infrastructure and fleet management\n\n\ud83d\udcc2 Controllers/Infrastructure/Geography/ (15 endpoints)\n   Route: Api/V1/Infrastructure/Areas, Governorates, Cities\n   \n   AreasController.cs (5):\n   \u2022 GET /Infrastructure/Areas [Admin/Staff]\n   \u2022 GET /Infrastructure/Areas/{id} [Admin/Staff]\n   \u2022 POST /Infrastructure/Areas [Admin/Staff]\n   \u2022 PUT /Infrastructure/Areas/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Areas/{id} [SuperAdmin]\n   \n   GovernoratesController.cs (5):\n   \u2022 GET /Infrastructure/Governorates [Admin/Staff]\n   \u2022 GET /Infrastructure/Governorates/{id} [Admin/Staff]\n   \u2022 POST /Infrastructure/Governorates [Admin/Staff]\n   \u2022 PUT /Infrastructure/Governorates/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Governorates/{id} [SuperAdmin]\n   \n   CitiesController.cs (5):\n   \u2022 GET /Infrastructure/Cities [Admin/Staff]\n   \u2022 GET /Infrastructure/Cities/{id} [Admin/Staff]\n   \u2022 POST /Infrastructure/Cities [Admin/Staff]\n   \u2022 PUT /Infrastructure/Cities/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Cities/{id} [SuperAdmin]\n\n\ud83d\udcc2 Controllers/Infrastructure/RailwayNetwork/ (12 endpoints)\n   Route: Api/V1/Infrastructure/Stations, Routes\n   \n   StationsController.cs (5):\n   \u2022 GET /Infrastructure/Stations [Public]\n   \u2022 GET /Infrastructure/Stations/{id} [Public]\n   \u2022 POST /Infrastructure/Stations [Admin/Staff]\n   \u2022 PUT /Infrastructure/Stations/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Stations/{id} [SuperAdmin]\n   \n   RoutesController.cs (7):\n   \u2022 GET /Infrastructure/Routes [Public]\n   \u2022 GET /Infrastructure/Routes/{id} [Public]\n   \u2022 POST /Infrastructure/Routes [Admin/Staff]\n   \u2022 PUT /Infrastructure/Routes/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Routes/{id} [SuperAdmin]\n   \u2022 POST /Infrastructure/Routes/{id}/Stations [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Routes/{id}/Stations/{stationId} [Admin/Staff]\n\n\ud83d\udcc2 Controllers/Infrastructure/Fleet/ (9 endpoints)\n   Route: Api/V1/Infrastructure/Trains, Coaches\n   \n   TrainsController.cs (8):\n   \u2022 GET /Infrastructure/Trains [Admin/Staff]\n   \u2022 GET /Infrastructure/Trains/{id} [Admin/Staff]\n   \u2022 POST /Infrastructure/Trains [Admin/Staff]\n   \u2022 PUT /Infrastructure/Trains/{id} [Admin/Staff]\n   \u2022 DELETE /Infrastructure/Trains/{id} [SuperAdmin]\n   \u2022 GET /Infrastructure/Trains/{trainId}/Coaches [Admin/Staff]\n   \u2022 POST /Infrastructure/Trains/{trainId}/Coaches/Bulk [Admin/Staff]\n   \n   CoachesController.cs (1):\n   \u2022 GET /Infrastructure/Coaches/{id}/Seats [Admin/Staff]\n\n\ud83d\udcc2 Controllers/Infrastructure/Operations/ (5 endpoints)\n   Route: Api/V1/Infrastructure/Trips\n   \n   TripsController.cs (5):\n   \u2022 GET /Infrastructure/Trips [Public]\n   \u2022 GET /Infrastructure/Trips/{id} [Public]\n   \u2022 POST /Infrastructure/Trips [Admin/Staff]\n   \u2022 PUT /Infrastructure/Trips/{id} [Admin/Staff]\n   \u2022 PUT /Infrastructure/Trips/{id}/Cancel [Admin/Staff]\n\n\u2705 Total: 41 endpoints across 8 controllers\n\ud83d\udd13 Public: Stations (GET), Routes (GET), Trips (GET)\n\ud83d\udd12 Admin/Staff: All Create/Update operations\n\ud83d\udc51 SuperAdmin: All Delete operations",
 			"item": [
 				{
 					"name": "Authentication",
-					"description": "Admin login to get admin_token for protected endpoints",
+					"description": "Admin login to obtain admin_token\n\nController: Controllers/Authentication/Core/AuthController.cs\nEndpoint: POST Api/V1/Authentication/Login\nUsage: Login with admin credentials (role: Admin or Staff)",
 					"item": [
 						{
 							"name": "Login as Admin",
@@ -863,7 +869,7 @@
 										"Login"
 									]
 								},
-								"description": "Login as admin user",
+								"description": "Controller: Authentication/Core/AuthController.cs\n\nLogin as admin user",
 								"auth": {
 									"type": "noauth"
 								},
@@ -878,13 +884,13 @@
 				},
 				{
 					"name": "Geography",
-					"description": "Geographic hierarchy: Regions → States → Cities",
+					"description": "Geographic hierarchy management (Areas \u2192 Governorates \u2192 Cities)\n\nControllers:\n  \u2022 Controllers/Infrastructure/Geography/AreasController.cs\n  \u2022 Controllers/Infrastructure/Geography/GovernoratesController.cs\n  \u2022 Controllers/Infrastructure/Geography/CitiesController.cs\n\nRoute: Api/V1/Infrastructure/Areas, Governorates, Cities\nAuthorization: Admin/Staff (all operations), SuperAdmin (delete only)\nPattern: Standard CRUD (GET all, GET by id, POST, PUT, DELETE)",
 					"item": [
 						{
-							"name": "Regions",
+							"name": "Areas",
 							"item": [
 								{
-									"name": "Get All Regions",
+									"name": "Get All Areas",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -899,20 +905,21 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/Regions",
+											"raw": "{{baseUrl}}/Infrastructure/Areas",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"Regions"
+												"Areas"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Get Region by ID",
+									"name": "Get Area by ID",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -927,21 +934,22 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/Regions/1",
+											"raw": "{{baseUrl}}/Infrastructure/Areas/1",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"Regions",
+												"Areas",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Create Region",
+									"name": "Create Area",
 									"event": [
 										{
 											"listen": "test",
@@ -950,7 +958,7 @@
 													"if (pm.response.code === 200) {",
 													"    var jsonData = pm.response.json();",
 													"    if (jsonData.data && jsonData.data.id) {",
-													"        pm.environment.set(\"region_id\", jsonData.data.id);",
+													"        pm.environment.set(\"area_id\", jsonData.data.id);",
 													"    }",
 													"}"
 												],
@@ -978,23 +986,24 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Central Region\",\n  \"nameAr\": \"الوسطى\",\n  \"code\": \"CNT\"\n}"
+											"raw": "{\n  \"nameEn\": \"Central Area\",\n  \"nameAr\": \"\u0627\u0644\u0648\u0633\u0637\u0649\",\n  \"code\": \"CNT\"\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/Regions",
+											"raw": "{{baseUrl}}/Infrastructure/Areas",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"Regions"
+												"Areas"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Update Region",
+									"name": "Update Area",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1015,24 +1024,25 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Central Region Updated\",\n  \"nameAr\": \"المنطقة الوسطى المحدثة\",\n  \"code\": \"CNT\"\n}"
+											"raw": "{\n  \"nameEn\": \"Central Area Updated\",\n  \"nameAr\": \"\u0627\u0644\u0645\u0646\u0637\u0642\u0629 \u0627\u0644\u0648\u0633\u0637\u0649 \u0627\u0644\u0645\u062d\u062f\u062b\u0629\",\n  \"code\": \"CNT\"\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/Regions/{{region_id}}",
+											"raw": "{{baseUrl}}/Infrastructure/Areas/{{area_id}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"Regions",
-												"{{region_id}}"
+												"Areas",
+												"{{area_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Delete Region",
+									"name": "Delete Area",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1047,27 +1057,90 @@
 										"method": "DELETE",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/Regions/{{region_id}}",
+											"raw": "{{baseUrl}}/Infrastructure/Areas/{{area_id}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"Regions",
-												"{{region_id}}"
+												"Areas",
+												"{{area_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\nSuperAdmin only"
+									},
+									"response": []
+								},
+								{
+									"name": "Get Area Boundary",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Areas/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Areas",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\nGet boundary polygon and bounding box data for a area"
+									},
+									"response": []
+								},
+								{
+									"name": "Update Area Boundary",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"boundaryPolygon\": \"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[32.5,15.5],[33.0,15.5],[33.0,16.0],[32.5,16.0],[32.5,15.5]]]}\",\n  \"boundingBoxNorth\": 16.0,\n  \"boundingBoxSouth\": 15.5,\n  \"boundingBoxEast\": 33.0,\n  \"boundingBoxWest\": 32.5\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Areas/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Areas",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/AreasController.cs\n\nUpdate boundary polygon and bounding box for a area"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/Geography/AreasController.cs\nRoute: Api/V1/Infrastructure/Areas"
 						},
 						{
-							"name": "States",
+							"name": "Governorates",
 							"item": [
 								{
-									"name": "Get All States",
+									"name": "Get All Governorates",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1082,20 +1155,21 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States"
+												"Governorates"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Get States by Region",
+									"name": "Get Governorates by Area",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1110,26 +1184,27 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States?regionId={{region_id}}",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates?areaId={{area_id}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States"
+												"Governorates"
 											],
 											"query": [
 												{
-													"key": "regionId",
-													"value": "{{region_id}}"
+													"key": "areaId",
+													"value": "{{area_id}}"
 												}
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Get State by ID",
+									"name": "Get Governorate by ID",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1144,21 +1219,22 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States/1",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates/1",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States",
+												"Governorates",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Create State",
+									"name": "Create Governorate",
 									"event": [
 										{
 											"listen": "test",
@@ -1195,23 +1271,24 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum\",\n  \"nameAr\": \"الخرطوم\",\n  \"regionId\": 1\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum\",\n  \"nameAr\": \"\u0627\u0644\u062e\u0631\u0637\u0648\u0645\",\n  \"areaId\": 1\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States"
+												"Governorates"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Update State",
+									"name": "Update Governorate",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1232,24 +1309,25 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum State\",\n  \"nameAr\": \"ولاية الخرطوم\",\n  \"regionId\": 1\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum Governorate\",\n  \"nameAr\": \"\u0648\u0644\u0627\u064a\u0629 \u0627\u0644\u062e\u0631\u0637\u0648\u0645\",\n  \"areaId\": 1\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States/{{state_id}}",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates/{{state_id}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States",
+												"Governorates",
 												"{{state_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Delete State",
+									"name": "Delete Governorate",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1264,21 +1342,84 @@
 										"method": "DELETE",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/Infrastructure/States/{{state_id}}",
+											"raw": "{{baseUrl}}/Infrastructure/Governorates/{{state_id}}",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"Infrastructure",
-												"States",
+												"Governorates",
 												"{{state_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\nSuperAdmin only"
+									},
+									"response": []
+								},
+								{
+									"name": "Get Governorate Boundary",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Governorates/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Governorates",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\nGet boundary polygon and bounding box data for a state"
+									},
+									"response": []
+								},
+								{
+									"name": "Update Governorate Boundary",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"boundaryPolygon\": \"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[32.5,15.5],[33.0,15.5],[33.0,16.0],[32.5,16.0],[32.5,15.5]]]}\",\n  \"boundingBoxNorth\": 16.0,\n  \"boundingBoxSouth\": 15.5,\n  \"boundingBoxEast\": 33.0,\n  \"boundingBoxWest\": 32.5\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Governorates/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Governorates",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/GovernoratesController.cs\n\nUpdate boundary polygon and bounding box for a state"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/Geography/GovernoratesController.cs\nRoute: Api/V1/Infrastructure/Governorates (can filter by areaId)"
 						},
 						{
 							"name": "Cities",
@@ -1307,12 +1448,13 @@
 												"Infrastructure",
 												"Cities"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\n"
 									},
 									"response": []
 								},
 								{
-									"name": "Get Cities by State",
+									"name": "Get Cities by Governorate",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1337,11 +1479,12 @@
 											],
 											"query": [
 												{
-													"key": "stateId",
+													"key": "governorateId",
 													"value": "{{state_id}}"
 												}
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1370,7 +1513,8 @@
 												"Cities",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1412,7 +1556,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum North\",\n  \"nameAr\": \"الخرطوم بحري\",\n  \"stateId\": 1\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum North\",\n  \"nameAr\": \"\u0627\u0644\u062e\u0631\u0637\u0648\u0645 \u0628\u062d\u0631\u064a\",\n  \"stateId\": 1\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Cities",
@@ -1423,7 +1567,8 @@
 												"Infrastructure",
 												"Cities"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1449,7 +1594,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum North City\",\n  \"nameAr\": \"مدينة الخرطوم بحري\",\n  \"stateId\": 1\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum North City\",\n  \"nameAr\": \"\u0645\u062f\u064a\u0646\u0629 \u0627\u0644\u062e\u0631\u0637\u0648\u0645 \u0628\u062d\u0631\u064a\",\n  \"stateId\": 1\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Cities/{{city_id}}",
@@ -1461,7 +1606,8 @@
 												"Cities",
 												"{{city_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1491,7 +1637,218 @@
 												"{{city_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\nSuperAdmin only"
+									},
+									"response": []
+								},
+								{
+									"name": "Get City Boundary",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\nGet boundary polygon and bounding box data for a city"
+									},
+									"response": []
+								},
+								{
+									"name": "Update City Boundary",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"boundaryPolygon\": \"{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[32.5,15.5],[33.0,15.5],[33.0,16.0],[32.5,16.0],[32.5,15.5]]]}\",\n  \"boundingBoxNorth\": 16.0,\n  \"boundingBoxSouth\": 15.5,\n  \"boundingBoxEast\": 33.0,\n  \"boundingBoxWest\": 32.5\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Cities/1/Boundary",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Cities",
+												"1",
+												"Boundary"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/CitiesController.cs\n\nUpdate boundary polygon and bounding box for a city"
+									},
+									"response": []
+								}
+							],
+							"description": "Controller: Controllers/Infrastructure/Geography/CitiesController.cs\nRoute: Api/V1/Infrastructure/Cities (can filter by stateId)"
+						},
+						{
+							"name": "Spatial",
+							"description": "Spatial validation and map operations\n\nController: Controllers/Infrastructure/Geography/SpatialController.cs\nRoute Base: Api/V1/Infrastructure/Spatial\nEndpoints: ValidateLocation, NearbyStations, ReverseGeocode, CalculateDistance",
+							"item": [
+								{
+									"name": "Validate Location",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"latitude\": 15.5,\n  \"longitude\": 32.5,\n  \"parentType\": \"area\",\n  \"parentId\": 1\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Spatial/ValidateLocation",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Spatial",
+												"ValidateLocation"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/SpatialController.cs\n\nValidate if coordinates are within parent boundary (area/state/city)"
+									},
+									"response": []
+								},
+								{
+									"name": "Reverse Geocode",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Spatial/ReverseGeocode",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Spatial",
+												"ReverseGeocode"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/SpatialController.cs\n\nGet address information from coordinates using Google Geocoding API"
+									},
+									"response": []
+								},
+								{
+									"name": "Get Nearby Stations",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Spatial/NearbyStations?lat=15.5007&lng=32.5599&radiusKm=25",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Spatial",
+												"NearbyStations"
+											],
+											"query": [
+												{
+													"key": "lat",
+													"value": "15.5007"
+												},
+												{
+													"key": "lng",
+													"value": "32.5599"
+												},
+												{
+													"key": "radiusKm",
+													"value": "25"
+												}
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/SpatialController.cs\n\nFind nearby stations using Google Places API"
+									},
+									"response": []
+								},
+								{
+									"name": "Calculate Distance",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{auth_token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"lat1\": 15.5007,\n  \"lng1\": 32.5599,\n  \"lat2\": 15.6,\n  \"lng2\": 32.7\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/Infrastructure/Spatial/CalculateDistance",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"Infrastructure",
+												"Spatial",
+												"CalculateDistance"
+											]
+										},
+										"description": "Controller: Infrastructure/Geography/SpatialController.cs\n\nCalculate distance between two points using Haversine formula"
 									},
 									"response": []
 								}
@@ -1501,7 +1858,7 @@
 				},
 				{
 					"name": "Infrastructure",
-					"description": "Railway infrastructure: Train Stations and Routes",
+					"description": "Railway infrastructure: Stations and Routes\n\nControllers:\n  \u2022 Controllers/Infrastructure/RailwayNetwork/StationsController.cs\n  \u2022 Controllers/Infrastructure/RailwayNetwork/RoutesController.cs\n\nRoute: Api/V1/Infrastructure/Stations, Routes\nFeatures:\n  - Stations with GPS coordinates (latitude/longitude)\n  - Routes with origin/destination + intermediate stops\n  - Public GET endpoints for customer trip search\n  - Admin CRUD operations",
 					"item": [
 						{
 							"name": "Stations",
@@ -1523,7 +1880,8 @@
 												"Infrastructure",
 												"Stations"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1566,7 +1924,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station\",\n  \"nameAr\": \"محطة الخرطوم المركزية\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599,\n  \"addressEn\": \"Al-Neel Street\",\n  \"addressAr\": \"شارع النيل\"\n}"
+											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station\",\n  \"nameAr\": \"\u0645\u062d\u0637\u0629 \u0627\u0644\u062e\u0631\u0637\u0648\u0645 \u0627\u0644\u0645\u0631\u0643\u0632\u064a\u0629\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599,\n  \"addressEn\": \"Al-Neel Street\",\n  \"addressAr\": \"\u0634\u0627\u0631\u0639 \u0627\u0644\u0646\u064a\u0644\"\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Stations",
@@ -1577,7 +1935,8 @@
 												"Infrastructure",
 												"Stations"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1599,7 +1958,8 @@
 												"Stations",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1641,7 +2001,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"code\": \"PRT\",\n  \"nameEn\": \"Port Sudan Station\",\n  \"nameAr\": \"محطة بورتسودان\",\n  \"cityId\": 1,\n  \"latitude\": 19.6158,\n  \"longitude\": 37.2163,\n  \"addressEn\": \"Port Sudan Center\",\n  \"addressAr\": \"وسط بورتسودان\"\n}"
+											"raw": "{\n  \"code\": \"PRT\",\n  \"nameEn\": \"Port Sudan Station\",\n  \"nameAr\": \"\u0645\u062d\u0637\u0629 \u0628\u0648\u0631\u062a\u0633\u0648\u062f\u0627\u0646\",\n  \"cityId\": 1,\n  \"latitude\": 19.6158,\n  \"longitude\": 37.2163,\n  \"addressEn\": \"Port Sudan Center\",\n  \"addressAr\": \"\u0648\u0633\u0637 \u0628\u0648\u0631\u062a\u0633\u0648\u062f\u0627\u0646\"\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Stations",
@@ -1652,7 +2012,8 @@
 												"Infrastructure",
 												"Stations"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1678,7 +2039,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station Updated\",\n  \"nameAr\": \"محطة الخرطوم المركزية المحدثة\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599\n}"
+											"raw": "{\n  \"code\": \"KRT\",\n  \"nameEn\": \"Khartoum Central Station Updated\",\n  \"nameAr\": \"\u0645\u062d\u0637\u0629 \u0627\u0644\u062e\u0631\u0637\u0648\u0645 \u0627\u0644\u0645\u0631\u0643\u0632\u064a\u0629 \u0627\u0644\u0645\u062d\u062f\u062b\u0629\",\n  \"cityId\": 1,\n  \"latitude\": 15.5007,\n  \"longitude\": 32.5599\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Stations/{{station_id}}",
@@ -1690,7 +2051,8 @@
 												"Stations",
 												"{{station_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1720,11 +2082,12 @@
 												"{{station_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/RailwayNetwork/StationsController.cs\n\nSuperAdmin only"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/RailwayNetwork/StationsController.cs\nRoute: Api/V1/Infrastructure/Stations\n\nPublic: GET /Infrastructure/Stations, GET /Infrastructure/Stations/{id}\nAdmin/Staff: POST, PUT\nSuperAdmin: DELETE\n\nFeatures: GPS coordinates, city assignment, address info"
 						},
 						{
 							"name": "Routes",
@@ -1746,7 +2109,8 @@
 												"Infrastructure",
 												"Routes"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1768,7 +2132,8 @@
 												"Routes",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1810,7 +2175,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Route\",\n  \"nameAr\": \"خط الخرطوم - بورتسودان\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Route\",\n  \"nameAr\": \"\u062e\u0637 \u0627\u0644\u062e\u0631\u0637\u0648\u0645 - \u0628\u0648\u0631\u062a\u0633\u0648\u062f\u0627\u0646\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Routes",
@@ -1821,7 +2186,8 @@
 												"Infrastructure",
 												"Routes"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1847,7 +2213,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Express\",\n  \"nameAr\": \"خط الخرطوم - بورتسودان السريع\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
+											"raw": "{\n  \"nameEn\": \"Khartoum to Port Sudan Express\",\n  \"nameAr\": \"\u062e\u0637 \u0627\u0644\u062e\u0631\u0637\u0648\u0645 - \u0628\u0648\u0631\u062a\u0633\u0648\u062f\u0627\u0646 \u0627\u0644\u0633\u0631\u064a\u0639\",\n  \"originStationId\": {{origin_station_id}},\n  \"destinationStationId\": {{destination_station_id}},\n  \"distanceKm\": 675.5\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Routes/{{route_id}}",
@@ -1859,7 +2225,8 @@
 												"Routes",
 												"{{route_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1898,7 +2265,8 @@
 												"{{route_id}}",
 												"Stations"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1929,7 +2297,8 @@
 												"Stations",
 												"3"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\n"
 									},
 									"response": []
 								},
@@ -1959,17 +2328,18 @@
 												"{{route_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/RailwayNetwork/RoutesController.cs\n\nSuperAdmin only"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/RailwayNetwork/RoutesController.cs\nRoute: Api/V1/Infrastructure/Routes\n\nPublic: GET /Infrastructure/Routes, GET /Infrastructure/Routes/{id}\nAdmin/Staff: POST, PUT, Add/Remove stations\nSuperAdmin: DELETE\n\nFeatures: Origin \u2192 Intermediate Stops \u2192 Destination with timing"
 						}
 					]
 				},
 				{
 					"name": "Fleet Management",
-					"description": "Train fleet, coaches, and seating configuration",
+					"description": "Train fleet and coach management\n\nControllers:\n  \u2022 Controllers/Infrastructure/Fleet/TrainsController.cs\n  \u2022 Controllers/Infrastructure/Fleet/CoachesController.cs\n\nRoute: Api/V1/Infrastructure/Trains, Coaches\nFeatures:\n  - Train fleet CRUD operations\n  - Bulk coach creation with auto-seat generation\n  - Seat management by coach\n  - Train classes: First/Second/Third",
 					"item": [
 						{
 							"name": "Trains",
@@ -1998,7 +2368,8 @@
 												"Infrastructure",
 												"Trains"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -2040,7 +2411,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express\",\n  \"nameAr\": \"السودان السريع\",\n  \"type\": 1\n}"
+											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express\",\n  \"nameAr\": \"\u0627\u0644\u0633\u0648\u062f\u0627\u0646 \u0627\u0644\u0633\u0631\u064a\u0639\",\n  \"type\": 1\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Trains",
@@ -2051,7 +2422,8 @@
 												"Infrastructure",
 												"Trains"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -2080,7 +2452,8 @@
 												"Trains",
 												"1"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -2106,7 +2479,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express Updated\",\n  \"nameAr\": \"السودان السريع المحدث\",\n  \"type\": 1\n}"
+											"raw": "{\n  \"trainNumber\": \"TR-001\",\n  \"nameEn\": \"Sudan Express Updated\",\n  \"nameAr\": \"\u0627\u0644\u0633\u0648\u062f\u0627\u0646 \u0627\u0644\u0633\u0631\u064a\u0639 \u0627\u0644\u0645\u062d\u062f\u062b\",\n  \"type\": 1\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/Infrastructure/Trains/{{train_id}}",
@@ -2118,7 +2491,8 @@
 												"Trains",
 												"{{train_id}}"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -2148,7 +2522,8 @@
 												"{{train_id}}",
 												"Coaches"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\n"
 									},
 									"response": []
 								},
@@ -2178,11 +2553,12 @@
 												"{{train_id}}"
 											]
 										},
-										"description": "SuperAdmin only"
+										"description": "Controller: Infrastructure/Fleet/TrainsController.cs\n\nSuperAdmin only"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/Fleet/TrainsController.cs\nRoute: Api/V1/Infrastructure/Trains\n\nOperations: CRUD + Get Coaches + Bulk Create Coaches\nAuthorization: Admin/Staff (CRUD), SuperAdmin (Delete)\nFeatures: Train number, name (EN/AR), class type"
 						},
 						{
 							"name": "Coaches & Seats",
@@ -2240,7 +2616,7 @@
 												"Bulk"
 											]
 										},
-										"description": "Class: 1=First, 2=Second, 3=Third"
+										"description": "Controller: Infrastructure/Fleet/CoachesController.cs\n\nClass: 1=First, 2=Second, 3=Third"
 									},
 									"response": []
 								},
@@ -2270,17 +2646,19 @@
 												"{{coach_id}}",
 												"Seats"
 											]
-										}
+										},
+										"description": "Controller: Infrastructure/Fleet/CoachesController.cs\n\n"
 									},
 									"response": []
 								}
-							]
+							],
+							"description": "Controller: Controllers/Infrastructure/Fleet/CoachesController.cs\nRoute: Api/V1/Infrastructure/Coaches\n\nEndpoint: GET /Infrastructure/Coaches/{id}/Seats\nNote: Coach creation via TrainsController POST {trainId}/Coaches/Bulk\nFeatures: View all seats for a coach with availability status"
 						}
 					]
 				},
 				{
 					"name": "Operations",
-					"description": "Trip scheduling and management",
+					"description": "Trip scheduling and operations management\n\nController: Controllers/Infrastructure/Operations/TripsController.cs\nRoute: Api/V1/Infrastructure/Trips\n\nPublic: GET /Infrastructure/Trips, GET /Infrastructure/Trips/{id}\nAdmin/Staff: POST, PUT, PUT /{id}/Cancel\n\nFeatures:\n  - Schedule trips (train + route + departure/arrival)\n  - Auto-initializes TripSeats from train coaches\n  - Cancel trips with passenger notifications\n  - Public search for customer booking",
 					"item": [
 						{
 							"name": "Get All Trips (Public)",
@@ -2299,7 +2677,8 @@
 										"Infrastructure",
 										"Trips"
 									]
-								}
+								},
+								"description": "Controller: Infrastructure/Operations/TripsController.cs\n\n"
 							},
 							"response": []
 						},
@@ -2352,7 +2731,8 @@
 										"Infrastructure",
 										"Trips"
 									]
-								}
+								},
+								"description": "Controller: Infrastructure/Operations/TripsController.cs\n\n"
 							},
 							"response": []
 						},
@@ -2374,7 +2754,8 @@
 										"Trips",
 										"1"
 									]
-								}
+								},
+								"description": "Controller: Infrastructure/Operations/TripsController.cs\n\n"
 							},
 							"response": []
 						},
@@ -2412,7 +2793,8 @@
 										"Trips",
 										"{{trip_id}}"
 									]
-								}
+								},
+								"description": "Controller: Infrastructure/Operations/TripsController.cs\n\n"
 							},
 							"response": []
 						},
@@ -2442,7 +2824,8 @@
 										"{{trip_id}}",
 										"Cancel"
 									]
-								}
+								},
+								"description": "Controller: Infrastructure/Operations/TripsController.cs\n\n"
 							},
 							"response": []
 						}
@@ -2513,7 +2896,7 @@
 			"type": "string"
 		},
 		{
-			"key": "region_id",
+			"key": "area_id",
 			"value": "",
 			"type": "string"
 		},

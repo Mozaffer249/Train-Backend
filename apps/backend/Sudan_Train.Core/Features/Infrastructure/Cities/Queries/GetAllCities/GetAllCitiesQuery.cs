@@ -6,7 +6,6 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.GetAllCities
 {
     public class GetAllCitiesQuery : IRequest<Response<List<CityDto>>>
     {
-        public int? StateId { get; set; }
     }
 }
 

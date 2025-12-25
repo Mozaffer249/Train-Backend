@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Features.Authentication.Commands.Login;
 using Sudan_Train.Core.Resources.Authentication;
+using Sudan_Train.Data.AppMetaData;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Data.Results;
 using Sudan_Train.Service.Abstracts;
@@ -195,7 +196,9 @@ namespace Trains.Core.Features.Authentication.Commands.Login
 
                 // Send email notification for new device login
                 if (_securitySettings.Value.EmailNotifications.Enabled &&
-                    _securitySettings.Value.EmailNotifications.NotifyOnNewDeviceLogin)
+                    _securitySettings.Value.EmailNotifications.NotifyOnNewDeviceLogin &&
+                      !result.Roles.Contains(Roles.SuperAdmin)
+                    )
                 {
                     await _notificationService.NotifyNewDeviceLoginAsync(user, deviceName, ipAddress);
                 }

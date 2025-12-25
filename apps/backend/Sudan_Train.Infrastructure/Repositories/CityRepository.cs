@@ -20,6 +20,16 @@ namespace Sudan_Train.Infrastructure.Repositories
         #endregion
 
         #region Handle Functions
+        public async Task<City?> GetByNameAsync(string nameEn)
+        {
+            return await cities
+                .FirstOrDefaultAsync(c => c.NameEn.ToLower() == nameEn.ToLower());
+        }
+
+        public async Task<List<City>> GetAllAsync()
+        {
+            return await cities.ToListAsync();
+        }
         #endregion
     }
 }

@@ -3,6 +3,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import GeographyPage from './pages/GeographyPage';
+import SeedingPage from './pages/SeedingPage';
 import UsersPage from './pages/UsersPage';
 import BookingsPage from './pages/BookingsPage';
 import TrainsPage from './pages/TrainsPage';
@@ -17,6 +19,8 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="geography" element={<GeographyPage />} />
+            <Route path="seeding" element={<SeedingPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="trains" element={<TrainsPage />} />

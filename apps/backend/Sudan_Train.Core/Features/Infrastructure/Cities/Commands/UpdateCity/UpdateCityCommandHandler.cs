@@ -26,7 +26,10 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.UpdateCity
                     request.Id,
                     request.NameEn,
                     request.NameAr,
-                    request.StateId);
+                    request.Latitude,
+                    request.Longitude,
+                    request.GooglePlaceId,
+                    request.FormattedAddress);
 
                 return Success("City updated successfully", cityDto);
             }

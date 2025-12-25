@@ -125,6 +125,76 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("UserTokens", "security");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Area", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BoundaryPolygon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("BoundingBoxEast")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxNorth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxSouth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxWest")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("FormattedAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("GoogleSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsFromGoogle")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PlusCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Areas", (string)null);
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -226,6 +296,44 @@ namespace Trains.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BoundaryPolygon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("BoundingBoxEast")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxNorth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxSouth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxWest")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FormattedAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("GoogleSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GovernorateId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsFromGoogle")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("NameAr")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -236,12 +344,13 @@ namespace Trains.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("StateId")
-                        .HasColumnType("int");
+                    b.Property<string>("PlusCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StateId", "NameEn")
+                    b.HasIndex("GovernorateId", "NameEn")
                         .IsUnique();
 
                     b.ToTable("Cities");
@@ -333,6 +442,73 @@ namespace Trains.Infrastructure.Migrations
                     b.HasIndex("TripId");
 
                     b.ToTable("Fares");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AreaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BoundaryPolygon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("BoundingBoxEast")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxNorth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxSouth")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BoundingBoxWest")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FormattedAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("GoogleSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsFromGoogle")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PlusCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AreaId");
+
+                    b.ToTable("Governorates", (string)null);
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
@@ -1300,37 +1476,6 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("Refunds");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Region", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Regions");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Route", b =>
                 {
                     b.Property<int>("Id")
@@ -1442,37 +1587,6 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("Seats");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.State", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("RegionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NameEn")
-                        .IsUnique();
-
-                    b.HasIndex("RegionId");
-
-                    b.ToTable("States");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Station", b =>
                 {
                     b.Property<int>("Id")
@@ -1489,6 +1603,10 @@ namespace Trains.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("BusinessStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
@@ -1499,6 +1617,24 @@ namespace Trains.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("FormattedAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("GoogleSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GoogleType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsFromGoogle")
+                        .HasColumnType("bit");
 
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
@@ -1515,6 +1651,17 @@ namespace Trains.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PlusCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double?>("ServiceRadiusKm")
+                        .HasColumnType("float");
+
+                    b.Property<string>("StationType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1871,13 +2018,13 @@ namespace Trains.Infrastructure.Migrations
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.City", b =>
                 {
-                    b.HasOne("Sudan_Train.Data.Entity.State", "State")
+                    b.HasOne("Sudan_Train.Data.Entity.Governorate", "Governorate")
                         .WithMany("Cities")
-                        .HasForeignKey("StateId")
+                        .HasForeignKey("GovernorateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("State");
+                    b.Navigation("Governorate");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Coach", b =>
@@ -1899,6 +2046,17 @@ namespace Trains.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Trip");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Area", "Area")
+                        .WithMany("Governorates")
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Area");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
@@ -2139,17 +2297,6 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Coach");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.State", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Region", "Region")
-                        .WithMany("States")
-                        .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Region");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Station", b =>
                 {
                     b.HasOne("Sudan_Train.Data.Entity.City", "City")
@@ -2229,6 +2376,11 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Trip");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Area", b =>
+                {
+                    b.Navigation("Governorates");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Booking", b =>
                 {
                     b.Navigation("BookingPassengers");
@@ -2255,6 +2407,11 @@ namespace Trains.Infrastructure.Migrations
             modelBuilder.Entity("Sudan_Train.Data.Entity.Coach", b =>
                 {
                     b.Navigation("Seats");
+                });
+
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
+                {
+                    b.Navigation("Cities");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
@@ -2290,11 +2447,6 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("PromotionUsages");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Region", b =>
-                {
-                    b.Navigation("States");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Route", b =>
                 {
                     b.Navigation("RouteStations");
@@ -2307,11 +2459,6 @@ namespace Trains.Infrastructure.Migrations
             modelBuilder.Entity("Sudan_Train.Data.Entity.Seat", b =>
                 {
                     b.Navigation("TripSeats");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.State", b =>
-                {
-                    b.Navigation("Cities");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Station", b =>

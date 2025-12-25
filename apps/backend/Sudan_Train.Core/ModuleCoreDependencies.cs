@@ -2,6 +2,9 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Sudan_Train.Core.Behaviors;
+using Sudan_Train.Core.Services.Google;
+using Sudan_Train.Core.Services.Seeding;
+using Sudan_Train.Core.Services.Spatial;
 using System.Reflection;
 
 namespace Sudan_Train.Core
@@ -21,6 +24,13 @@ namespace Sudan_Train.Core
 
             // Register Validation Behavior
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+            // Register Google Integration services
+            services.AddHttpClient<IGoogleGeocodingService, GoogleGeocodingService>();
+            services.AddHttpClient<IGooglePlacesService, GooglePlacesService>();
+
+            // Register Spatial Validation service
+            services.AddTransient<ISpatialValidationService, SpatialValidationService>();
 
             return services;
         }

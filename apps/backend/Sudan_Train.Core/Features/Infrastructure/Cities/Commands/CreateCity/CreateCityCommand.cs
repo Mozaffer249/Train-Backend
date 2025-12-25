@@ -8,7 +8,10 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.CreateCity
     {
         public string NameEn { get; set; } = default!;
         public string NameAr { get; set; } = default!;
-        public int StateId { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public string? GooglePlaceId { get; set; }
+        public string? FormattedAddress { get; set; }
     }
 }
 

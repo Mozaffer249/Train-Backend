@@ -5,6 +5,8 @@ namespace Sudan_Train.Infrastructure.Abstracts
 {
     public interface ICityRepository : IGenericRepositoryAsync<City>
     {
+        Task<City?> GetByNameAsync(string nameEn);
+        Task<List<City>> GetAllAsync();
     }
 }
 

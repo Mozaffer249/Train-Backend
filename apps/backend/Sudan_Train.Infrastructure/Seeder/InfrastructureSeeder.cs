@@ -21,7 +21,7 @@ namespace Sudan_Train.Infrastructure.Seeder
             try
             {
                 // Check if already seeded
-                if (await _context.Regions.AnyAsync())
+                if (await _context.Cities.AnyAsync())
                 {
                     _logger.LogInformation("Infrastructure data already seeded");
                     return;
@@ -29,9 +29,7 @@ namespace Sudan_Train.Infrastructure.Seeder
 
                 _logger.LogInformation("Starting infrastructure seeding...");
 
-                var regions = await SeedRegionsAsync();
-                var states = await SeedStatesAsync(regions);
-                var cities = await SeedCitiesAsync(states);
+                var cities = await SeedCitiesAsync();
                 var stations = await SeedStationsAsync(cities);
                 var routes = await SeedRoutesAsync(stations);
                 var trains = await SeedTrainsAsync();
@@ -46,50 +44,20 @@ namespace Sudan_Train.Infrastructure.Seeder
             }
         }
 
-        private async Task<List<Region>> SeedRegionsAsync()
-        {
-            var regions = new List<Region>
-            {
-                new Region { NameEn = "Northern Region", NameAr = "المنطقة الشمالية", Code = "NR" },
-                new Region { NameEn = "Central Region", NameAr = "المنطقة الوسطى", Code = "CR" },
-                new Region { NameEn = "Eastern Region", NameAr = "المنطقة الشرقية", Code = "ER" }
-            };
-
-            await _context.Regions.AddRangeAsync(regions);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Seeded {Count} regions", regions.Count);
-            return regions;
-        }
-
-        private async Task<List<State>> SeedStatesAsync(List<Region> regions)
-        {
-            var states = new List<State>
-            {
-                new State { NameEn = "Khartoum", NameAr = "الخرطوم", RegionId = regions[1].Id },
-                new State { NameEn = "Northern State", NameAr = "الولاية الشمالية", RegionId = regions[0].Id },
-                new State { NameEn = "Red Sea", NameAr = "البحر الأحمر", RegionId = regions[2].Id },
-                new State { NameEn = "River Nile", NameAr = "نهر النيل", RegionId = regions[0].Id },
-                new State { NameEn = "Kassala", NameAr = "كسلا", RegionId = regions[2].Id },
-                new State { NameEn = "Gedaref", NameAr = "القضارف", RegionId = regions[2].Id }
-            };
-
-            await _context.States.AddRangeAsync(states);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Seeded {Count} states", states.Count);
-            return states;
-        }
-
-        private async Task<List<City>> SeedCitiesAsync(List<State> states)
+        private async Task<List<City>> SeedCitiesAsync()
         {
             var cities = new List<City>
             {
-                new City { NameEn = "Khartoum City", NameAr = "مدينة الخرطوم", StateId = states[0].Id },
-                new City { NameEn = "Omdurman", NameAr = "أم درمان", StateId = states[0].Id },
-                new City { NameEn = "Bahri", NameAr = "بحري", StateId = states[0].Id },
-                new City { NameEn = "Atbara", NameAr = "عطبرة", StateId = states[3].Id },
-                new City { NameEn = "Port Sudan", NameAr = "بورتسودان", StateId = states[2].Id },
-                new City { NameEn = "Kassala City", NameAr = "مدينة كسلا", StateId = states[4].Id },
-                new City { NameEn = "Gedaref City", NameAr = "مدينة القضارف", StateId = states[5].Id }
+                new City { NameEn = "Khartoum", NameAr = "الخرطوم", Latitude = 15.5007, Longitude = 32.5599 },
+                new City { NameEn = "Omdurman", NameAr = "أم درمان", Latitude = 15.6442, Longitude = 32.4777 },
+                new City { NameEn = "Khartoum North", NameAr = "الخرطوم بحري", Latitude = 15.6393, Longitude = 32.5363 },
+                new City { NameEn = "Atbara", NameAr = "عطبرة", Latitude = 17.7027, Longitude = 33.9868 },
+                new City { NameEn = "Port Sudan", NameAr = "بورتسودان", Latitude = 19.6158, Longitude = 37.2164 },
+                new City { NameEn = "Kassala", NameAr = "كسلا", Latitude = 15.4609, Longitude = 36.3990 },
+                new City { NameEn = "Gedaref", NameAr = "القضارف", Latitude = 14.0352, Longitude = 35.3833 },
+                new City { NameEn = "El Obeid", NameAr = "الأبيض", Latitude = 13.1833, Longitude = 30.2167 },
+                new City { NameEn = "Nyala", NameAr = "نيالا", Latitude = 12.0488, Longitude = 24.8810 },
+                new City { NameEn = "Wad Madani", NameAr = "ود مدني", Latitude = 14.4011, Longitude = 33.5196 }
             };
 
             await _context.Cities.AddRangeAsync(cities);

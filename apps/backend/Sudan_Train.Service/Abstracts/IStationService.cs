@@ -10,7 +10,10 @@ namespace Sudan_Train.Service.Abstracts
         Task<StationDto> UpdateStationAsync(int id, string? nameEn, string? nameAr, double? latitude, double? longitude, string? addressEn, string? addressAr);
         Task<bool> DeleteStationAsync(int id);
         Task<bool> IsStationCodeUniqueAsync(string code, int? excludeId = null);
+        Task<bool> IsStationNameUniqueInCityAsync(string nameEn, string nameAr, int cityId, int? excludeId = null);
+        Task<bool> CityExistsAsync(int cityId);
         Task<bool> StationIsUsedInRoutesAsync(int stationId);
     }
 }
+
 

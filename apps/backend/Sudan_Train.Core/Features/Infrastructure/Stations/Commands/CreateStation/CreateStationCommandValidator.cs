@@ -34,10 +34,16 @@ namespace Sudan_Train.Core.Features.Infrastructure.Stations.Commands.CreateStati
                 .MustAsync(CityExists).WithMessage("City not found");
 
             RuleFor(x => x.Latitude)
-                .InclusiveBetween(8, 22).WithMessage("Latitude must be within Sudan boundaries (8-22)");
+                .NotEmpty().WithMessage("Latitude is required")
+                .InclusiveBetween(-90, 90).WithMessage("Latitude must be between -90 and 90");
 
             RuleFor(x => x.Longitude)
-                .InclusiveBetween(21, 39).WithMessage("Longitude must be within Sudan boundaries (21-39)");
+                .NotEmpty().WithMessage("Longitude is required")
+                .InclusiveBetween(-180, 180).WithMessage("Longitude must be between -180 and 180");
+
+            // Duplicate name validation within same city
+            RuleFor(x => x)
+                .MustAsync(BeUniqueName).WithMessage("A station with this name already exists in this city");
         }
 
         private async Task<bool> BeUniqueCode(string code, CancellationToken cancellationToken)
@@ -48,6 +54,11 @@ namespace Sudan_Train.Core.Features.Infrastructure.Stations.Commands.CreateStati
         private async Task<bool> CityExists(int cityId, CancellationToken cancellationToken)
         {
             return await _cityRepository.GetTableNoTracking().AnyAsync(c => c.Id == cityId, cancellationToken);
+        }
+
+        private async Task<bool> BeUniqueName(CreateStationCommand command, CancellationToken cancellationToken)
+        {
+            return await _stationService.IsStationNameUniqueInCityAsync(command.NameEn, command.NameAr, command.CityId);
         }
     }
 }

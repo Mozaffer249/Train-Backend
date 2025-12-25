@@ -28,11 +28,11 @@ namespace Sudan_Train.Service.Implementations
         public async Task<RouteDto> CreateRouteAsync(int originStationId, int destinationStationId, string? nameEn, string? nameAr, decimal? distanceKm)
         {
             var originStation = await _stationRepository.GetTableNoTracking()
-                .Include(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(s => s.City)
                 .FirstOrDefaultAsync(s => s.Id == originStationId);
 
             var destinationStation = await _stationRepository.GetTableNoTracking()
-                .Include(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(s => s.City)
                 .FirstOrDefaultAsync(s => s.Id == destinationStationId);
 
             // Auto-generate route name if not provided
@@ -72,8 +72,8 @@ namespace Sudan_Train.Service.Implementations
         public async Task<RouteDto?> GetRouteByIdAsync(int id)
         {
             var route = await _routeRepository.GetTableNoTracking()
-                .Include(r => r.OriginStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
-                .Include(r => r.DestinationStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(r => r.OriginStation).ThenInclude(s => s.City)
+                .Include(r => r.DestinationStation).ThenInclude(s => s.City)
                 .Include(r => r.RouteStations).ThenInclude(rs => rs.Station)
                 .Include(r => r.Trips)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -105,8 +105,8 @@ namespace Sudan_Train.Service.Implementations
         public async Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null)
         {
             var query = _routeRepository.GetTableNoTracking()
-                .Include(r => r.OriginStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
-                .Include(r => r.DestinationStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(r => r.OriginStation).ThenInclude(s => s.City)
+                .Include(r => r.DestinationStation).ThenInclude(s => s.City)
                 .Include(r => r.RouteStations).ThenInclude(rs => rs.Station)
                 .Include(r => r.Trips)
                 .AsQueryable();
@@ -145,8 +145,8 @@ namespace Sudan_Train.Service.Implementations
         public async Task<RouteDto> UpdateRouteAsync(int id, string? nameEn, string? nameAr, decimal? distanceKm)
         {
             var route = await _routeRepository.GetTableNoTracking()
-                .Include(r => r.OriginStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
-                .Include(r => r.DestinationStation).ThenInclude(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(r => r.OriginStation).ThenInclude(s => s.City)
+                .Include(r => r.DestinationStation).ThenInclude(s => s.City)
                 .Include(r => r.RouteStations).ThenInclude(rs => rs.Station)
                 .Include(r => r.Trips)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -255,8 +255,6 @@ namespace Sudan_Train.Service.Implementations
                 NameAr = station.NameAr,
                 CityId = station.CityId,
                 CityName = station.City?.NameEn ?? "",
-                StateName = station.City?.State?.NameEn ?? "",
-                RegionName = station.City?.State?.Region?.NameEn ?? "",
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,

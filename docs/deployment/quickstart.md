@@ -56,7 +56,7 @@ docker-compose down -v && docker-compose up --build -d
 | Service | URL |
 |---------|-----|
 | **Customer App** | http://localhost:3000 |
-| **Admin Dashboard** | http://localhost:3001 |
+| **Admin Dashboard** | <http://localhost:3001> |
 | **Swagger UI** | http://localhost:8080/swagger |
 | **API Base** | http://localhost:8080 |
 | **Messaging API** | http://localhost:5001 |

@@ -14,8 +14,6 @@ namespace Sudan_Train.Infrastructure
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
 
             // Infrastructure Repositories
-            services.AddTransient<IRegionRepository, RegionRepository>();
-            services.AddTransient<IStateRepository, StateRepository>();
             services.AddTransient<ICityRepository, CityRepository>();
             services.AddTransient<IStationRepository, StationRepository>();
             services.AddTransient<IRouteRepository, RouteRepository>();
@@ -30,7 +28,7 @@ namespace Sudan_Train.Infrastructure
             services.AddTransient<DatabaseSeeder>();
             services.AddTransient<RoleSeeder>();
             services.AddTransient<UserSeeder>();
-            services.AddTransient<StateAndCitySeeder>();
+            services.AddTransient<CitiesSeeder>();
 
             //views
 

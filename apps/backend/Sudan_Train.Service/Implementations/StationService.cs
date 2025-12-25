@@ -41,7 +41,6 @@ namespace Sudan_Train.Service.Implementations
             await _stationRepository.AddAsync(station);
 
             var city = await _cityRepository.GetTableNoTracking()
-                .Include(c => c.State).ThenInclude(s => s.Region)
                 .FirstOrDefaultAsync(c => c.Id == cityId);
 
             return new StationDto
@@ -52,8 +51,6 @@ namespace Sudan_Train.Service.Implementations
                 NameAr = station.NameAr,
                 CityId = station.CityId,
                 CityName = city?.NameEn ?? "",
-                StateName = city?.State?.NameEn ?? "",
-                RegionName = city?.State?.Region?.NameEn ?? "",
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
@@ -65,7 +62,7 @@ namespace Sudan_Train.Service.Implementations
         public async Task<StationDto?> GetStationByIdAsync(int id)
         {
             var station = await _stationRepository.GetTableNoTracking()
-                .Include(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(s => s.City)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (station == null)
@@ -79,8 +76,6 @@ namespace Sudan_Train.Service.Implementations
                 NameAr = station.NameAr,
                 CityId = station.CityId,
                 CityName = station.City.NameEn,
-                StateName = station.City.State.NameEn,
-                RegionName = station.City.State.Region.NameEn,
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
@@ -92,7 +87,7 @@ namespace Sudan_Train.Service.Implementations
         public async Task<List<StationDto>> GetAllStationsAsync(int? cityId = null, string? searchTerm = null)
         {
             var query = _stationRepository.GetTableNoTracking()
-                .Include(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(s => s.City)
                 .AsQueryable();
 
             if (cityId.HasValue)
@@ -117,8 +112,6 @@ namespace Sudan_Train.Service.Implementations
                     NameAr = s.NameAr,
                     CityId = s.CityId,
                     CityName = s.City.NameEn,
-                    StateName = s.City.State.NameEn,
-                    RegionName = s.City.State.Region.NameEn,
                     Latitude = s.Latitude,
                     Longitude = s.Longitude,
                     AddressEn = s.AddressEn,
@@ -133,7 +126,7 @@ namespace Sudan_Train.Service.Implementations
         public async Task<StationDto> UpdateStationAsync(int id, string? nameEn, string? nameAr, double? latitude, double? longitude, string? addressEn, string? addressAr)
         {
             var station = await _stationRepository.GetTableNoTracking()
-                .Include(s => s.City).ThenInclude(c => c.State).ThenInclude(st => st.Region)
+                .Include(s => s.City)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (station == null)
@@ -169,8 +162,6 @@ namespace Sudan_Train.Service.Implementations
                 NameAr = station.NameAr,
                 CityId = station.CityId,
                 CityName = station.City.NameEn,
-                StateName = station.City.State.NameEn,
-                RegionName = station.City.State.Region.NameEn,
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
@@ -200,6 +191,24 @@ namespace Sudan_Train.Service.Implementations
             return !await query.AnyAsync();
         }
 
+        public async Task<bool> IsStationNameUniqueInCityAsync(string nameEn, string nameAr, int cityId, int? excludeId = null)
+        {
+            var query = _stationRepository.GetTableNoTracking()
+                .Where(s => s.CityId == cityId &&
+                    (s.NameEn.ToLower() == nameEn.ToLower() || s.NameAr == nameAr));
+
+            if (excludeId.HasValue)
+                query = query.Where(s => s.Id != excludeId.Value);
+
+            return !await query.AnyAsync();
+        }
+
+        public async Task<bool> CityExistsAsync(int cityId)
+        {
+            return await _cityRepository.GetTableNoTracking()
+                .AnyAsync(c => c.Id == cityId);
+        }
+
         public async Task<bool> StationIsUsedInRoutesAsync(int stationId)
         {
             return await _routeRepository.GetTableNoTracking()
@@ -207,4 +216,5 @@ namespace Sudan_Train.Service.Implementations
         }
     }
 }
+
 

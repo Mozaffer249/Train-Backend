@@ -37,6 +37,7 @@ namespace Sudan_Train.Service.Implementations
 
         public async Task NotifyNewDeviceLoginAsync(User user, string deviceInfo, string ipAddress)
         {
+            
             var subject = "New Device Login Detected - Sudan Train";
             var body = GenerateNewDeviceLoginEmail(user.FirstName, deviceInfo, ipAddress, DateTime.UtcNow);
             

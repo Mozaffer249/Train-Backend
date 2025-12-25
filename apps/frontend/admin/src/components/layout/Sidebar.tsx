@@ -5,6 +5,8 @@ import {
   CalendarDays, 
   Train, 
   Ticket,
+  MapPin,
+  Database,
   LogOut 
 } from 'lucide-react';
 
@@ -13,6 +15,8 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/geography', icon: MapPin, label: 'Geography' },
+    { path: '/seeding', icon: Database, label: 'Data Seeding' },
     { path: '/users', icon: Users, label: 'Users' },
     { path: '/bookings', icon: Ticket, label: 'Bookings' },
     { path: '/trains', icon: Train, label: 'Trains' },

@@ -23,7 +23,10 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.CreateCity
             var cityDto = await _geographyService.CreateCityAsync(
                 request.NameEn,
                 request.NameAr,
-                request.StateId);
+                request.Latitude,
+                request.Longitude,
+                request.GooglePlaceId,
+                request.FormattedAddress);
 
             return Success("City created successfully", cityDto);
         }

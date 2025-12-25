@@ -24,11 +24,39 @@ namespace Sudan_Train.Data.Entity
         [ForeignKey(nameof(CityId))]
         public City City { get; set; } = default!;
 
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
+        [Required]
+        public double Latitude { get; set; }
+
+        [Required]
+        public double Longitude { get; set; }
 
         public string? AddressEn { get; set; }
         public string? AddressAr { get; set; }
+
+        // Google Integration Fields
+        [MaxLength(255)]
+        public string? GooglePlaceId { get; set; }
+
+        [MaxLength(500)]
+        public string? FormattedAddress { get; set; }
+
+        [MaxLength(50)]
+        public string? PlusCode { get; set; }
+
+        [MaxLength(100)]
+        public string? GoogleType { get; set; }
+
+        public DateTime? GoogleSyncedAt { get; set; }
+        public bool IsFromGoogle { get; set; } = false;
+
+        [MaxLength(50)]
+        public string? BusinessStatus { get; set; }
+
+        // Spatial Fields
+        public double? ServiceRadiusKm { get; set; }
+
+        [MaxLength(50)]
+        public string? StationType { get; set; } // "train_station", "bus_station", etc.
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

@@ -20,7 +20,7 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.GetAllCities
 
         public async Task<Response<List<CityDto>>> Handle(GetAllCitiesQuery request, CancellationToken cancellationToken)
         {
-            var cities = await _geographyService.GetAllCitiesAsync(request.StateId);
+            var cities = await _geographyService.GetAllCitiesAsync();
             return Success(null, cities);
         }
     }

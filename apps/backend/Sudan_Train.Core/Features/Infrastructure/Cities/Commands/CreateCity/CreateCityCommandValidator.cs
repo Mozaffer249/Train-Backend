@@ -1,34 +1,42 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using Sudan_Train.Infrastructure.Abstracts;
+using Sudan_Train.Service.Abstracts;
 
 namespace Sudan_Train.Core.Features.Infrastructure.Cities.Commands.CreateCity
 {
     public class CreateCityCommandValidator : AbstractValidator<CreateCityCommand>
     {
-        private readonly IStateRepository _stateRepository;
+        private readonly IGeographyService _geographyService;
 
-        public CreateCityCommandValidator(IStateRepository stateRepository)
+        public CreateCityCommandValidator(IGeographyService geographyService)
         {
-            _stateRepository = stateRepository;
+            _geographyService = geographyService;
 
             RuleFor(x => x.NameEn)
                 .NotEmpty().WithMessage("English name is required")
                 .Length(3, 100).WithMessage("English name must be between 3 and 100 characters");
 
             RuleFor(x => x.NameAr)
-                .Length(3, 100).When(x => !string.IsNullOrEmpty(x.NameAr))
-                .WithMessage("Arabic name must be between 3 and 100 characters");
+                .NotEmpty().WithMessage("Arabic name is required")
+                .Length(3, 100).WithMessage("Arabic name must be between 3 and 100 characters");
 
-            RuleFor(x => x.StateId)
-                .GreaterThan(0).WithMessage("State ID is required")
-                .MustAsync(StateExists).WithMessage("State not found");
+            RuleFor(x => x.Latitude)
+                .NotEmpty().WithMessage("Latitude is required")
+                .InclusiveBetween(-90, 90).WithMessage("Latitude must be between -90 and 90");
+
+            RuleFor(x => x.Longitude)
+                .NotEmpty().WithMessage("Longitude is required")
+                .InclusiveBetween(-180, 180).WithMessage("Longitude must be between -180 and 180");
+
+            // Duplicate name validation globally
+            RuleFor(x => x)
+                .MustAsync(BeUniqueName).WithMessage("A city with this name already exists");
         }
 
-        private async Task<bool> StateExists(int stateId, CancellationToken cancellationToken)
+        private async Task<bool> BeUniqueName(CreateCityCommand command, CancellationToken cancellationToken)
         {
-            return await _stateRepository.GetTableNoTracking().AnyAsync(s => s.Id == stateId, cancellationToken);
+            return await _geographyService.IsCityNameUniqueAsync(command.NameEn, command.NameAr);
         }
     }
 }
+
 

@@ -134,13 +134,13 @@ using (var scope = app.Services.CreateScope())
         var userSeeder = services.GetRequiredService<UserSeeder>();
         await userSeeder.SeedAsync();
 
-        var stateAndCitySeeder = services.GetRequiredService<StateAndCitySeeder>();
-        await stateAndCitySeeder.SeedAsync();
+        // var stateAndCitySeeder = services.GetRequiredService<GovernorateAndCitySeeder>();
+        // await stateAndCitySeeder.SeedAsync();
 
         // Seed infrastructure data (trains, routes, trips)
-        var context = services.GetRequiredService<ApplicationDBContext>();
-        var infrastructureSeeder = new InfrastructureSeeder(context, services.GetRequiredService<ILogger<InfrastructureSeeder>>());
-        await infrastructureSeeder.SeedAsync();
+        // var context = services.GetRequiredService<ApplicationDBContext>();
+        // var infrastructureSeeder = new InfrastructureSeeder(context, services.GetRequiredService<ILogger<InfrastructureSeeder>>());
+        // await infrastructureSeeder.SeedAsync();
 
         Log.Information("Database initialization and seeding completed successfully.");
     }

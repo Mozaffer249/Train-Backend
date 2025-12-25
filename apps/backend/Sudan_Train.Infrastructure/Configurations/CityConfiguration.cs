@@ -18,13 +18,8 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.HasIndex(c => new { c.StateId, c.NameEn })
-                .IsUnique();
-
-            builder.HasOne(c => c.State)
-                .WithMany(s => s.Cities)
-                .HasForeignKey(c => c.StateId)
-                .OnDelete(DeleteBehavior.Restrict);
+      
+   
 
             builder.HasMany(c => c.Stations)
                 .WithOne(s => s.City)
