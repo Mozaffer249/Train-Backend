@@ -395,6 +395,7 @@ const GeographyPage = () => {
         onClose={() => setIsCityModalOpen(false)}
         onSuccess={handleCitySuccess}
         city={selectedCity}
+        existingCities={cities}
       />
       <StationModal
         isOpen={isStationModalOpen}

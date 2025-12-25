@@ -10,6 +10,7 @@ interface CityModalProps {
   onClose: () => void;
   onSuccess: () => void;
   city?: City | null;
+  existingCities?: City[];
 }
 
 const mapContainerStyle = {
@@ -22,7 +23,7 @@ const sudanCenter = {
   lng: 32.5599,
 };
 
-const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
+const CityModal = ({ isOpen, onClose, onSuccess, city, existingCities = [] }: CityModalProps) => {
   const { isLoaded } = useGoogleMaps();
   const [formData, setFormData] = useState<CityFormData>({
     nameAr: '',
@@ -109,14 +110,6 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
 
     try {
       const validation = await citiesApi.validateLocation(lat, lng);
-      console.log('🔍 Validation Response:', validation);
-      console.log('📍 Boundary Data:', {
-        polygon: validation.suggestedData?.boundaryPolygon,
-        north: validation.suggestedData?.boundingBoxNorth,
-        south: validation.suggestedData?.boundingBoxSouth,
-        east: validation.suggestedData?.boundingBoxEast,
-        west: validation.suggestedData?.boundingBoxWest,
-      });
       setValidationResult(validation);
 
       if (!validation.isValid) {
@@ -210,15 +203,6 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
     }
 
     setIsSubmitting(true);
-
-    console.log('📤 Submitting formData:', formData);
-    console.log('🗺️ Boundary fields in formData:', {
-      boundaryPolygon: formData.boundaryPolygon,
-      boundingBoxNorth: formData.boundingBoxNorth,
-      boundingBoxSouth: formData.boundingBoxSouth,
-      boundingBoxEast: formData.boundingBoxEast,
-      boundingBoxWest: formData.boundingBoxWest,
-    });
 
     try {
       if (isEditMode && city) {
@@ -414,6 +398,27 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
                     </div>
                   </Autocomplete>
 
+                  {/* Legend */}
+                  {!isEditMode && existingCities.some(c => c.boundaryPolygon) && (
+                    <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
+                      <div className="font-medium mb-1">Map Legend:</div>
+                      <div className="flex gap-4">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 border border-gray-400 bg-gray-200 opacity-30"></div>
+                          <span>Existing cities</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 border-2 border-green-500 bg-green-200 opacity-40"></div>
+                          <span>New city boundary</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                          <span>Selected location</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Map */}
                   <div className="border border-gray-300 rounded-lg overflow-hidden">
                     <GoogleMap
@@ -426,7 +431,67 @@ const CityModal = ({ isOpen, onClose, onSuccess, city }: CityModalProps) => {
                         streetViewControl: false,
                       }}
                     >
-                      {markerPosition && <Marker position={markerPosition} />}
+                      {/* Existing City Boundaries - Show as context */}
+                      {!isEditMode && existingCities
+                        .filter(existingCity => existingCity.id !== city?.id && existingCity.boundaryPolygon)
+                        .map((existingCity) => {
+                          try {
+                            const geoJson = JSON.parse(existingCity.boundaryPolygon!);
+                            const coordinates = geoJson.coordinates[0].map((coord: [number, number]) => ({
+                              lat: coord[1],
+                              lng: coord[0]
+                            }));
+
+                            return (
+                              <Polygon
+                                key={`existing-boundary-${existingCity.id}`}
+                                paths={coordinates}
+                                options={{
+                                  strokeColor: '#94A3B8',
+                                  strokeOpacity: 0.5,
+                                  strokeWeight: 1.5,
+                                  fillColor: '#94A3B8',
+                                  fillOpacity: 0.05,
+                                  clickable: false,
+                                  zIndex: 1,
+                                }}
+                              />
+                            );
+                          } catch {
+                            return null;
+                          }
+                        })}
+
+                      {/* New City Boundary - Show after validation */}
+                      {boundaryPaths.length > 0 && (
+                        <Polygon
+                          paths={boundaryPaths}
+                          options={{
+                            strokeColor: '#10B981',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: '#10B981',
+                            fillOpacity: 0.2,
+                            clickable: false,
+                            zIndex: 2,
+                          }}
+                        />
+                      )}
+
+                      {/* Marker for selected location */}
+                      {markerPosition && (
+                        <Marker
+                          position={markerPosition}
+                          icon={{
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: '#EF4444',
+                            fillOpacity: 1,
+                            strokeColor: '#fff',
+                            strokeWeight: 2,
+                          }}
+                        />
+                      )}
                     </GoogleMap>
                   </div>
 
