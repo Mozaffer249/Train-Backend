@@ -116,7 +116,7 @@ export const citiesApi = {
 };
 
 // Geography API - Stations
-import { Station, StationFormData } from '../types/geography';
+import { Station, StationFormData, StationValidationResult } from '../types/geography';
 
 export const stationsApi = {
   getAll: (cityId?: number) => {
@@ -137,6 +137,13 @@ export const stationsApi = {
     api.put<Station>(`/Infrastructure/Stations/${id}`, data),
 
   delete: (id: number) => api.delete<void>(`/Infrastructure/Stations/${id}`),
+
+  validateLocation: (lat: number, lng: number, cityId: number) =>
+    api.post<StationValidationResult>('/Infrastructure/Stations/ValidateLocation', {
+      latitude: lat,
+      longitude: lng,
+      cityId: cityId
+    }),
 };
 
 // Spatial API

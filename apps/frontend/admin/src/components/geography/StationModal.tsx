@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, MapPin, Search } from 'lucide-react';
-import { GoogleMap, Marker, Autocomplete, Circle } from '@react-google-maps/api';
+import { GoogleMap, Marker, Autocomplete, Circle, Polygon } from '@react-google-maps/api';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
-import { Station, StationFormData, City } from '../../types/geography';
+import { Station, StationFormData, City, StationValidationResult } from '../../types/geography';
 import { stationsApi, citiesApi } from '../../services/api';
 
 interface StationModalProps {
@@ -43,6 +43,8 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationResult, setValidationResult] = useState<StationValidationResult | null>(null);
+  const [isValidatingLocation, setIsValidatingLocation] = useState(false);
 
   const isEditMode = !!station;
 
@@ -87,6 +89,7 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
       setMapCenter(sudanCenter);
     }
     setError(null);
+    setValidationResult(null);
   }, [station, isOpen]);
 
   // Update map center when city is selected
@@ -132,18 +135,47 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
     }
   };
 
+  const validateAndSetLocation = async (lat: number, lng: number) => {
+    if (!formData.cityId) {
+      setError('Please select a city first');
+      return;
+    }
+
+    setIsValidatingLocation(true);
+    setError(null);
+    setValidationResult(null);
+
+    try {
+      const validation = await stationsApi.validateLocation(lat, lng, formData.cityId);
+      setValidationResult(validation);
+
+      if (!validation.isValid) {
+        setError(validation.message);
+        setMarkerPosition({ lat, lng });
+        setFormData({ ...formData, latitude: lat, longitude: lng });
+      } else {
+        setMarkerPosition({ lat, lng });
+        setFormData({
+          ...formData,
+          latitude: lat,
+          longitude: lng,
+          formattedAddress: validation.suggestedData?.formattedAddress || formData.formattedAddress,
+        });
+      }
+    } catch (err: any) {
+      console.error('Validation error:', err);
+      setMarkerPosition({ lat, lng });
+      setFormData({ ...formData, latitude: lat, longitude: lng });
+    } finally {
+      setIsValidatingLocation(false);
+    }
+  };
+
   const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      setFormData((prev) => ({
-        ...prev,
-        latitude: lat,
-        longitude: lng,
-      }));
+      validateAndSetLocation(event.latLng.lat(), event.latLng.lng());
     }
-  }, []);
+  }, [formData.cityId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,6 +259,18 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
               {error}
+            </div>
+          )}
+
+          {validationResult && validationResult.isValid && !error && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+              ✓ {validationResult.message}
+            </div>
+          )}
+
+          {isValidatingLocation && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+              🔍 Validating location...
             </div>
           )}
 
@@ -429,6 +473,37 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
                         streetViewControl: false,
                       }}
                     >
+                      {/* City Boundary - Show selected city's boundary */}
+                      {formData.cityId && cities.length > 0 && (() => {
+                        const selectedCity = cities.find(c => c.id === formData.cityId);
+                        if (selectedCity?.boundaryPolygon) {
+                          try {
+                            const geoJson = JSON.parse(selectedCity.boundaryPolygon);
+                            const coordinates = geoJson.coordinates[0].map((coord: [number, number]) => ({
+                              lat: coord[1],
+                              lng: coord[0]
+                            }));
+                            return (
+                              <Polygon
+                                key={`city-boundary-${selectedCity.id}`}
+                                paths={coordinates}
+                                options={{
+                                  strokeColor: '#3B82F6',
+                                  strokeOpacity: 0.6,
+                                  strokeWeight: 2,
+                                  fillColor: '#3B82F6',
+                                  fillOpacity: 0.1,
+                                  clickable: false,
+                                }}
+                              />
+                            );
+                          } catch {
+                            return null;
+                          }
+                        }
+                        return null;
+                      })()}
+
                       {markerPosition && (
                         <>
                           <Marker position={markerPosition} />
@@ -474,10 +549,19 @@ const StationModal = ({ isOpen, onClose, onSuccess, station }: StationModalProps
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || isLoadingCities || !formData.latitude || !formData.longitude}
+              disabled={
+                isSubmitting || 
+                isLoadingCities || 
+                isValidatingLocation ||
+                !formData.latitude || 
+                !formData.longitude ||
+                (validationResult && !validationResult.isValid)
+              }
               className="flex-1 px-4 py-2 bg-admin-primary-600 text-white rounded-lg hover:bg-admin-primary-700 transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : isEditMode ? 'Update Station' : 'Create Station'}
+              {isSubmitting ? 'Saving...' : 
+               isValidatingLocation ? 'Validating...' :
+               isEditMode ? 'Update Station' : 'Create Station'}
             </button>
           </div>
         </form>

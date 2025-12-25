@@ -7,6 +7,7 @@ using Sudan_Train.Core.Features.Infrastructure.Stations.Commands.DeleteStation;
 using Sudan_Train.Core.Features.Infrastructure.Stations.Queries.GetAllStations;
 using Sudan_Train.Core.Features.Infrastructure.Stations.Queries.GetStationById;
 using Sudan_Train.Core.Features.Infrastructure.Stations.Queries.CheckDuplicate;
+using Sudan_Train.Core.Features.Infrastructure.Stations.Queries.ValidateLocation;
 using Sudan_Train.Data.AppMetaData;
 
 namespace Sudan_Train.Controllers.Infrastructure.RailwayNetwork
@@ -96,6 +97,17 @@ namespace Sudan_Train.Controllers.Infrastructure.RailwayNetwork
                 CityId = cityId,
                 ExcludeId = excludeId
             });
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Validate station location to ensure it's within city boundaries
+        /// </summary>
+        [HttpPost("ValidateLocation")]
+        [Authorize(Roles = Roles.AdminOrStaff)]
+        public async Task<IActionResult> ValidateLocation([FromBody] ValidateStationLocationQuery query)
+        {
+            var response = await _mediator.Send(query);
             return Ok(response);
         }
     }

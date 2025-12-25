@@ -20,6 +20,10 @@ namespace Sudan_Train.Infrastructure.Repositories
         #endregion
 
         #region Handle Functions
+        public async Task<List<Station>> GetAllAsync()
+        {
+            return await stations.ToListAsync();
+        }
         #endregion
     }
 }

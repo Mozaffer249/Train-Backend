@@ -98,6 +98,21 @@ export interface CityValidationResult {
   distanceKm?: number;
 }
 
+// Station validation result (for location and duplicate detection)
+export interface StationValidationResult {
+  isValid: boolean;
+  message: string;
+  existingStation?: Station;
+  suggestedData?: {
+    nameEn: string;
+    formattedAddress: string;
+    googlePlaceId?: string;
+    cityId: number;
+    cityName: string;
+  };
+  distanceKm?: number;
+}
+
 // Map entity union type
 export type MapEntity = City | Station;
 export type EntityType = 'city' | 'station';

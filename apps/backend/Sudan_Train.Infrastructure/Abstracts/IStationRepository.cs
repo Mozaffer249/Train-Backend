@@ -5,6 +5,7 @@ namespace Sudan_Train.Infrastructure.Abstracts
 {
     public interface IStationRepository : IGenericRepositoryAsync<Station>
     {
+        Task<List<Station>> GetAllAsync();
     }
 }
 
