@@ -57,9 +57,31 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                 });
             }
 
-            // Step 2: Extract boundaries from geocode result
-            var (polygon, north, south, east, west) =
-                _googleGeocodingService.ExtractBoundaries(geocodeResult);
+            // Step 2: Extract city name first
+            var cityName = ExtractCityName(geocodeResult);
+
+            // Step 2b: Get city-level boundaries by geocoding the city name
+            // This gives us the FULL city viewport instead of just the clicked point
+            string? polygon = null;
+            double? north = null, south = null, east = null, west = null;
+
+            if (!string.IsNullOrEmpty(cityName))
+            {
+                // Forward geocode the city name to get city-level boundaries
+                var cityLevelResult = await _googleGeocodingService.GeocodeAddress(cityName);
+                if (cityLevelResult != null)
+                {
+                    (polygon, north, south, east, west) =
+                        _googleGeocodingService.ExtractBoundaries(cityLevelResult);
+                }
+            }
+
+            // Fallback to original result if city-level geocoding failed
+            if (string.IsNullOrEmpty(polygon))
+            {
+                (polygon, north, south, east, west) =
+                    _googleGeocodingService.ExtractBoundaries(geocodeResult);
+            }
 
             // Step 3: Check if point is within ANY existing city's boundary polygon
             var citiesWithBoundaries = await _cityRepository.GetAllWithBoundariesAsync();
@@ -96,9 +118,7 @@ namespace Sudan_Train.Core.Features.Infrastructure.Cities.Queries.ValidateLocati
                 }
             }
 
-            // Step 4: Extract city name from address components
-            var cityName = ExtractCityName(geocodeResult);
-
+            // Step 4: Check if city name was extracted (already extracted in Step 2)
             if (string.IsNullOrEmpty(cityName))
             {
                 return Success<CityValidationDto>(null, new CityValidationDto

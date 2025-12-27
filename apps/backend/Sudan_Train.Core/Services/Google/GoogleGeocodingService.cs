@@ -176,7 +176,7 @@ namespace Sudan_Train.Core.Services.Google
         public (string? polygon, double? north, double? south, double? east, double? west)
             ExtractBoundaries(GoogleResult result)
         {
-            var viewport = result.Geometry.Bounds ?? result.Geometry.Viewport;
+            var viewport = result.Geometry.Viewport ?? result.Geometry.Bounds;
 
             if (viewport == null)
                 return (null, null, null, null, null);
