@@ -4,7 +4,7 @@ const libraries: ('places' | 'drawing' | 'geometry')[] = ['places', 'drawing', '
 
 export const useGoogleMaps = () => {
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBwgPpXdlERV4l4OfuahpcTksHME8HU6H0',
     libraries,
   });
 

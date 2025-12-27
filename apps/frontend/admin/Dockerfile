@@ -3,6 +3,16 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
+# Accept build arguments
+ARG VITE_API_URL
+ARG VITE_MESSAGING_API_URL
+ARG VITE_GOOGLE_MAPS_API_KEY
+
+# Set as environment variables for Vite build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_MESSAGING_API_URL=$VITE_MESSAGING_API_URL
+ENV VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY
+
 # Copy package files
 COPY package*.json ./
 
@@ -12,7 +22,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the app
+# Build the app (environment variables are now available)
 RUN npm run build
 
 # Stage 2: Production

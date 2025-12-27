@@ -139,11 +139,12 @@ services:
     build:
       context: ./apps/frontend/admin
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8080
+        - VITE_MESSAGING_API_URL=http://localhost:5001
+        - VITE_GOOGLE_MAPS_API_KEY=AIzaSyBwgPpXdlERV4l4OfuahpcTksHME8HU6H0
     image: sudan-train-admin:latest
     container_name: sudan-train-admin
-    environment:
-      - VITE_API_URL=http://localhost:8080
-      - VITE_MESSAGING_API_URL=http://localhost:5001
     ports:
       - "3001:80"
     depends_on:
