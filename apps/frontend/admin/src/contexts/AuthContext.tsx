@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const parsedUser = JSON.parse(storedUser);
           // Validate that user has admin/staff role
-          if (parsedUser.role === 'SuperAdmin' || parsedUser.role === 'Staff') {
+          if (parsedUser.role === 'Admin' || parsedUser.role === 'Staff') {
             setUser(parsedUser);
           } else {
             // Invalid role, clear storage

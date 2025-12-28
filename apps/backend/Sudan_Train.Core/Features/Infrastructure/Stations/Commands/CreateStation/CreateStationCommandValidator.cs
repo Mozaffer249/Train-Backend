@@ -18,7 +18,6 @@ namespace Sudan_Train.Core.Features.Infrastructure.Stations.Commands.CreateStati
             RuleFor(x => x.Code)
                 .NotEmpty().WithMessage("Station code is required")
                 .Length(3, 10).WithMessage("Station code must be between 3 and 10 characters")
-                .Matches("^[A-Z0-9]+$").WithMessage("Station code must contain only uppercase letters and numbers")
                 .MustAsync(BeUniqueCode).WithMessage("Station code already exists");
 
             RuleFor(x => x.NameEn)
