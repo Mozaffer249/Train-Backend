@@ -8,6 +8,9 @@ namespace Sudan_Train.Core.Features.Infrastructure.Routes.Queries.GetAllRoutes
     {
         public int? OriginStationId { get; set; }
         public int? DestinationStationId { get; set; }
+        public bool? IsActive { get; set; }
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }
 

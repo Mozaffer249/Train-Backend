@@ -28,6 +28,12 @@ namespace Sudan_Train.Data.Entity
 
         public decimal? DistanceKm { get; set; }
 
+        // Status Fields
+        public bool IsActive { get; set; } = true;
+
+        [MaxLength(500)]
+        public string? MaintenanceNote { get; set; }
+
         public ICollection<RouteStation> RouteStations { get; set; } = new List<RouteStation>();
         public ICollection<Trip> Trips { get; set; } = new List<Trip>();
         public ICollection<TrainSchedule> TrainSchedules { get; set; } = new List<TrainSchedule>();

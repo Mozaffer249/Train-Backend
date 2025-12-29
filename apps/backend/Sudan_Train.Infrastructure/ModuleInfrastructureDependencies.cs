@@ -18,6 +18,7 @@ namespace Sudan_Train.Infrastructure
             services.AddTransient<IStationRepository, StationRepository>();
             services.AddTransient<IRouteRepository, RouteRepository>();
             services.AddTransient<IRouteStationRepository, RouteStationRepository>();
+            services.AddTransient<IFareRepository, FareRepository>();
             services.AddTransient<ITrainRepository, TrainRepository>();
             services.AddTransient<ICoachRepository, CoachRepository>();
             services.AddTransient<ISeatRepository, SeatRepository>();

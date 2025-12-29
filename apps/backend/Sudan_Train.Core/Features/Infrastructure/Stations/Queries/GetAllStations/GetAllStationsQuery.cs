@@ -8,6 +8,10 @@ namespace Sudan_Train.Core.Features.Infrastructure.Stations.Queries.GetAllStatio
     {
         public int? CityId { get; set; }
         public string? SearchTerm { get; set; }
+        public bool? IsActive { get; set; }
+        public string? StationType { get; set; }
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }
 

@@ -23,8 +23,12 @@ namespace Sudan_Train.Service
             services.AddTransient<IGeographyService, GeographyService>();
             services.AddTransient<IStationService, StationService>();
             services.AddTransient<IRouteService, RouteService>();
+            services.AddTransient<IFareService, FareService>();
             services.AddTransient<ITrainService, TrainService>();
             services.AddTransient<ITripService, TripService>();
+
+            // Utility services
+            services.AddTransient<IDistanceCalculationService, DistanceCalculationService>();
 
             // Register EmailServiceProxy to forward email requests to MessagingApi microservice
             services.AddHttpClient<IEmailService, EmailServiceProxy>();

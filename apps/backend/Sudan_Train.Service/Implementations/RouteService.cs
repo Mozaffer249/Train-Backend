@@ -12,17 +12,20 @@ namespace Sudan_Train.Service.Implementations
         private readonly IRouteStationRepository _routeStationRepository;
         private readonly IStationRepository _stationRepository;
         private readonly ITripRepository _tripRepository;
+        private readonly IDistanceCalculationService _distanceCalculationService;
 
         public RouteService(
             IRouteRepository routeRepository,
             IRouteStationRepository routeStationRepository,
             IStationRepository stationRepository,
-            ITripRepository tripRepository)
+            ITripRepository tripRepository,
+            IDistanceCalculationService distanceCalculationService)
         {
             _routeRepository = routeRepository;
             _routeStationRepository = routeStationRepository;
             _stationRepository = stationRepository;
             _tripRepository = tripRepository;
+            _distanceCalculationService = distanceCalculationService;
         }
 
         public async Task<RouteDto> CreateRouteAsync(int originStationId, int destinationStationId, string? nameEn, string? nameAr, decimal? distanceKm)
@@ -44,13 +47,22 @@ namespace Sudan_Train.Service.Implementations
                 ? nameAr
                 : $"خط {originStation?.NameAr} إلى {destinationStation?.NameAr}";
 
+            // Auto-calculate distance if not provided
+            var calculatedDistance = distanceKm;
+            if (!calculatedDistance.HasValue && originStation != null && destinationStation != null)
+            {
+                calculatedDistance = (decimal)_distanceCalculationService.CalculateDistance(
+                    originStation.Latitude, originStation.Longitude,
+                    destinationStation.Latitude, destinationStation.Longitude);
+            }
+
             var route = new Route
             {
                 NameEn = routeName,
                 NameAr = routeNameAr,
                 OriginStationId = originStationId,
                 DestinationStationId = destinationStationId,
-                DistanceKm = distanceKm,
+                DistanceKm = calculatedDistance,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -102,7 +114,7 @@ namespace Sudan_Train.Service.Implementations
             };
         }
 
-        public async Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null)
+        public async Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null, bool? isActive = null, int pageNumber = 1, int pageSize = 10)
         {
             var query = _routeRepository.GetTableNoTracking()
                 .Include(r => r.OriginStation).ThenInclude(s => s.City)
@@ -117,8 +129,13 @@ namespace Sudan_Train.Service.Implementations
             if (destinationStationId.HasValue)
                 query = query.Where(r => r.DestinationStationId == destinationStationId.Value);
 
+            if (isActive.HasValue)
+                query = query.Where(r => r.IsActive == isActive.Value);
+
             var routes = await query
                 .OrderBy(r => r.NameEn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             return routes.Select(r => new RouteDto
@@ -224,6 +241,37 @@ namespace Sudan_Train.Service.Implementations
             };
         }
 
+        public async Task<RouteStationDto?> UpdateRouteStationAsync(int routeId, int stationId, int? stopOrder, int? arrivalMinutesFromOrigin, int? departureMinutesFromOrigin)
+        {
+            var routeStation = await _routeStationRepository.GetTableNoTracking()
+                .Include(rs => rs.Station)
+                .FirstOrDefaultAsync(rs => rs.RouteId == routeId && rs.StationId == stationId);
+
+            if (routeStation == null)
+                return null;
+
+            if (stopOrder.HasValue)
+                routeStation.StopOrder = stopOrder.Value;
+
+            if (arrivalMinutesFromOrigin.HasValue)
+                routeStation.ArrivalOffset = TimeSpan.FromMinutes(arrivalMinutesFromOrigin.Value);
+
+            if (departureMinutesFromOrigin.HasValue)
+                routeStation.DepartureOffset = TimeSpan.FromMinutes(departureMinutesFromOrigin.Value);
+
+            await _routeStationRepository.UpdateAsync(routeStation);
+
+            return new RouteStationDto
+            {
+                Id = routeStation.Id,
+                StationId = routeStation.StationId,
+                StationName = routeStation.Station?.NameEn ?? "",
+                StopOrder = routeStation.StopOrder,
+                ArrivalOffset = routeStation.ArrivalOffset,
+                DepartureOffset = routeStation.DepartureOffset
+            };
+        }
+
         public async Task<bool> RemoveRouteStationAsync(int routeId, int stationId)
         {
             var routeStation = await _routeStationRepository.GetTableNoTracking()
@@ -233,7 +281,25 @@ namespace Sudan_Train.Service.Implementations
                 return false;
 
             await _routeStationRepository.DeleteAsync(routeStation);
+
+            // Auto-resequence remaining stations
+            await ResequenceRouteStationsAsync(routeId);
+
             return true;
+        }
+
+        private async Task ResequenceRouteStationsAsync(int routeId)
+        {
+            var routeStations = await _routeStationRepository.GetTableNoTracking()
+                .Where(rs => rs.RouteId == routeId)
+                .OrderBy(rs => rs.StopOrder)
+                .ToListAsync();
+
+            for (int i = 0; i < routeStations.Count; i++)
+            {
+                routeStations[i].StopOrder = i + 1;
+                await _routeStationRepository.UpdateAsync(routeStations[i]);
+            }
         }
 
         public async Task<bool> RouteHasTripsAsync(int routeId)

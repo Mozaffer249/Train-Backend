@@ -20,7 +20,12 @@ namespace Sudan_Train.Core.Features.Infrastructure.Routes.Queries.GetAllRoutes
 
         public async Task<Response<List<RouteDto>>> Handle(GetAllRoutesQuery request, CancellationToken cancellationToken)
         {
-            var routes = await _routeService.GetAllRoutesAsync(request.OriginStationId, request.DestinationStationId);
+            var routes = await _routeService.GetAllRoutesAsync(
+                request.OriginStationId,
+                request.DestinationStationId,
+                request.IsActive,
+                request.PageNumber,
+                request.PageSize);
             return Success(null, routes);
         }
     }

@@ -6,10 +6,11 @@ namespace Sudan_Train.Service.Abstracts
     {
         Task<RouteDto> CreateRouteAsync(int originStationId, int destinationStationId, string? nameEn, string? nameAr, decimal? distanceKm);
         Task<RouteDto?> GetRouteByIdAsync(int id);
-        Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null);
+        Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null, bool? isActive = null, int pageNumber = 1, int pageSize = 10);
         Task<RouteDto> UpdateRouteAsync(int id, string? nameEn, string? nameAr, decimal? distanceKm);
         Task<bool> DeleteRouteAsync(int id);
         Task<RouteStationDto> AddRouteStationAsync(int routeId, int stationId, int stopOrder, int arrivalMinutesFromOrigin, int departureMinutesFromOrigin);
+        Task<RouteStationDto?> UpdateRouteStationAsync(int routeId, int stationId, int? stopOrder, int? arrivalMinutesFromOrigin, int? departureMinutesFromOrigin);
         Task<bool> RemoveRouteStationAsync(int routeId, int stationId);
         Task<bool> RouteHasTripsAsync(int routeId);
     }

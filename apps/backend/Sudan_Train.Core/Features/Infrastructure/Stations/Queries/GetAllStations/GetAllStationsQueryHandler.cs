@@ -20,7 +20,13 @@ namespace Sudan_Train.Core.Features.Infrastructure.Stations.Queries.GetAllStatio
 
         public async Task<Response<List<StationDto>>> Handle(GetAllStationsQuery request, CancellationToken cancellationToken)
         {
-            var stations = await _stationService.GetAllStationsAsync(request.CityId, request.SearchTerm);
+            var stations = await _stationService.GetAllStationsAsync(
+                request.CityId,
+                request.SearchTerm,
+                request.IsActive,
+                request.StationType,
+                request.PageNumber,
+                request.PageSize);
             return Success(null, stations);
         }
     }

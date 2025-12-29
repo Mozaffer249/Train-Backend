@@ -84,7 +84,7 @@ namespace Sudan_Train.Service.Implementations
             };
         }
 
-        public async Task<List<StationDto>> GetAllStationsAsync(int? cityId = null, string? searchTerm = null)
+        public async Task<List<StationDto>> GetAllStationsAsync(int? cityId = null, string? searchTerm = null, bool? isActive = null, string? stationType = null, int pageNumber = 1, int pageSize = 10)
         {
             var query = _stationRepository.GetTableNoTracking()
                 .Include(s => s.City)
@@ -92,6 +92,12 @@ namespace Sudan_Train.Service.Implementations
 
             if (cityId.HasValue)
                 query = query.Where(s => s.CityId == cityId.Value);
+
+            if (isActive.HasValue)
+                query = query.Where(s => s.IsActive == isActive.Value);
+
+            if (!string.IsNullOrEmpty(stationType))
+                query = query.Where(s => s.StationType == stationType);
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -104,6 +110,8 @@ namespace Sudan_Train.Service.Implementations
 
             var stations = await query
                 .OrderBy(s => s.NameEn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(s => new StationDto
                 {
                     Id = s.Id,

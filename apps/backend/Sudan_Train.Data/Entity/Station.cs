@@ -58,6 +58,12 @@ namespace Sudan_Train.Data.Entity
         [MaxLength(50)]
         public string? StationType { get; set; } // "train_station", "bus_station", etc.
 
+        // Status Fields
+        public bool IsActive { get; set; } = true;
+
+        [MaxLength(500)]
+        public string? MaintenanceNote { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

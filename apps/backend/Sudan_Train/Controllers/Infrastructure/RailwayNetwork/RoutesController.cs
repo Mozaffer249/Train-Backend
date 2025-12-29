@@ -5,6 +5,7 @@ using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.CreateRoute;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.UpdateRoute;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.DeleteRoute;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.AddRouteStation;
+using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.UpdateRouteStation;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Commands.RemoveRouteStation;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Queries.GetAllRoutes;
 using Sudan_Train.Core.Features.Infrastructure.Routes.Queries.GetRouteById;
@@ -87,6 +88,19 @@ namespace Sudan_Train.Controllers.Infrastructure.RailwayNetwork
         public async Task<IActionResult> AddRouteStation(int routeId, [FromBody] AddRouteStationCommand command)
         {
             command.RouteId = routeId;
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Update a station in a route (reorder or change timing)
+        /// </summary>
+        [HttpPut("{routeId}/Stations/{stationId}")]
+        [Authorize(Roles = Roles.AdminOrStaff)]
+        public async Task<IActionResult> UpdateRouteStation(int routeId, int stationId, [FromBody] UpdateRouteStationCommand command)
+        {
+            command.RouteId = routeId;
+            command.StationId = stationId;
             var response = await _mediator.Send(command);
             return Ok(response);
         }
