@@ -5,6 +5,9 @@ import { citiesApi, stationsApi } from '../services/api';
 import CityModal from '../components/geography/CityModal';
 import StationModal from '../components/geography/StationModal';
 import GeographyMap from '../components/map/GeographyMap';
+import StatusBadge from '../components/common/StatusBadge';
+import Pagination from '../components/common/Pagination';
+import FilterDropdown from '../components/common/FilterDropdown';
 
 const GeographyPage = () => {
   const [activeTab, setActiveTab] = useState<GeographyTab>('cities');
@@ -20,7 +23,14 @@ const GeographyPage = () => {
   const [filteredStations, setFilteredStations] = useState<Station[]>([]);
   const [stationSearch, setStationSearch] = useState('');
   const [stationCityFilter, setStationCityFilter] = useState<number>(0);
+  const [stationStatusFilter, setStationStatusFilter] = useState<string>('all');
+  const [stationTypeFilter, setStationTypeFilter] = useState<string>('all');
   const [isLoadingStations, setIsLoadingStations] = useState(false);
+  
+  // Pagination state
+  const [stationPageNumber, setStationPageNumber] = useState(1);
+  const [stationPageSize, setStationPageSize] = useState(20);
+  const [totalStations, setTotalStations] = useState(0);
   
   // Modal states
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
@@ -57,25 +67,12 @@ const GeographyPage = () => {
     }
   }, [citySearch, cities]);
 
-  // Filter stations by search and city
+  // Reload stations when filters change
   useEffect(() => {
-    let filtered = stations;
-    
-    if (stationCityFilter) {
-      filtered = filtered.filter((s) => s.cityId === stationCityFilter);
+    if (activeTab === 'stations') {
+      loadStations();
     }
-    
-    if (stationSearch.trim()) {
-      filtered = filtered.filter(
-        (s) =>
-          s.nameAr.includes(stationSearch) ||
-          s.nameEn.toLowerCase().includes(stationSearch.toLowerCase()) ||
-          s.code.toLowerCase().includes(stationSearch.toLowerCase())
-      );
-    }
-    
-    setFilteredStations(filtered);
-  }, [stationSearch, stationCityFilter, stations]);
+  }, [stationSearch, stationCityFilter, stationStatusFilter, stationTypeFilter, stationPageNumber, stationPageSize]);
 
   // Data loading functions
   const loadCities = async () => {
@@ -94,9 +91,20 @@ const GeographyPage = () => {
   const loadStations = async () => {
     setIsLoadingStations(true);
     try {
-      const data = await stationsApi.getAll();
+      const params: any = {
+        pageNumber: stationPageNumber,
+        pageSize: stationPageSize,
+      };
+      
+      if (stationCityFilter) params.cityId = stationCityFilter;
+      if (stationSearch.trim()) params.searchTerm = stationSearch;
+      if (stationStatusFilter !== 'all') params.isActive = stationStatusFilter === 'active';
+      if (stationTypeFilter !== 'all') params.stationType = stationTypeFilter;
+      
+      const data = await stationsApi.getAll(params);
       setStations(data);
       setFilteredStations(data);
+      setTotalStations(data.length); // Note: Backend should return total count
     } catch (error) {
       console.error('Failed to load stations:', error);
     } finally {
@@ -269,37 +277,71 @@ const GeographyPage = () => {
       {/* Stations Tab */}
       {activeTab === 'stations' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex gap-4 flex-1">
-              <div className="relative flex-1 max-w-md">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-4 items-end">
+              <div className="relative flex-1 min-w-[250px]">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
                   placeholder="Search stations..."
                   value={stationSearch}
-                  onChange={(e) => setStationSearch(e.target.value)}
+                  onChange={(e) => {
+                    setStationSearch(e.target.value);
+                    setStationPageNumber(1);
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
                 />
               </div>
-              <div className="relative">
-                <select
-                  value={stationCityFilter}
-                  onChange={(e) => setStationCityFilter(parseInt(e.target.value))}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
-                >
-                  <option value={0}>All Cities</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.nameEn}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              
+              <FilterDropdown
+                label="City"
+                value={stationCityFilter}
+                onChange={(val) => {
+                  setStationCityFilter(Number(val));
+                  setStationPageNumber(1);
+                }}
+                options={[
+                  { value: 0, label: 'All Cities' },
+                  ...cities.map(c => ({ value: c.id, label: c.nameEn }))
+                ]}
+                className="min-w-[150px]"
+              />
+              
+              <FilterDropdown
+                label="Status"
+                value={stationStatusFilter}
+                onChange={(val) => {
+                  setStationStatusFilter(String(val));
+                  setStationPageNumber(1);
+                }}
+                options={[
+                  { value: 'all', label: 'All Status' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' },
+                ]}
+                className="min-w-[130px]"
+              />
+              
+              <FilterDropdown
+                label="Type"
+                value={stationTypeFilter}
+                onChange={(val) => {
+                  setStationTypeFilter(String(val));
+                  setStationPageNumber(1);
+                }}
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'train_station', label: 'Train Station' },
+                  { value: 'bus_station', label: 'Bus Station' },
+                ]}
+                className="min-w-[130px]"
+              />
+              
+              <button onClick={handleAddStation} className="admin-button flex items-center gap-2 ml-auto">
+                <Plus size={20} />
+                Add Station
+              </button>
             </div>
-            <button onClick={handleAddStation} className="admin-button flex items-center gap-2">
-              <Plus size={20} />
-              Add Station
-            </button>
           </div>
 
           <div className="admin-card">
@@ -330,13 +372,13 @@ const GeographyPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isLoadingStations ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         Loading stations...
                       </td>
                     </tr>
                   ) : filteredStations.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         No stations found
                       </td>
                     </tr>
@@ -357,6 +399,12 @@ const GeographyPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
                           {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge 
+                            isActive={station.isActive} 
+                            maintenanceNote={station.maintenanceNote} 
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <button

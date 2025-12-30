@@ -119,9 +119,24 @@ export const citiesApi = {
 import { Station, StationFormData, StationValidationResult } from '../types/geography';
 
 export const stationsApi = {
-  getAll: (cityId?: number) => {
-    const endpoint = cityId
-      ? `/Infrastructure/Stations?cityId=${cityId}`
+  getAll: (params?: {
+    cityId?: number;
+    searchTerm?: string;
+    isActive?: boolean;
+    stationType?: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.cityId) queryParams.append('cityId', params.cityId.toString());
+    if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm);
+    if (params?.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
+    if (params?.stationType) queryParams.append('stationType', params.stationType);
+    if (params?.pageNumber) queryParams.append('pageNumber', params.pageNumber.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    
+    const endpoint = queryParams.toString() 
+      ? `/Infrastructure/Stations?${queryParams}`
       : '/Infrastructure/Stations';
     return api.get<Station[]>(endpoint);
   },
@@ -200,4 +215,70 @@ export const boundaryApi = {
 
   updateCityBoundary: (id: number, data: BoundaryData) =>
     api.put<void>(`/Infrastructure/Cities/${id}/Boundary`, data),
+};
+
+// Routes API
+import { Route, RouteFormData, RouteStationFormData } from '../types/infrastructure';
+
+// Helper function to build query params
+function buildQueryParams(params?: Record<string, any>): string {
+  if (!params) return '';
+  const queryParams = new URLSearchParams();
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null) {
+      queryParams.append(key, params[key].toString());
+    }
+  });
+  return queryParams.toString();
+}
+
+export const routesApi = {
+  getAll: (params?: {
+    originStationId?: number;
+    destinationStationId?: number;
+    isActive?: boolean;
+    pageNumber?: number;
+    pageSize?: number;
+  }) => {
+    const queryString = buildQueryParams(params);
+    const endpoint = queryString ? `/Infrastructure/Routes?${queryString}` : '/Infrastructure/Routes';
+    return api.get<Route[]>(endpoint);
+  },
+  
+  getById: (id: number) => api.get<Route>(`/Infrastructure/Routes/${id}`),
+  
+  create: (data: RouteFormData) => api.post<Route>('/Infrastructure/Routes', data),
+  
+  update: (id: number, data: Partial<RouteFormData>) =>
+    api.put<Route>(`/Infrastructure/Routes/${id}`, data),
+  
+  delete: (id: number) => api.delete<void>(`/Infrastructure/Routes/${id}`),
+  
+  // Route stations management
+  addStation: (routeId: number, data: RouteStationFormData) => 
+    api.post(`/Infrastructure/Routes/${routeId}/Stations`, data),
+  
+  updateStation: (routeId: number, stationId: number, data: Partial<RouteStationFormData>) =>
+    api.put(`/Infrastructure/Routes/${routeId}/Stations/${stationId}`, data),
+  
+  removeStation: (routeId: number, stationId: number) =>
+    api.delete(`/Infrastructure/Routes/${routeId}/Stations/${stationId}`),
+};
+
+// Fares API
+import { Fare, FareFormData } from '../types/infrastructure';
+
+export const faresApi = {
+  getAll: (params?: {
+    routeId?: number;
+    coachClass?: number;
+    pageNumber?: number;
+    pageSize?: number;
+  }) => {
+    const queryString = buildQueryParams(params);
+    const endpoint = queryString ? `/Infrastructure/Fares?${queryString}` : '/Infrastructure/Fares';
+    return api.get<Fare[]>(endpoint);
+  },
+  
+  create: (data: FareFormData) => api.post<Fare>('/Infrastructure/Fares', data),
 };

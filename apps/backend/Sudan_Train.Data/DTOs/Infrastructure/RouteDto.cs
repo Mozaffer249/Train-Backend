@@ -8,6 +8,8 @@ namespace Sudan_Train.Data.DTOs.Infrastructure
         public StationDto Origin { get; set; } = default!;
         public StationDto Destination { get; set; } = default!;
         public decimal? DistanceKm { get; set; }
+        public bool IsActive { get; set; }
+        public string? MaintenanceNote { get; set; }
         public List<RouteStationDto> IntermediateStops { get; set; } = new();
         public int TripsCount { get; set; }
     }

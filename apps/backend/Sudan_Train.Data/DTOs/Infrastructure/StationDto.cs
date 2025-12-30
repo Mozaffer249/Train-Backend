@@ -16,6 +16,8 @@ namespace Sudan_Train.Data.DTOs.Infrastructure
         public string? FormattedAddress { get; set; }
         public double? ServiceRadiusKm { get; set; }
         public string? StationType { get; set; }
+        public bool IsActive { get; set; }
+        public string? MaintenanceNote { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

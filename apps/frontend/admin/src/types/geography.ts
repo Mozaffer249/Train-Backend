@@ -46,6 +46,8 @@ export interface Station {
   serviceRadiusKm?: number;
   googlePlaceId?: string;
   formattedAddress?: string;
+  isActive: boolean;
+  maintenanceNote?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -61,6 +63,8 @@ export interface StationFormData {
   serviceRadiusKm?: number;
   googlePlaceId?: string;
   formattedAddress?: string;
+  isActive?: boolean;
+  maintenanceNote?: string;
 }
 
 // Boundary data interface (matching backend BoundaryDto)

@@ -76,6 +76,8 @@ namespace Sudan_Train.Service.Implementations
                 Origin = MapStationToDto(originStation),
                 Destination = MapStationToDto(destinationStation),
                 DistanceKm = route.DistanceKm,
+                IsActive = route.IsActive,
+                MaintenanceNote = route.MaintenanceNote,
                 IntermediateStops = new List<RouteStationDto>(),
                 TripsCount = 0
             };
@@ -101,6 +103,8 @@ namespace Sudan_Train.Service.Implementations
                 Origin = MapStationToDto(route.OriginStation),
                 Destination = MapStationToDto(route.DestinationStation),
                 DistanceKm = route.DistanceKm,
+                IsActive = route.IsActive,
+                MaintenanceNote = route.MaintenanceNote,
                 IntermediateStops = route.RouteStations.OrderBy(rs => rs.StopOrder).Select(rs => new RouteStationDto
                 {
                     Id = rs.Id,
@@ -146,6 +150,8 @@ namespace Sudan_Train.Service.Implementations
                 Origin = MapStationToDto(r.OriginStation),
                 Destination = MapStationToDto(r.DestinationStation),
                 DistanceKm = r.DistanceKm,
+                IsActive = r.IsActive,
+                MaintenanceNote = r.MaintenanceNote,
                 IntermediateStops = r.RouteStations.OrderBy(rs => rs.StopOrder).Select(rs => new RouteStationDto
                 {
                     Id = rs.Id,
@@ -192,6 +198,8 @@ namespace Sudan_Train.Service.Implementations
                 Origin = MapStationToDto(route.OriginStation),
                 Destination = MapStationToDto(route.DestinationStation),
                 DistanceKm = route.DistanceKm,
+                IsActive = route.IsActive,
+                MaintenanceNote = route.MaintenanceNote,
                 IntermediateStops = route.RouteStations.OrderBy(rs => rs.StopOrder).Select(rs => new RouteStationDto
                 {
                     Id = rs.Id,
@@ -325,6 +333,8 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
                 AddressAr = station.AddressAr,
+                IsActive = station.IsActive,
+                MaintenanceNote = station.MaintenanceNote,
                 CreatedAt = station.CreatedAt
             };
         }

@@ -55,6 +55,8 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
                 AddressAr = station.AddressAr,
+                IsActive = station.IsActive,
+                MaintenanceNote = station.MaintenanceNote,
                 CreatedAt = station.CreatedAt
             };
         }
@@ -80,6 +82,8 @@ namespace Sudan_Train.Service.Implementations
                 Longitude = station.Longitude,
                 AddressEn = station.AddressEn,
                 AddressAr = station.AddressAr,
+                IsActive = station.IsActive,
+                MaintenanceNote = station.MaintenanceNote,
                 CreatedAt = station.CreatedAt
             };
         }
@@ -124,6 +128,8 @@ namespace Sudan_Train.Service.Implementations
                     Longitude = s.Longitude,
                     AddressEn = s.AddressEn,
                     AddressAr = s.AddressAr,
+                    IsActive = s.IsActive,
+                    MaintenanceNote = s.MaintenanceNote,
                     CreatedAt = s.CreatedAt
                 })
                 .ToListAsync();

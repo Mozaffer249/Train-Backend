@@ -45,7 +45,7 @@ Sudan-Train-Platform/
 
 Copy your existing React application files into `apps/frontend/customer/` (or `apps/frontend/admin/` for admin applications):
 
-```bash
+```sh
 # For customer-facing applications
 # Option A: Fresh copy (replaces existing)
 rm -rf apps/frontend/customer/*
@@ -83,20 +83,23 @@ REACT_APP_MESSAGING_API_URL=http://localhost:5001
 Ensure your API calls use environment variables instead of hardcoded URLs:
 
 **Before:**
-```javascript
+
+```js
 // ❌ Hardcoded URL
 const response = await fetch('http://localhost:5000/api/auth/login');
 ```
 
 **After (Vite):**
-```javascript
+
+```js
 // ✅ Environment variable
 const API_URL = import.meta.env.VITE_API_URL;
 const response = await fetch(`${API_URL}/api/auth/login`);
 ```
 
 **After (Create React App):**
-```javascript
+
+```js
 // ✅ Environment variable
 const API_URL = process.env.REACT_APP_API_URL;
 const response = await fetch(`${API_URL}/api/auth/login`);
@@ -134,6 +137,7 @@ For Create React App with proxy:
 The frontend Dockerfile should be in `apps/frontend/customer/Dockerfile`:
 
 **For Vite projects:**
+
 ```dockerfile
 # Build stage
 FROM node:18-alpine as build
@@ -152,6 +156,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 **For Create React App:**
+
 ```dockerfile
 # Build stage
 FROM node:18-alpine as build
@@ -203,7 +208,7 @@ server {
 
 ### Step 7: Test the Integration
 
-```bash
+```sh
 # Install dependencies
 cd apps/frontend/customer
 npm install
@@ -259,7 +264,7 @@ app.UseCors("AllowFrontend");
 
 If using JWT authentication, ensure cookies or headers are properly handled:
 
-```javascript
+```js
 // Frontend: Include credentials in fetch requests
 const response = await fetch(`${API_URL}/api/auth/login`, {
     method: 'POST',
@@ -307,7 +312,7 @@ customer:
 
 ### Build and Test
 
-```bash
+```sh
 # Rebuild just the frontend
 docker-compose up --build -d frontend
 
