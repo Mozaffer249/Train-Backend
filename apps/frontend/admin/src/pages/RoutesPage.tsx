@@ -8,6 +8,7 @@ import Pagination from '../components/common/Pagination';
 import FilterDropdown from '../components/common/FilterDropdown';
 import RouteModal from '../components/routes/RouteModal';
 import RouteDetailModal from '../components/routes/RouteDetailModal';
+import { showSuccess, showError, showConfirm, extractErrorMessage } from '../utils/alerts';
 
 const RoutesPage = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -43,10 +44,12 @@ const RoutesPage = () => {
 
   const loadStations = async () => {
     try {
-      const data = await stationsApi.getAll({ isActive: true });
+      // Load all active stations for filter dropdown
+      const data = await stationsApi.getAll({ isActive: true, pageSize: 10000 });
       setStations(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load stations:', error);
+      showError('Loading Error', extractErrorMessage(error));
     }
   };
 
@@ -65,22 +68,30 @@ const RoutesPage = () => {
       const data = await routesApi.getAll(params);
       setRoutes(data);
       setTotalRoutes(data.length); // Backend should return total count
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load routes:', error);
+      showError('Loading Error', extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this route?')) return;
+    const confirmed = await showConfirm(
+      'Delete Route?',
+      'This action cannot be undone. All intermediate stations will be removed.',
+      'Yes, delete it'
+    );
+    
+    if (!confirmed) return;
 
     try {
       await routesApi.delete(id);
+      await showSuccess('Deleted!', 'Route has been deleted successfully');
       loadRoutes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete route:', error);
-      alert('Failed to delete route');
+      showError('Delete Failed', extractErrorMessage(error));
     }
   };
 

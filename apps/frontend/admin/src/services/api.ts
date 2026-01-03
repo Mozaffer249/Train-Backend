@@ -46,9 +46,12 @@ async function fetchWithAuth<T>(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    // Handle both camelCase and PascalCase from backend
+    const message = errorData.message || errorData.Message;
+    const errors = errorData.errors || errorData.Errors;
     throw new Error(
-      errorData.message || 
-      errorData.errors?.join(', ') || 
+      message || 
+      errors?.join(', ') || 
       `Request failed with status ${response.status}`
     );
   }
@@ -56,7 +59,10 @@ async function fetchWithAuth<T>(
   const result: ApiResponse<T> = await response.json();
   
   if (!result.succeeded) {
-    throw new Error(result.message || result.errors?.join(', ') || 'Request failed');
+    // Handle both camelCase and PascalCase from backend
+    const message = result.message || (result as any).Message;
+    const errors = result.errors || (result as any).Errors;
+    throw new Error(message || errors?.join(', ') || 'Request failed');
   }
 
   return result.data;

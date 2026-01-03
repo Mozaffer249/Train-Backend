@@ -24,9 +24,13 @@ namespace Sudan_Train.Core.Features.Infrastructure.Routes.Commands.UpdateRoute
             {
                 var routeDto = await _routeService.UpdateRouteAsync(
                     request.Id,
+                    request.OriginStationId,
+                    request.DestinationStationId,
                     request.NameEn,
                     request.NameAr,
-                    request.DistanceKm);
+                    request.DistanceKm,
+                    request.IsActive,
+                    request.MaintenanceNote);
                 return Success("Route updated successfully", routeDto);
             }
             catch (KeyNotFoundException)

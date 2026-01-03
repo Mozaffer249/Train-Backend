@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { routesApi } from '../../services/api';
+import { showSuccess, showError, extractErrorMessage } from '../../utils/alerts';
 
 interface StationTimingModalProps {
   isOpen: boolean;
@@ -32,10 +33,13 @@ const StationTimingModal = ({ isOpen, onClose, onSuccess, routeId, stationId }: 
 
     try {
       await routesApi.updateStation(routeId, stationId, formData);
+      await showSuccess('Updated', 'Station timing updated successfully');
       onSuccess();
       onClose();
     } catch (error: any) {
-      setError(error.message || 'Failed to update station timing');
+      const errorMessage = extractErrorMessage(error);
+      setError(errorMessage);
+      showError('Update Failed', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

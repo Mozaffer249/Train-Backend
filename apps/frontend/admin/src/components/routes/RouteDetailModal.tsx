@@ -4,6 +4,7 @@ import { Route, RouteStationFormData } from '../../types/infrastructure';
 import { routesApi, stationsApi } from '../../services/api';
 import { Station } from '../../types/geography';
 import StationTimingModal from './StationTimingModal';
+import { showSuccess, showError, showConfirm, extractErrorMessage } from '../../utils/alerts';
 
 interface RouteDetailModalProps {
   isOpen: boolean;
@@ -37,8 +38,9 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
     try {
       const data = await routesApi.getById(routeId);
       setRoute(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load route:', error);
+      showError('Loading Error', extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -46,17 +48,19 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
 
   const loadStations = async () => {
     try {
-      const data = await stationsApi.getAll({ isActive: true });
+      // Load all active stations with high pageSize for dropdown
+      const data = await stationsApi.getAll({ isActive: true, pageSize: 10000 });
       setStations(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load stations:', error);
+      showError('Loading Error', extractErrorMessage(error));
     }
   };
 
   const handleAddStation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStation.stationId) {
-      alert('Please select a station');
+      showError('Validation Error', 'Please select a station');
       return;
     }
 
@@ -64,22 +68,30 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
       await routesApi.addStation(routeId, newStation);
       setIsAddingStation(false);
       setNewStation({ stationId: 0, stopOrder: 1, arrivalMinutesFromOrigin: 0, departureMinutesFromOrigin: 0 });
+      await showSuccess('Station Added', 'Intermediate station added successfully');
       loadRoute();
       onRefresh();
     } catch (error: any) {
-      alert(error.message || 'Failed to add station');
+      showError('Add Failed', extractErrorMessage(error));
     }
   };
 
   const handleRemoveStation = async (stationId: number) => {
-    if (!confirm('Remove this station from the route?')) return;
+    const confirmed = await showConfirm(
+      'Remove Station?',
+      'This will remove the station from the route. Remaining stations will be resequenced.',
+      'Yes, remove it'
+    );
+    
+    if (!confirmed) return;
 
     try {
       await routesApi.removeStation(routeId, stationId);
+      await showSuccess('Removed', 'Station removed from route');
       loadRoute();
       onRefresh();
     } catch (error: any) {
-      alert(error.message || 'Failed to remove station');
+      showError('Remove Failed', extractErrorMessage(error));
     }
   };
 
@@ -158,12 +170,21 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
                             >
                               <option value={0}>Select station...</option>
-                              {stations.filter(s => s.id !== route.origin.id && s.id !== route.destination.id).map((station) => (
-                                <option key={station.id} value={station.id}>
-                                  {station.nameEn} ({station.code})
-                                </option>
-                              ))}
+                              {stations
+                                .filter(s => 
+                                  route && 
+                                  s.id !== route.origin.id && 
+                                  s.id !== route.destination.id
+                                )
+                                .map((station) => (
+                                  <option key={station.id} value={station.id}>
+                                    {station.nameEn} ({station.code})
+                                  </option>
+                                ))}
                             </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Showing {stations.filter(s => route && s.id !== route.origin.id && s.id !== route.destination.id).length} available stations
+                            </p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Stop Order</label>

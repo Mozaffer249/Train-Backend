@@ -165,7 +165,7 @@ namespace Sudan_Train.Service.Implementations
             }).ToList();
         }
 
-        public async Task<RouteDto> UpdateRouteAsync(int id, string? nameEn, string? nameAr, decimal? distanceKm)
+        public async Task<RouteDto> UpdateRouteAsync(int id, int? originStationId, int? destinationStationId, string? nameEn, string? nameAr, decimal? distanceKm, bool? isActive, string? maintenanceNote)
         {
             var route = await _routeRepository.GetTableNoTracking()
                 .Include(r => r.OriginStation).ThenInclude(s => s.City)
@@ -177,40 +177,61 @@ namespace Sudan_Train.Service.Implementations
             if (route == null)
                 throw new KeyNotFoundException($"Route with ID {id} not found");
 
+            // Track if origin/destination changed for distance recalculation
+            bool stationsChanged = false;
+
+            // Update origin station
+            if (originStationId.HasValue && originStationId.Value != route.OriginStationId)
+            {
+                route.OriginStationId = originStationId.Value;
+                stationsChanged = true;
+            }
+
+            // Update destination station
+            if (destinationStationId.HasValue && destinationStationId.Value != route.DestinationStationId)
+            {
+                route.DestinationStationId = destinationStationId.Value;
+                stationsChanged = true;
+            }
+
+            // Auto-recalculate distance if stations changed and distance not manually provided
+            if (stationsChanged && !distanceKm.HasValue)
+            {
+                var originStation = await _stationRepository.GetByIdAsync(route.OriginStationId);
+                var destStation = await _stationRepository.GetByIdAsync(route.DestinationStationId);
+
+                if (originStation != null && destStation != null)
+                {
+                    route.DistanceKm = (decimal)_distanceCalculationService.CalculateDistance(
+                        originStation.Latitude, originStation.Longitude,
+                        destStation.Latitude, destStation.Longitude);
+                }
+            }
+            else if (distanceKm.HasValue)
+            {
+                route.DistanceKm = distanceKm.Value;
+            }
+
+            // Update other fields
             if (!string.IsNullOrEmpty(nameEn))
                 route.NameEn = nameEn;
 
             if (!string.IsNullOrEmpty(nameAr))
                 route.NameAr = nameAr;
 
-            if (distanceKm.HasValue)
-                route.DistanceKm = distanceKm;
+            if (isActive.HasValue)
+                route.IsActive = isActive.Value;
+
+            if (maintenanceNote != null)
+                route.MaintenanceNote = string.IsNullOrEmpty(maintenanceNote) ? null : maintenanceNote;
 
             route.UpdatedAt = DateTime.UtcNow;
 
             await _routeRepository.UpdateAsync(route);
 
-            return new RouteDto
-            {
-                Id = route.Id,
-                NameEn = route.NameEn ?? "",
-                NameAr = route.NameAr ?? "",
-                Origin = MapStationToDto(route.OriginStation),
-                Destination = MapStationToDto(route.DestinationStation),
-                DistanceKm = route.DistanceKm,
-                IsActive = route.IsActive,
-                MaintenanceNote = route.MaintenanceNote,
-                IntermediateStops = route.RouteStations.OrderBy(rs => rs.StopOrder).Select(rs => new RouteStationDto
-                {
-                    Id = rs.Id,
-                    StationId = rs.StationId,
-                    StationName = rs.Station.NameEn,
-                    StopOrder = rs.StopOrder,
-                    ArrivalOffset = rs.ArrivalOffset,
-                    DepartureOffset = rs.DepartureOffset
-                }).ToList(),
-                TripsCount = route.Trips.Count
-            };
+            // Reload with updated relationships
+            var updatedRoute = await GetRouteByIdAsync(id);
+            return updatedRoute!;
         }
 
         public async Task<bool> DeleteRouteAsync(int id)

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Route, RouteFormData } from '../../types/infrastructure';
 import { routesApi, stationsApi } from '../../services/api';
 import { Station } from '../../types/geography';
+import { showSuccess, showError, extractErrorMessage } from '../../utils/alerts';
 
 interface RouteModalProps {
   isOpen: boolean;
@@ -46,10 +47,12 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
 
   const loadStations = async () => {
     try {
-      const data = await stationsApi.getAll({ isActive: true });
+      // Load all active stations with high pageSize for dropdown
+      const data = await stationsApi.getAll({ isActive: true, pageSize: 10000 });
       setStations(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load stations:', error);
+      showError('Loading Error', extractErrorMessage(error));
     }
   };
 
@@ -85,13 +88,17 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
     try {
       if (route) {
         await routesApi.update(route.id, formData);
+        await showSuccess('Updated', 'Route updated successfully');
       } else {
         await routesApi.create(formData);
+        await showSuccess('Created', 'Route created successfully');
       }
       onSuccess();
       onClose();
     } catch (error: any) {
-      setError(error.message || 'Failed to save route');
+      const errorMessage = extractErrorMessage(error);
+      setError(errorMessage);
+      showError('Save Failed', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,6 +125,13 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                 {error}
+              </div>
+            )}
+
+            {route && route.tripsCount > 0 && (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+                <strong>Warning:</strong> This route has {route.tripsCount} trip(s). 
+                You cannot change origin or destination stations.
               </div>
             )}
 
@@ -160,7 +174,8 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                     value={formData.originStationId}
                     onChange={(e) => setFormData({ ...formData, originStationId: Number(e.target.value) })}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
+                    disabled={route && route.tripsCount > 0}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value={0}>Select origin...</option>
                     {stations.map((station) => (
@@ -169,6 +184,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">Total stations: {stations.length}</p>
                 </div>
 
                 <div>
@@ -179,7 +195,8 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                     value={formData.destinationStationId}
                     onChange={(e) => setFormData({ ...formData, destinationStationId: Number(e.target.value) })}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
+                    disabled={route && route.tripsCount > 0}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value={0}>Select destination...</option>
                     {stations.map((station) => (
@@ -188,6 +205,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">Total stations: {stations.length}</p>
                 </div>
               </div>
 
@@ -250,7 +268,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                   className="admin-button"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Saving...' : route ? 'Update Route' : 'Create Route'}
+                  {isSubmitting ? 'Saving...' : route ? 'Update ..Route' : 'Create Route'}
                 </button>
               </div>
             </form>
