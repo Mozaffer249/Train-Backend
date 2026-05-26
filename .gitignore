@@ -80,4 +80,53 @@ bld/
 *.sln.iml
 
 .env
+.env.*
+!.env.example
 appsettings.*.json
+
+## JavaScript / Node / frontend (Vite, npm)
+node_modules/
+**/node_modules/
+
+# Production / dev build output (Vite)
+dist/
+**/dist/
+
+# Vite caches
+**/.vite/
+.vite/
+
+# npm / yarn logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json.bak
+
+# Frontend env (local overrides; adjust if you commit .env.development intentionally)
+apps/frontend/**/.env
+apps/frontend/**/.env.local
+apps/frontend/**/.env.*.local
+
+## Test / tooling coverage
+coverage/
+*.lcov
+.nyc_output/
+
+## OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Optional: Firebase / cloud service keys (never commit real keys)
+**/google-services.json
+**/GoogleService-Info.plist
+**/*firebase-adminsdk*.json
+firebase-adminsdk*.json
+
+## Secrets & local certificates (examples)
+*.pfx
+*.p12
+*.key
+secrets.json
