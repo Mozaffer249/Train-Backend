@@ -14,12 +14,13 @@ namespace Sudan_Train.Data.Entity.Identity
             Bookings = new HashSet<Booking>();
             Notifications = new HashSet<Notification>();
             PromotionUsages = new HashSet<PromotionUsage>();
-            LoginSessions = new HashSet<LoginSession>();
-            TrustedDevices = new HashSet<TrustedDevice>();
-            AuditLogs = new HashSet<AuditLog>();
-            SecurityEvents = new HashSet<SecurityEvent>();
-            PasswordHistories = new HashSet<PasswordHistory>();
-            TwoFactorRecoveryCodes = new HashSet<TwoFactorRecoveryCode>();
+            // Advanced security navigations temporarily disabled (tables dropped via DropAdvancedSecurityTables migration).
+            //LoginSessions = new HashSet<LoginSession>();
+            //TrustedDevices = new HashSet<TrustedDevice>();
+            //AuditLogs = new HashSet<AuditLog>();
+            //SecurityEvents = new HashSet<SecurityEvent>();
+            //PasswordHistories = new HashSet<PasswordHistory>();
+            //TwoFactorRecoveryCodes = new HashSet<TwoFactorRecoveryCode>();
         }
 
         public string FirstName { get; set; } = default!;
@@ -50,11 +51,12 @@ namespace Sudan_Train.Data.Entity.Identity
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<Notification> Notifications { get; set; }
         public ICollection<PromotionUsage> PromotionUsages { get; set; }
-        public ICollection<LoginSession> LoginSessions { get; set; }
-        public ICollection<TrustedDevice> TrustedDevices { get; set; }
-        public ICollection<AuditLog> AuditLogs { get; set; }
-        public ICollection<SecurityEvent> SecurityEvents { get; set; }
-        public ICollection<PasswordHistory> PasswordHistories { get; set; }
-        public ICollection<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
+        // Advanced security navigations temporarily disabled (tables dropped via DropAdvancedSecurityTables migration).
+        //public ICollection<LoginSession> LoginSessions { get; set; }
+        //public ICollection<TrustedDevice> TrustedDevices { get; set; }
+        //public ICollection<AuditLog> AuditLogs { get; set; }
+        //public ICollection<SecurityEvent> SecurityEvents { get; set; }
+        //public ICollection<PasswordHistory> PasswordHistories { get; set; }
+        //public ICollection<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
     }
 }

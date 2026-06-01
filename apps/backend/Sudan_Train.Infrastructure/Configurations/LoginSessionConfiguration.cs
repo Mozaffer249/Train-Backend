@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — LoginSession table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class LoginSessionConfiguration : IEntityTypeConfiguration<LoginSession>
     {
         public void Configure(EntityTypeBuilder<LoginSession> builder)
@@ -50,4 +52,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    */
 }

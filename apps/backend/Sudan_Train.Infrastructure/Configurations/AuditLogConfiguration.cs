@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — AuditLog table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
     {
         public void Configure(EntityTypeBuilder<AuditLog> builder)
@@ -44,4 +46,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.SetNull);
         }
     }
+    */
 }

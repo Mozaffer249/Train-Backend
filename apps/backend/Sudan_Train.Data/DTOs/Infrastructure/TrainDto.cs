@@ -6,7 +6,6 @@ namespace Sudan_Train.Data.DTOs.Infrastructure
         public string TrainNumber { get; set; } = default!;
         public string NameEn { get; set; } = default!;
         public string NameAr { get; set; } = default!;
-        public string Type { get; set; } = default!;
         public int CoachesCount { get; set; }
         public int TotalCapacity { get; set; }
         public DateTime CreatedAt { get; set; }

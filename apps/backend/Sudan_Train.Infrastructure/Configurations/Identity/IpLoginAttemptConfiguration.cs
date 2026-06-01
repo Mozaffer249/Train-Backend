@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations.Identity
 {
+    /* Temporarily disabled — IpLoginAttempt table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class IpLoginAttemptConfiguration : IEntityTypeConfiguration<IpLoginAttempt>
     {
         public void Configure(EntityTypeBuilder<IpLoginAttempt> builder)
@@ -34,4 +36,5 @@ namespace Sudan_Train.Infrastructure.Configurations.Identity
                 .HasDatabaseName("IX_IpLoginAttempts_AttemptTime");
         }
     }
+    */
 }

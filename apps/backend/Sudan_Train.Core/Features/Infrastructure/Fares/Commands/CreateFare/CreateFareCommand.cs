@@ -13,8 +13,6 @@ namespace Sudan_Train.Core.Features.Infrastructure.Fares.Commands.CreateFare
         public int? TripId { get; set; }
         public CoachClass CoachClass { get; set; }
         public decimal BasePrice { get; set; }
-        public decimal? PricePerKm { get; set; }
-        public decimal VatRate { get; set; } = 0.15m;
         public decimal? DiscountPercent { get; set; }
     }
 }

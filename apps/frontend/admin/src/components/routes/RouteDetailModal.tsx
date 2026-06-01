@@ -114,33 +114,33 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
           <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
             <div className="bg-white px-6 pt-5 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Route Details</h3>
+                <h3 className="text-lg font-medium text-gray-900">تفاصيل المسار</h3>
                 <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
                   <X size={24} />
                 </button>
               </div>
 
               {isLoading ? (
-                <div className="py-8 text-center text-gray-500">Loading...</div>
+                <div className="py-8 text-center text-gray-500">جاري التحميل…</div>
               ) : route ? (
                 <div className="space-y-6">
                   {/* Route Info */}
                   <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="text-sm text-gray-500">Route Name</p>
+                      <p className="text-sm text-gray-500">اسم المسار</p>
                       <p className="font-medium">{route.nameEn}</p>
                       <p className="text-sm text-gray-600" dir="rtl">{route.nameAr}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Distance</p>
+                      <p className="text-sm text-gray-500">المسافة</p>
                       <p className="font-medium">{route.distanceKm ? `${route.distanceKm.toFixed(2)} km` : 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Origin</p>
+                      <p className="text-sm text-gray-500">المنشأ</p>
                       <p className="font-medium">{route.origin.nameEn}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Destination</p>
+                      <p className="text-sm text-gray-500">الوجهة</p>
                       <p className="font-medium">{route.destination.nameEn}</p>
                     </div>
                   </div>
@@ -148,7 +148,7 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                   {/* Intermediate Stations */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-900">Intermediate Stations</h4>
+                      <h4 className="font-medium text-gray-900">المحطات الوسيطة</h4>
                       <button
                         onClick={() => setIsAddingStation(true)}
                         className="text-sm admin-button flex items-center gap-1"
@@ -162,7 +162,7 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                       <form onSubmit={handleAddStation} className="mb-4 p-4 border border-gray-200 rounded-lg space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Station</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">المحطة</label>
                             <select
                               value={newStation.stationId}
                               onChange={(e) => setNewStation({ ...newStation, stationId: Number(e.target.value) })}
@@ -187,7 +187,7 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                             </p>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Stop Order</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">ترتيب التوقف</label>
                             <input
                               type="number"
                               min={1}
@@ -221,30 +221,28 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button type="submit" className="admin-button text-sm">Add</button>
+                          <button type="submit" className="admin-button text-sm">إضافة</button>
                           <button
                             type="button"
                             onClick={() => setIsAddingStation(false)}
                             className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                          >
-                            Cancel
-                          </button>
+                          >إلغاء</button>
                         </div>
                       </form>
                     )}
 
                     {route.intermediateStops.length === 0 ? (
-                      <p className="text-sm text-gray-500 text-center py-4">No intermediate stations</p>
+                      <p className="text-sm text-gray-500 text-center py-4">لا توجد محطات وسيطة</p>
                     ) : (
                       <div className="border border-gray-200 rounded-lg overflow-hidden">
                         <table className="w-full">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Order</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Station</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Arrival</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Departure</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">الترتيب</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">المحطة</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">الوصول</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">المغادرة</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">إجراءات</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200">
@@ -287,13 +285,11 @@ const RouteDetailModal = ({ isOpen, onClose, onRefresh, routeId }: RouteDetailMo
                   </div>
 
                   <div className="flex justify-end pt-4 border-t">
-                    <button onClick={onClose} className="admin-button">
-                      Close
-                    </button>
+                    <button onClick={onClose} className="admin-button">إغلاق</button>
                   </div>
                 </div>
               ) : (
-                <p className="text-center text-gray-500 py-8">Route not found</p>
+                <p className="text-center text-gray-500 py-8">المسار غير موجود</p>
               )}
             </div>
           </div>

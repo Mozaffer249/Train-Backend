@@ -54,19 +54,17 @@ namespace Trains.Core.Features.Authentication.Commands.Login
 
         public async Task<Response<JwtAuthResult>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            // Get IP address early for risk assessment
-            var httpContext = _httpContextAccessor.HttpContext;
-            var ipAddress = GetClientIpAddress(httpContext);
 
-            // Assess login risk before password check
-            var riskAssessment = await _riskAssessmentService.AssessLoginRiskAsync(ipAddress, null);
-
-            if (riskAssessment.Level == RiskLevel.Critical)
-            {
-                // Block the login attempt
-                await _riskAssessmentService.BlockIpAsync(ipAddress, _securitySettings.Value.RiskBasedAuth.BlockSuspiciousIpMinutes);
-                return Unauthorized<JwtAuthResult>("Access temporarily blocked due to suspicious activity. Please try again later.");
-            }
+            // Risk assessment, IP tracking, audit logging, and session creation are temporarily
+            // disabled (advanced security tables dropped via DropAdvancedSecurityTables migration).
+            //var httpContext = _httpContextAccessor.HttpContext;
+            //var ipAddress = GetClientIpAddress(httpContext);
+            //var riskAssessment = await _riskAssessmentService.AssessLoginRiskAsync(ipAddress, null);
+            //if (riskAssessment.Level == RiskLevel.Critical)
+            //{
+            //    await _riskAssessmentService.BlockIpAsync(ipAddress, _securitySettings.Value.RiskBasedAuth.BlockSuspiciousIpMinutes);
+            //    return Unauthorized<JwtAuthResult>("Access temporarily blocked due to suspicious activity. Please try again later.");
+            //}
 
             // Detect if input is email or username
             bool isEmail = IsEmailFormat(request.UserNameOrEmail!);
@@ -78,8 +76,7 @@ namespace Trains.Core.Features.Authentication.Commands.Login
 
             if (user == null)
             {
-                // Record failed attempt (without revealing whether username/email exists)
-                await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, null, request.UserNameOrEmail, false);
+                //await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, null, request.UserNameOrEmail, false);
                 return NotFound<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.UserNotFound]);
             }
 
@@ -112,47 +109,40 @@ namespace Trains.Core.Features.Authentication.Commands.Login
 
             if (!signInResult.Succeeded)
             {
-                // Record failed login attempt
-                await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, user.Id, user.UserName, false);
-
-                // Log suspicious activity if high risk
-                if (riskAssessment.Level >= RiskLevel.High)
-                {
-                    await _auditService.LogSecurityEventAsync(
-                        userId: user.Id,
-                        eventType: SecurityEventType.SuspiciousActivity,
-                        ipAddress: ipAddress,
-                        details: $"Multiple failed login attempts: {riskAssessment.FailedAttemptsInWindow} in time window"
-                    );
-
-                    // Notify user of suspicious activity
-                    if (_securitySettings.Value.EmailNotifications.Enabled &&
-                        _securitySettings.Value.EmailNotifications.NotifyOnSuspiciousActivity)
-                    {
-                        await _notificationService.NotifySuspiciousActivityAsync(
-                            user,
-                            $"Multiple failed login attempts ({riskAssessment.FailedAttemptsInWindow})",
-                            ipAddress);
-                    }
-                }
+                // Failed-attempt recording, audit logging, and suspicious-activity notification disabled.
+                //await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, user.Id, user.UserName, false);
+                //if (riskAssessment.Level >= RiskLevel.High)
+                //{
+                //    await _auditService.LogSecurityEventAsync(
+                //        userId: user.Id,
+                //        eventType: SecurityEventType.SuspiciousActivity,
+                //        ipAddress: ipAddress,
+                //        details: $"Multiple failed login attempts: {riskAssessment.FailedAttemptsInWindow} in time window"
+                //    );
+                //    if (_securitySettings.Value.EmailNotifications.Enabled &&
+                //        _securitySettings.Value.EmailNotifications.NotifyOnSuspiciousActivity)
+                //    {
+                //        await _notificationService.NotifySuspiciousActivityAsync(
+                //            user,
+                //            $"Multiple failed login attempts ({riskAssessment.FailedAttemptsInWindow})",
+                //            ipAddress);
+                //    }
+                //}
 
                 return Unauthorized<JwtAuthResult>(_authLocalizer[AuthenticationResourcesKeys.PasswordNotCorrect]);
             }
 
-            // Record successful login attempt
-            await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, user.Id, user.UserName, true);
-
-            // Check if 2FA is required due to risk assessment
-            if (riskAssessment.RequiresTwoFactor && !user.TwoFactorEnabled)
-            {
-                // For now, just warn the user - in production, you'd force 2FA setup
-                await _auditService.LogSecurityEventAsync(
-                    userId: user.Id,
-                    eventType: SecurityEventType.SuspiciousActivity,
-                    ipAddress: ipAddress,
-                    details: $"High-risk login detected. Recommendation: Enable 2FA. Failed attempts in window: {riskAssessment.FailedAttemptsInWindow}"
-                );
-            }
+            // Successful-attempt recording and risk-based 2FA audit disabled.
+            //await _riskAssessmentService.RecordLoginAttemptAsync(ipAddress, user.Id, user.UserName, true);
+            //if (riskAssessment.RequiresTwoFactor && !user.TwoFactorEnabled)
+            //{
+            //    await _auditService.LogSecurityEventAsync(
+            //        userId: user.Id,
+            //        eventType: SecurityEventType.SuspiciousActivity,
+            //        ipAddress: ipAddress,
+            //        details: $"High-risk login detected. Recommendation: Enable 2FA. Failed attempts in window: {riskAssessment.FailedAttemptsInWindow}"
+            //    );
+            //}
 
             // Generate JWT token
             var result = await _authenticationService.GetJWTToken(user);
@@ -164,49 +154,39 @@ namespace Trains.Core.Features.Authentication.Commands.Login
             result.FullName = $"{user.FirstName} {user.LastName}".Trim();
             result.Roles = (await _userManager.GetRolesAsync(user)).ToList();
 
-            // Get device and IP info
-            var userAgent = httpContext?.Request.Headers["User-Agent"].ToString() ?? "Unknown";
-            var deviceId = request.DeviceId ?? Guid.NewGuid().ToString();
-            var deviceName = request.DeviceName ?? ParseDeviceFromUserAgent(userAgent);
-
-            // Check if device is trusted
-            var isTrustedDevice = await _sessionService.IsDeviceTrustedAsync(user.Id, deviceId);
-
-            // Create login session
-            await _sessionService.CreateSessionAsync(
-                userId: user.Id,
-                deviceId: deviceId,
-                deviceName: deviceName,
-                ipAddress: ipAddress,
-                userAgent: userAgent,
-                accessToken: result.AccessToken,
-                refreshToken: result.RefreshToken.TokenString,
-                location: null // Optional: Use IP geolocation API
-            );
-
-            // Log security event if new device
-            if (!isTrustedDevice)
-            {
-                await _auditService.LogSecurityEventAsync(
-                    userId: user.Id,
-                    eventType: SecurityEventType.LoginFromNewDevice,
-                    ipAddress: ipAddress,
-                    details: $"Login from new device: {deviceName}"
-                );
-
-                // Send email notification for new device login
-                if (_securitySettings.Value.EmailNotifications.Enabled &&
-                    _securitySettings.Value.EmailNotifications.NotifyOnNewDeviceLogin &&
-                      !result.Roles.Contains(Roles.SuperAdmin)
-                    )
-                {
-                    await _notificationService.NotifyNewDeviceLoginAsync(user, deviceName, ipAddress);
-                }
-            }
-
-            // Add device info to response for frontend to prompt "Trust this device?"
-            result.IsNewDevice = !isTrustedDevice;
-            result.DeviceId = deviceId;
+            // Device trust detection, login-session creation, and new-device audit/notification disabled.
+            //var userAgent = httpContext?.Request.Headers["User-Agent"].ToString() ?? "Unknown";
+            //var deviceId = request.DeviceId ?? Guid.NewGuid().ToString();
+            //var deviceName = request.DeviceName ?? ParseDeviceFromUserAgent(userAgent);
+            //var isTrustedDevice = await _sessionService.IsDeviceTrustedAsync(user.Id, deviceId);
+            //await _sessionService.CreateSessionAsync(
+            //    userId: user.Id,
+            //    deviceId: deviceId,
+            //    deviceName: deviceName,
+            //    ipAddress: ipAddress,
+            //    userAgent: userAgent,
+            //    accessToken: result.AccessToken,
+            //    refreshToken: result.RefreshToken.TokenString,
+            //    location: null // Optional: Use IP geolocation API
+            //);
+            //if (!isTrustedDevice)
+            //{
+            //    await _auditService.LogSecurityEventAsync(
+            //        userId: user.Id,
+            //        eventType: SecurityEventType.LoginFromNewDevice,
+            //        ipAddress: ipAddress,
+            //        details: $"Login from new device: {deviceName}"
+            //    );
+            //    if (_securitySettings.Value.EmailNotifications.Enabled &&
+            //        _securitySettings.Value.EmailNotifications.NotifyOnNewDeviceLogin &&
+            //          !result.Roles.Contains(Roles.SuperAdmin)
+            //        )
+            //    {
+            //        await _notificationService.NotifyNewDeviceLoginAsync(user, deviceName, ipAddress);
+            //    }
+            //}
+            //result.IsNewDevice = !isTrustedDevice;
+            //result.DeviceId = deviceId;
 
             return Success(entity: result);
         }

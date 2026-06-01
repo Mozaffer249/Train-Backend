@@ -26,6 +26,7 @@ namespace Sudan_Train.Service
             services.AddTransient<IFareService, FareService>();
             services.AddTransient<ITrainService, TrainService>();
             services.AddTransient<ITripService, TripService>();
+            services.AddTransient<IBookingService, BookingService>();
 
             // Utility services
             services.AddTransient<IDistanceCalculationService, DistanceCalculationService>();

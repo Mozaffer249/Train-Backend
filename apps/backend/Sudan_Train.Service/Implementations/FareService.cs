@@ -10,20 +10,46 @@ namespace Sudan_Train.Service.Implementations
     {
         private readonly IFareRepository _fareRepository;
         private readonly IRouteRepository _routeRepository;
-        private readonly IDistanceCalculationService _distanceCalculationService;
 
         public FareService(
             IFareRepository fareRepository,
-            IRouteRepository routeRepository,
-            IDistanceCalculationService distanceCalculationService)
+            IRouteRepository routeRepository)
         {
             _fareRepository = fareRepository;
             _routeRepository = routeRepository;
-            _distanceCalculationService = distanceCalculationService;
         }
 
-        public async Task<FareDto> CreateFareAsync(int? routeId, int? originStationId, int? destinationStationId, int? tripId, CoachClass coachClass, decimal basePrice, decimal? pricePerKm, decimal vatRate, decimal? discountPercent)
+        public async Task<FareDto> CreateFareAsync(
+            int? routeId,
+            int? originStationId,
+            int? destinationStationId,
+            int? tripId,
+            CoachClass coachClass,
+            decimal basePrice,
+            decimal? discountPercent)
         {
+            var now = DateTime.UtcNow;
+
+            // Auto-close any active fare with the EXACT same scope tuple + class
+            // so the new row cleanly supersedes the old. Keeps the "at most one
+            // active fare per (scope, class)" invariant. Different scopes (e.g.
+            // route-level vs segment-level) do NOT collide — strict equality on
+            // all four nullables.
+            var existing = await _fareRepository.GetTableAsTracking()
+                .Where(f => f.CoachClass == coachClass
+                         && f.RouteId == routeId
+                         && f.OriginStationId == originStationId
+                         && f.DestinationStationId == destinationStationId
+                         && f.TripId == tripId
+                         && (f.EffectiveTo == null || f.EffectiveTo > now))
+                .ToListAsync();
+
+            foreach (var old in existing)
+            {
+                old.EffectiveTo = now;
+                await _fareRepository.UpdateAsync(old);
+            }
+
             var fare = new Fare
             {
                 RouteId = routeId,
@@ -32,10 +58,8 @@ namespace Sudan_Train.Service.Implementations
                 TripId = tripId,
                 CoachClass = coachClass,
                 BasePrice = basePrice,
-                PricePerKm = pricePerKm,
-                VatRate = vatRate,
                 DiscountPercent = discountPercent,
-                EffectiveFrom = DateTime.UtcNow
+                EffectiveFrom = now
             };
 
             await _fareRepository.AddAsync(fare);
@@ -70,10 +94,15 @@ namespace Sudan_Train.Service.Implementations
                 query = query.Where(f => f.CoachClass == coachClass);
 
             var fares = await query.OrderBy(f => f.EffectiveFrom).ToListAsync();
-            return fares.Select(MapToDto).ToList();
+            return fares.Select(f => MapToDto(f)).ToList();
         }
 
-        public async Task<FareDto> UpdateFareAsync(int id, decimal? basePrice, decimal? pricePerKm, decimal? vatRate, decimal? discountPercent, DateTime? effectiveTo)
+        public async Task<FareDto> UpdateFareAsync(
+            int id,
+            decimal? basePrice,
+            decimal? discountPercent,
+            DateTime? effectiveFrom,
+            DateTime? effectiveTo)
         {
             var fare = await _fareRepository.GetByIdAsync(id);
             if (fare == null)
@@ -82,14 +111,11 @@ namespace Sudan_Train.Service.Implementations
             if (basePrice.HasValue)
                 fare.BasePrice = basePrice.Value;
 
-            if (pricePerKm.HasValue)
-                fare.PricePerKm = pricePerKm;
-
-            if (vatRate.HasValue)
-                fare.VatRate = vatRate.Value;
-
             if (discountPercent.HasValue)
                 fare.DiscountPercent = discountPercent;
+
+            if (effectiveFrom.HasValue)
+                fare.EffectiveFrom = effectiveFrom.Value;
 
             if (effectiveTo.HasValue)
                 fare.EffectiveTo = effectiveTo;
@@ -109,9 +135,10 @@ namespace Sudan_Train.Service.Implementations
             return true;
         }
 
+        // Simple resolver kept for callers that just want a number. Mirrors the
+        // GetApplicableFareAsync priority (Segment > Route) without breakdown.
         public async Task<decimal> CalculateFareAsync(int routeId, int originStationId, int destinationStationId, CoachClass coachClass)
         {
-            // Try to find exact segment fare
             var segmentFare = await _fareRepository.GetTableNoTracking()
                 .Where(f => f.OriginStationId == originStationId &&
                            f.DestinationStationId == destinationStationId &&
@@ -121,9 +148,8 @@ namespace Sudan_Train.Service.Implementations
                 .FirstOrDefaultAsync();
 
             if (segmentFare != null)
-                return segmentFare.TotalWithVat;
+                return segmentFare.FinalPrice;
 
-            // Try route-level fare with distance calculation
             var routeFare = await _fareRepository.GetTableNoTracking()
                 .Where(f => f.RouteId == routeId &&
                            f.CoachClass == coachClass &&
@@ -131,15 +157,10 @@ namespace Sudan_Train.Service.Implementations
                 .OrderByDescending(f => f.EffectiveFrom)
                 .FirstOrDefaultAsync();
 
-            if (routeFare != null && routeFare.PricePerKm.HasValue)
-            {
-                var distance = await _distanceCalculationService.CalculateRouteDistanceAsync(originStationId, destinationStationId, new List<int>());
-                var calculatedPrice = routeFare.PricePerKm.Value * distance;
-                var withDiscount = calculatedPrice - (calculatedPrice * (routeFare.DiscountPercent ?? 0) / 100);
-                return withDiscount + (withDiscount * routeFare.VatRate);
-            }
+            if (routeFare != null)
+                return routeFare.FinalPrice;
 
-            // Default fallback pricing
+            // Default fallback pricing when no fare is configured for this route.
             var route = await _routeRepository.GetByIdAsync(routeId);
             if (route?.DistanceKm != null)
             {
@@ -150,65 +171,67 @@ namespace Sudan_Train.Service.Implementations
                     CoachClass.Third => 7m,
                     _ => 10m
                 };
-                return baseRate * route.DistanceKm.Value * 1.15m; // Include 15% VAT
+                return baseRate * route.DistanceKm.Value;
             }
 
             return 0;
         }
 
-        public async Task<FareDto?> GetApplicableFareAsync(int? routeId, int? originStationId, int? destinationStationId, int? tripId, CoachClass coachClass)
+        public async Task<FareDto?> GetApplicableFareAsync(
+            int? routeId,
+            int? originStationId,
+            int? destinationStationId,
+            int? tripId,
+            CoachClass? coachClass = null)
         {
-            // Priority: Trip-specific > Segment-specific > Route-level
-            var query = _fareRepository.GetTableNoTracking()
+            // Priority: Trip-specific > Segment-specific > Route-level.
+            // When `coachClass` is null we're in "starting price" mode (search) —
+            // drop the class filter and pick the cheapest match per scope.
+            // When `coachClass` is set we're in booking mode and need an exact
+            // class match for pricing to be honest.
+            var baseQuery = _fareRepository.GetTableNoTracking()
                 .Include(f => f.Route)
                 .Include(f => f.OriginStation)
                 .Include(f => f.DestinationStation)
-                .Where(f => f.CoachClass == coachClass &&
-                           (f.EffectiveTo == null || f.EffectiveTo > DateTime.UtcNow));
+                .Where(f => f.EffectiveTo == null || f.EffectiveTo > DateTime.UtcNow);
 
-            // Check trip-specific fare
+            if (coachClass.HasValue)
+                baseQuery = baseQuery.Where(f => f.CoachClass == coachClass.Value);
+
+            // For exact-class lookups we keep "newest fare wins" (OrderByDescending
+            // EffectiveFrom). For class-less search we pick the cheapest active row.
+            IQueryable<Fare> Apply(IQueryable<Fare> q) =>
+                coachClass.HasValue
+                    ? q.OrderByDescending(f => f.EffectiveFrom)
+                    : q.OrderBy(f => f.BasePrice).ThenByDescending(f => f.EffectiveFrom);
+
+            Fare? resolved = null;
+
             if (tripId.HasValue)
             {
-                var tripFare = await query
-                    .Where(f => f.TripId == tripId)
-                    .OrderByDescending(f => f.EffectiveFrom)
+                resolved = await Apply(baseQuery.Where(f => f.TripId == tripId))
                     .FirstOrDefaultAsync();
-
-                if (tripFare != null)
-                    return MapToDto(tripFare);
             }
 
-            // Check segment-specific fare
-            if (originStationId.HasValue && destinationStationId.HasValue)
+            if (resolved == null && originStationId.HasValue && destinationStationId.HasValue)
             {
-                var segmentFare = await query
-                    .Where(f => f.OriginStationId == originStationId &&
-                               f.DestinationStationId == destinationStationId)
-                    .OrderByDescending(f => f.EffectiveFrom)
+                resolved = await Apply(baseQuery.Where(f => f.OriginStationId == originStationId &&
+                                                            f.DestinationStationId == destinationStationId))
                     .FirstOrDefaultAsync();
-
-                if (segmentFare != null)
-                    return MapToDto(segmentFare);
             }
 
-            // Check route-level fare
-            if (routeId.HasValue)
+            if (resolved == null && routeId.HasValue)
             {
-                var routeFare = await query
-                    .Where(f => f.RouteId == routeId)
-                    .OrderByDescending(f => f.EffectiveFrom)
+                resolved = await Apply(baseQuery.Where(f => f.RouteId == routeId))
                     .FirstOrDefaultAsync();
-
-                if (routeFare != null)
-                    return MapToDto(routeFare);
             }
 
-            return null;
+            return resolved == null ? null : MapToDto(resolved, withBreakdown: true);
         }
 
-        private FareDto MapToDto(Fare fare)
+        private static FareDto MapToDto(Fare fare, bool withBreakdown = false)
         {
-            return new FareDto
+            var dto = new FareDto
             {
                 Id = fare.Id,
                 RouteId = fare.RouteId,
@@ -217,14 +240,34 @@ namespace Sudan_Train.Service.Implementations
                 TripId = fare.TripId,
                 CoachClass = fare.CoachClass.ToString(),
                 BasePrice = fare.BasePrice,
-                PricePerKm = fare.PricePerKm,
-                VatRate = fare.VatRate,
                 DiscountPercent = fare.DiscountPercent,
                 Currency = fare.Currency,
                 FinalPrice = fare.FinalPrice,
-                TotalWithVat = fare.TotalWithVat,
                 EffectiveFrom = fare.EffectiveFrom,
-                EffectiveTo = fare.EffectiveTo
+                EffectiveTo = fare.EffectiveTo,
+            };
+
+            if (withBreakdown)
+                dto.Breakdown = BuildBreakdown(fare);
+
+            return dto;
+        }
+
+        // Single source of truth for the receipt math. Reused by BookingService.
+        public static FareBreakdownDto BuildBreakdown(Fare fare)
+        {
+            var basePrice = fare.BasePrice;
+            var discountPct = fare.DiscountPercent ?? 0m;
+            var discountAmount = basePrice * discountPct / 100m;
+            var total = basePrice - discountAmount;
+
+            return new FareBreakdownDto
+            {
+                BasePrice = basePrice,
+                DiscountPercent = discountPct,
+                DiscountAmount = discountAmount,
+                Total = total,
+                Currency = fare.Currency,
             };
         }
     }

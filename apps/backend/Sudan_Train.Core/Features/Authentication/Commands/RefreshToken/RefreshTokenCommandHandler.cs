@@ -73,30 +73,27 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.RefreshToken
                 return Unauthorized<JwtAuthResult>(_sharedLocalizer[SharedResourcesKeys.UnAuthorized]);
             }
 
-            // Update session activity
-            if (!string.IsNullOrEmpty(request.AccessToken))
-            {
-                await _sessionService.UpdateSessionActivityAsync(request.AccessToken);
-            }
-
-            // Create new session with new tokens
-            if (!string.IsNullOrEmpty(request.DeviceId))
-            {
-                var httpContext = _httpContextAccessor.HttpContext;
-                var ipAddress = GetClientIpAddress(httpContext);
-                var userAgent = httpContext?.Request.Headers["User-Agent"].ToString() ?? "Unknown";
-                var deviceName = httpContext?.Request.Headers["Device-Name"].ToString() ?? "Unknown Device";
-
-                await _sessionService.CreateSessionAsync(
-                    userId: user.Id,
-                    deviceId: request.DeviceId,
-                    deviceName: deviceName,
-                    ipAddress: ipAddress,
-                    userAgent: userAgent,
-                    accessToken: result.AccessToken,
-                    refreshToken: result.RefreshToken.TokenString
-                );
-            }
+            // Login-session tracking disabled (LoginSession table dropped via DropAdvancedSecurityTables migration).
+            //if (!string.IsNullOrEmpty(request.AccessToken))
+            //{
+            //    await _sessionService.UpdateSessionActivityAsync(request.AccessToken);
+            //}
+            //if (!string.IsNullOrEmpty(request.DeviceId))
+            //{
+            //    var httpContext = _httpContextAccessor.HttpContext;
+            //    var ipAddress = GetClientIpAddress(httpContext);
+            //    var userAgent = httpContext?.Request.Headers["User-Agent"].ToString() ?? "Unknown";
+            //    var deviceName = httpContext?.Request.Headers["Device-Name"].ToString() ?? "Unknown Device";
+            //    await _sessionService.CreateSessionAsync(
+            //        userId: user.Id,
+            //        deviceId: request.DeviceId,
+            //        deviceName: deviceName,
+            //        ipAddress: ipAddress,
+            //        userAgent: userAgent,
+            //        accessToken: result.AccessToken,
+            //        refreshToken: result.RefreshToken.TokenString
+            //    );
+            //}
 
             return Success(entity: result);
         }

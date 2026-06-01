@@ -61,8 +61,8 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.DeleteAccount
                 return BadRequest<string>(_authLocalizer[AuthenticationResourcesKeys.PasswordNotCorrect]);
             }
 
-            // Terminate all sessions
-            await _sessionService.TerminateAllSessionsExceptCurrentAsync(userId, string.Empty);
+            // Session termination disabled (LoginSession table dropped via DropAdvancedSecurityTables migration).
+            //await _sessionService.TerminateAllSessionsExceptCurrentAsync(userId, string.Empty);
 
             // Delete the user
             var result = await _userManager.DeleteAsync(user);

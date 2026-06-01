@@ -26,8 +26,7 @@ namespace Sudan_Train.Core.Features.Infrastructure.Trains.Commands.UpdateTrain
                     request.Id,
                     request.TrainNumber,
                     request.NameEn,
-                    request.NameAr,
-                    request.Type);
+                    request.NameAr);
                 return Success("Train updated successfully", trainDto);
             }
             catch (KeyNotFoundException)

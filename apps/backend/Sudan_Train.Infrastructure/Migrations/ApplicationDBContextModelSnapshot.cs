@@ -125,76 +125,6 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("UserTokens", "security");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Area", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BoundaryPolygon")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("BoundingBoxEast")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxNorth")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxSouth")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxWest")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("FormattedAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("GooglePlaceId")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime?>("GoogleSyncedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsFromGoogle")
-                        .HasColumnType("bit");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PlusCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Areas", (string)null);
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -255,6 +185,12 @@ namespace Trains.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AlightingStationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BoardingStationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
@@ -275,6 +211,10 @@ namespace Trains.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlightingStationId");
+
+                    b.HasIndex("BoardingStationId");
+
                     b.HasIndex("FareId");
 
                     b.HasIndex("PassengerId");
@@ -284,6 +224,8 @@ namespace Trains.Infrastructure.Migrations
                     b.HasIndex("TripSeatId");
 
                     b.HasIndex("BookingId", "PassengerId");
+
+                    b.HasIndex("TripId", "TripSeatId");
 
                     b.ToTable("BookingPassengers");
                 });
@@ -322,16 +264,13 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<DateTime?>("GoogleSyncedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("GovernorateId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsFromGoogle")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Latitude")
+                    b.Property<double>("Latitude")
                         .HasColumnType("float");
 
-                    b.Property<double?>("Longitude")
+                    b.Property<double>("Longitude")
                         .HasColumnType("float");
 
                     b.Property<string>("NameAr")
@@ -349,9 +288,6 @@ namespace Trains.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId", "NameEn")
-                        .IsUnique();
 
                     b.ToTable("Cities");
                 });
@@ -409,6 +345,9 @@ namespace Trains.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("CoachClass")
                         .HasColumnType("int");
 
@@ -419,6 +358,9 @@ namespace Trains.Infrastructure.Migrations
                         .HasColumnType("nvarchar(3)")
                         .HasDefaultValue("SDG");
 
+                    b.Property<int?>("DestinationStationId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("DiscountPercent")
                         .HasColumnType("decimal(5,2)");
 
@@ -428,148 +370,26 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<DateTime?>("EffectiveTo")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int?>("OriginStationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RouteId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("TripId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("VatRate")
-                        .HasColumnType("decimal(5,2)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("DestinationStationId");
+
+                    b.HasIndex("OriginStationId");
+
+                    b.HasIndex("RouteId");
 
                     b.HasIndex("TripId");
 
                     b.ToTable("Fares");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AreaId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("BoundaryPolygon")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("BoundingBoxEast")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxNorth")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxSouth")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("BoundingBoxWest")
-                        .HasColumnType("float");
-
-                    b.Property<string>("FormattedAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("GooglePlaceId")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime?>("GoogleSyncedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsFromGoogle")
-                        .HasColumnType("bit");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PlusCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AreaId");
-
-                    b.ToTable("Governorates", (string)null);
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Details")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EntityId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("EntityType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("Success")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Action");
-
-                    b.HasIndex("IpAddress");
-
-                    b.HasIndex("Timestamp");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "Action");
-
-                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.EmailConfirmationOtp", b =>
@@ -609,142 +429,6 @@ namespace Trains.Infrastructure.Migrations
                         .HasDatabaseName("IX_EmailConfirmationOtp_UserId_Code");
 
                     b.ToTable("EmailConfirmationOtps", "security");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.IpLoginAttempt", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("AttemptTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("WasSuccessful")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttemptTime")
-                        .HasDatabaseName("IX_IpLoginAttempts_AttemptTime");
-
-                    b.HasIndex("IpAddress", "AttemptTime")
-                        .HasDatabaseName("IX_IpLoginAttempts_IpAddress_AttemptTime");
-
-                    b.ToTable("IpLoginAttempts", "security");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccessToken")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("DeviceName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastActivityTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("LoginTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LogoutTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("UserAgent")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccessToken");
-
-                    b.HasIndex("LoginTime");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "IsActive");
-
-                    b.ToTable("LoginSessions");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChangedAt");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "ChangedAt");
-
-                    b.ToTable("PasswordHistories");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordResetOtp", b =>
@@ -814,132 +498,6 @@ namespace Trains.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("Roles", "security");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.SecurityEvent", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EventType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("WasNotified")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("OccurredAt");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "EventType");
-
-                    b.HasIndex("UserId", "WasNotified");
-
-                    b.ToTable("SecurityEvents");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TrustedDevice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DeviceFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("DeviceName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastUsedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TrustedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "DeviceId");
-
-                    b.HasIndex("UserId", "IsActive");
-
-                    b.ToTable("TrustedDevices");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TwoFactorRecoveryCode", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "IsUsed");
-
-                    b.ToTable("TwoFactorRecoveryCodes");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
@@ -1496,6 +1054,13 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<decimal?>("DistanceKm")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaintenanceNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("NameAr")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -1633,14 +1198,21 @@ namespace Trains.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsFromGoogle")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Latitude")
+                    b.Property<double>("Latitude")
                         .HasColumnType("float");
 
-                    b.Property<double?>("Longitude")
+                    b.Property<double>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<string>("MaintenanceNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
@@ -1752,9 +1324,6 @@ namespace Trains.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1977,6 +1546,18 @@ namespace Trains.Infrastructure.Migrations
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.BookingPassenger", b =>
                 {
+                    b.HasOne("Sudan_Train.Data.Entity.Station", "AlightingStation")
+                        .WithMany()
+                        .HasForeignKey("AlightingStationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sudan_Train.Data.Entity.Station", "BoardingStation")
+                        .WithMany()
+                        .HasForeignKey("BoardingStationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Sudan_Train.Data.Entity.Booking", "Booking")
                         .WithMany("BookingPassengers")
                         .HasForeignKey("BookingId")
@@ -2005,6 +1586,10 @@ namespace Trains.Infrastructure.Migrations
                         .HasForeignKey("TripSeatId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("AlightingStation");
+
+                    b.Navigation("BoardingStation");
+
                     b.Navigation("Booking");
 
                     b.Navigation("Fare");
@@ -2014,17 +1599,6 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Trip");
 
                     b.Navigation("TripSeat");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.City", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Governorate", "Governorate")
-                        .WithMany("Cities")
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Governorate");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Coach", b =>
@@ -2040,33 +1614,33 @@ namespace Trains.Infrastructure.Migrations
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Fare", b =>
                 {
+                    b.HasOne("Sudan_Train.Data.Entity.Station", "DestinationStation")
+                        .WithMany()
+                        .HasForeignKey("DestinationStationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Sudan_Train.Data.Entity.Station", "OriginStation")
+                        .WithMany()
+                        .HasForeignKey("OriginStationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Sudan_Train.Data.Entity.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Sudan_Train.Data.Entity.Trip", "Trip")
                         .WithMany()
                         .HasForeignKey("TripId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("DestinationStation");
+
+                    b.Navigation("OriginStation");
+
+                    b.Navigation("Route");
+
                     b.Navigation("Trip");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Area", "Area")
-                        .WithMany("Governorates")
-                        .HasForeignKey("AreaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Area");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.AuditLog", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("AuditLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.EmailConfirmationOtp", b =>
@@ -2080,65 +1654,10 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.LoginSession", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("LoginSessions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordHistory", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("PasswordHistories")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.PasswordResetOtp", b =>
                 {
                     b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.SecurityEvent", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("SecurityEvents")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TrustedDevice", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("TrustedDevices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.TwoFactorRecoveryCode", b =>
-                {
-                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
-                        .WithMany("TwoFactorRecoveryCodes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2376,11 +1895,6 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Trip");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Area", b =>
-                {
-                    b.Navigation("Governorates");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Booking", b =>
                 {
                     b.Navigation("BookingPassengers");
@@ -2409,30 +1923,13 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Seats");
                 });
 
-            modelBuilder.Entity("Sudan_Train.Data.Entity.Governorate", b =>
-                {
-                    b.Navigation("Cities");
-                });
-
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
                 {
-                    b.Navigation("AuditLogs");
-
                     b.Navigation("Bookings");
-
-                    b.Navigation("LoginSessions");
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("PasswordHistories");
-
                     b.Navigation("PromotionUsages");
-
-                    b.Navigation("SecurityEvents");
-
-                    b.Navigation("TrustedDevices");
-
-                    b.Navigation("TwoFactorRecoveryCodes");
 
                     b.Navigation("UserRefreshTokens");
                 });

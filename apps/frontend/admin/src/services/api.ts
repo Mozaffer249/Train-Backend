@@ -1,7 +1,7 @@
 // API Service Layer for Sudan Train Admin
 // Handles all API communication with authentication
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 const API_PREFIX = '/Api/V1';
 
 // Generic API Response type matching backend Response<T>
@@ -89,7 +89,7 @@ export const api = {
 };
 
 // Geography API - Cities
-import { City, CityFormData, PlaceSearchResult, CityValidationResult } from '../types/geography';
+import { City, CityFormData, CityValidationResult } from '../types/geography';
 
 export const citiesApi = {
   getAll: () => api.get<City[]>('/Infrastructure/Cities'),
@@ -285,6 +285,97 @@ export const faresApi = {
     const endpoint = queryString ? `/Infrastructure/Fares?${queryString}` : '/Infrastructure/Fares';
     return api.get<Fare[]>(endpoint);
   },
-  
+
   create: (data: FareFormData) => api.post<Fare>('/Infrastructure/Fares', data),
+
+  // PATCH-style update; only send the fields the admin actually changed.
+  update: (id: number, data: Partial<FareFormData>) =>
+    api.put<Fare>(`/Infrastructure/Fares/${id}`, data),
+};
+
+// Trains API
+import { Train, TrainFormData, BulkCoachesFormData, Trip, TripFormData, TripUpdateData, CoachUpdateData } from '../types/infrastructure';
+
+// Coach row shape returned by /Infrastructure/Trains/{trainId}/Coaches and
+// the new /Coaches/{id} endpoint. Capacity is read-only in the admin UI once
+// seats exist; class change re-classifies but doesn't regenerate the grid.
+export interface AdminCoach {
+  id: number;
+  trainId: number;
+  coachNumber: string;
+  class: string;
+  capacity: number;
+  sequence: number;
+  seatsCount: number;
+}
+
+export const trainsApi = {
+  getAll: () => api.get<Train[]>('/Infrastructure/Trains'),
+
+  getById: (id: number) => api.get<Train>(`/Infrastructure/Trains/${id}`),
+
+  create: (data: TrainFormData) => api.post<Train>('/Infrastructure/Trains', data),
+
+  update: (id: number, data: TrainFormData) =>
+    api.put<Train>(`/Infrastructure/Trains/${id}`, { id, ...data }),
+
+  delete: (id: number) => api.delete<void>(`/Infrastructure/Trains/${id}`),
+
+  getCoaches: (trainId: number) => api.get<AdminCoach[]>(`/Infrastructure/Trains/${trainId}/Coaches`),
+
+  getCoach: (coachId: number) => api.get<AdminCoach>(`/Infrastructure/Trains/Coaches/${coachId}`),
+
+  updateCoach: (coachId: number, data: CoachUpdateData) =>
+    api.put<AdminCoach>(`/Infrastructure/Trains/Coaches/${coachId}`, data),
+
+  bulkCreateCoaches: (trainId: number, data: BulkCoachesFormData) =>
+    api.post(`/Infrastructure/Trains/${trainId}/Coaches/Bulk`, { trainId, ...data }),
+};
+
+// Per-coach seat layout. Returned by GET /Infrastructure/Coaches/{coachId}/Seats.
+export interface AdminSeat {
+  id: number;
+  coachId: number;
+  seatNumber: string;
+  isWindow: boolean;
+  isAccessible: boolean;
+}
+
+export const coachesApi = {
+  getSeats: (coachId: number) =>
+    api.get<AdminSeat[]>(`/Infrastructure/Coaches/${coachId}/Seats`),
+};
+
+// Trips API
+export const tripsApi = {
+  getAll: (params?: { date?: string; routeId?: number; status?: string }) => {
+    const queryString = buildQueryParams(params);
+    const endpoint = queryString ? `/Infrastructure/Trips?${queryString}` : '/Infrastructure/Trips';
+    return api.get<Trip[]>(endpoint);
+  },
+
+  getById: (id: number) => api.get<Trip>(`/Infrastructure/Trips/${id}`),
+
+  create: (data: TripFormData) => api.post<Trip>('/Infrastructure/Trips', data),
+
+  update: (id: number, data: TripUpdateData) =>
+    api.put<Trip>(`/Infrastructure/Trips/${id}`, { id, ...data }),
+
+  cancel: (id: number) => api.put<Trip>(`/Infrastructure/Trips/${id}/Cancel`, {}),
+};
+
+// Bookings API (per-segment)
+import { Booking } from '../types/infrastructure';
+
+export const bookingsApi = {
+  getAll: (params?: { status?: string; userId?: number; pageNumber?: number; pageSize?: number }) => {
+    const queryString = buildQueryParams(params);
+    const endpoint = queryString ? `/Bookings?${queryString}` : '/Bookings';
+    return api.get<Booking[]>(endpoint);
+  },
+
+  getById: (id: number) => api.get<Booking>(`/Bookings/${id}`),
+
+  cancel: (id: number, reason?: string) =>
+    api.post<string>(`/Bookings/${id}/Cancel`, { bookingId: id, reason }),
 };

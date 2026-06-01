@@ -59,6 +59,11 @@ namespace Sudan_Train.Service.BackgroundServices
 
         private async Task CleanupInactiveSessionsAsync()
         {
+            // Session cleanup disabled — LoginSession table dropped (DropAdvancedSecurityTables migration).
+            // This background service is also unregistered in Program.cs and will not run.
+            await Task.CompletedTask;
+
+            /* Original implementation preserved for restoration:
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
             var notificationService = scope.ServiceProvider.GetRequiredService<ISecurityNotificationService>();
@@ -102,6 +107,7 @@ namespace Sudan_Train.Service.BackgroundServices
             _logger.LogInformation("Terminated {Count} inactive sessions (inactive for more than {Minutes} minutes)",
                 inactiveSessions.Count,
                 _settings.SessionTimeout.InactivityMinutes);
+            */
         }
     }
 }

@@ -7,6 +7,8 @@ using Sudan_Train.Core.Features.Infrastructure.Trains.Commands.DeleteTrain;
 using Sudan_Train.Core.Features.Infrastructure.Trains.Queries.GetAllTrains;
 using Sudan_Train.Core.Features.Infrastructure.Trains.Queries.GetTrainById;
 using Sudan_Train.Core.Features.Infrastructure.Coaches.Commands.BulkCreateCoaches;
+using Sudan_Train.Core.Features.Infrastructure.Coaches.Commands.UpdateCoach;
+using Sudan_Train.Core.Features.Infrastructure.Coaches.Queries.GetCoachById;
 using Sudan_Train.Core.Features.Infrastructure.Coaches.Queries.GetCoachesByTrain;
 using Sudan_Train.Data.AppMetaData;
 
@@ -98,6 +100,30 @@ namespace Sudan_Train.Controllers.Infrastructure.Fleet
         public async Task<IActionResult> BulkCreateCoaches(int trainId, [FromBody] BulkCreateCoachesCommand command)
         {
             command.TrainId = trainId;
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Fetch a single coach by ID — useful for pre-filling the admin edit modal.
+        /// </summary>
+        [HttpGet("Coaches/{coachId:int}")]
+        [Authorize(Roles = Roles.AdminOrStaff)]
+        public async Task<IActionResult> GetCoachById(int coachId)
+        {
+            var response = await _mediator.Send(new GetCoachByIdQuery { Id = coachId });
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// PATCH-style coach update. Capacity is locked — seats are already wired
+        /// and may have bookings. Editable: CoachNumber, Class, Sequence.
+        /// </summary>
+        [HttpPut("Coaches/{coachId:int}")]
+        [Authorize(Roles = Roles.AdminOrStaff)]
+        public async Task<IActionResult> UpdateCoach(int coachId, [FromBody] UpdateCoachCommand command)
+        {
+            command.Id = coachId;
             var response = await _mediator.Send(command);
             return Ok(response);
         }

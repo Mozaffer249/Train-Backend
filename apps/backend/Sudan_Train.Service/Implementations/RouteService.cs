@@ -120,6 +120,13 @@ namespace Sudan_Train.Service.Implementations
 
         public async Task<List<RouteDto>> GetAllRoutesAsync(int? originStationId = null, int? destinationStationId = null, bool? isActive = null, int pageNumber = 1, int pageSize = 10)
         {
+            // Per-segment seat inventory: a customer searching A→B should also find
+            // a route A→C that passes through B (as an intermediate stop). Match if
+            // both stations appear anywhere in the route's stop sequence AND the
+            // origin precedes the destination in stop order. The stop-order check
+            // can't run in SQL because intermediates and the origin/destination
+            // endpoints live in different tables, so we widen with SQL and then
+            // narrow in memory.
             var query = _routeRepository.GetTableNoTracking()
                 .Include(r => r.OriginStation).ThenInclude(s => s.City)
                 .Include(r => r.DestinationStation).ThenInclude(s => s.City)
@@ -128,21 +135,52 @@ namespace Sudan_Train.Service.Implementations
                 .AsQueryable();
 
             if (originStationId.HasValue)
-                query = query.Where(r => r.OriginStationId == originStationId.Value);
+            {
+                var oid = originStationId.Value;
+                query = query.Where(r =>
+                    r.OriginStationId == oid ||
+                    r.DestinationStationId == oid ||
+                    r.RouteStations.Any(rs => rs.StationId == oid));
+            }
 
             if (destinationStationId.HasValue)
-                query = query.Where(r => r.DestinationStationId == destinationStationId.Value);
+            {
+                var did = destinationStationId.Value;
+                query = query.Where(r =>
+                    r.OriginStationId == did ||
+                    r.DestinationStationId == did ||
+                    r.RouteStations.Any(rs => rs.StationId == did));
+            }
 
             if (isActive.HasValue)
                 query = query.Where(r => r.IsActive == isActive.Value);
 
-            var routes = await query
-                .OrderBy(r => r.NameEn)
+            var routes = await query.OrderBy(r => r.NameEn).ToListAsync();
+
+            // When both endpoints were specified, require that the origin actually
+            // sits *before* the destination along the route. Stop order: the route's
+            // OriginStation is implicit position 0, the DestinationStation is one
+            // past the last intermediate, and intermediates use RouteStation.StopOrder.
+            if (originStationId.HasValue && destinationStationId.HasValue)
+            {
+                var oid = originStationId.Value;
+                var did = destinationStationId.Value;
+                routes = routes
+                    .Where(r =>
+                    {
+                        var oOrder = StopOrderOnRoute(r, oid);
+                        var dOrder = StopOrderOnRoute(r, did);
+                        return oOrder.HasValue && dOrder.HasValue && oOrder.Value < dOrder.Value;
+                    })
+                    .ToList();
+            }
+
+            var paged = routes
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
 
-            return routes.Select(r => new RouteDto
+            return paged.Select(r => new RouteDto
             {
                 Id = r.Id,
                 NameEn = r.NameEn ?? "",
@@ -156,13 +194,34 @@ namespace Sudan_Train.Service.Implementations
                 {
                     Id = rs.Id,
                     StationId = rs.StationId,
-                    StationName = rs.Station.NameEn,
+                    StationName = rs.Station.NameAr ?? rs.Station.NameEn ?? "",
                     StopOrder = rs.StopOrder,
                     ArrivalOffset = rs.ArrivalOffset,
                     DepartureOffset = rs.DepartureOffset
                 }).ToList(),
                 TripsCount = r.Trips.Count
             }).ToList();
+        }
+
+        /// <summary>
+        /// Resolves a station's position along a route. Returns 0 for the route's
+        /// origin, <c>RouteStations.Max(StopOrder) + 1</c> for the destination, the
+        /// matching <c>RouteStation.StopOrder</c> for an intermediate, or null if
+        /// the station isn't on the route at all.
+        /// </summary>
+        private static int? StopOrderOnRoute(Data.Entity.Route route, int stationId)
+        {
+            if (route.OriginStationId == stationId) return 0;
+            var intermediate = route.RouteStations.FirstOrDefault(rs => rs.StationId == stationId);
+            if (intermediate != null) return intermediate.StopOrder;
+            if (route.DestinationStationId == stationId)
+            {
+                var maxIntermediate = route.RouteStations.Any()
+                    ? route.RouteStations.Max(rs => rs.StopOrder)
+                    : 0;
+                return maxIntermediate + 1;
+            }
+            return null;
         }
 
         public async Task<RouteDto> UpdateRouteAsync(int id, int? originStationId, int? destinationStationId, string? nameEn, string? nameAr, decimal? distanceKm, bool? isActive, string? maintenanceNote)

@@ -3,11 +3,14 @@ import Homepage from './components/Homepage';
 import SearchResults from './components/SearchResults';
 import BookingPage from './components/BookingPage';
 import Dashboard from './components/Dashboard';
-import AdminPanel from './components/AdminPanel';
 import Header from './components/Header';
+import Login from './components/Login';
+import Register from './components/Register';
+import ConfirmEmail from './components/ConfirmEmail';
+import ForgotPassword from './components/ForgotPassword';
+import ProtectedRoute from './components/ProtectedRoute';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
-import Login from './components/Login';
 
 function App() {
   return (
@@ -19,10 +22,26 @@ function App() {
             <Routes>
               <Route path="/" element={<Homepage />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/confirm-email" element={<ConfirmEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/search" element={<SearchResults />} />
-              <Route path="/book" element={<BookingPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/admin" element={<AdminPanel />} />
+              <Route
+                path="/book"
+                element={
+                  <ProtectedRoute>
+                    <BookingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </div>
         </Router>

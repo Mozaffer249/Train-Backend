@@ -26,6 +26,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.GenerateRecoveryCode
 
         public async Task<Response<GenerateRecoveryCodesResponse>> Handle(GenerateRecoveryCodesCommand request, CancellationToken cancellationToken)
         {
+            // Two-factor recovery codes temporarily disabled — TwoFactorRecoveryCode table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<GenerateRecoveryCodesResponse>("Two-factor authentication is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             // Get current user from HttpContext
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
@@ -50,6 +55,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.GenerateRecoveryCode
             {
                 return BadRequest<GenerateRecoveryCodesResponse>(ex.Message);
             }
+            */
         }
     }
 }

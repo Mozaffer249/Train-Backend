@@ -104,33 +104,38 @@ namespace Sudan_Train.Infrastructure.Seeder
 
         private async Task<List<Train>> SeedTrainsAsync()
         {
-            var trains = new List<Train>
+            // Trains no longer carry a class — each coach holds its own class.
+            // The seeded "default class" below is just for the seeder's coach generation.
+            var trainSeeds = new[]
             {
-                new Train { TrainNumber = "TR-101", NameEn = "Express One", NameAr = "إكسبرس واحد", Type = CoachClass.First, CreatedAt = DateTime.UtcNow },
-                new Train { TrainNumber = "TR-102", NameEn = "Regional Two", NameAr = "إقليمي اثنان", Type = CoachClass.Second, CreatedAt = DateTime.UtcNow },
-                new Train { TrainNumber = "TR-103", NameEn = "Local Three", NameAr = "محلي ثلاثة", Type = CoachClass.Third, CreatedAt = DateTime.UtcNow }
+                new { TrainNumber = "TR-101", NameEn = "Express One", NameAr = "إكسبرس واحد", DefaultClass = CoachClass.First, NumberOfCoaches = 5, SeatsPerCoach = 40 },
+                new { TrainNumber = "TR-102", NameEn = "Regional Two", NameAr = "إقليمي اثنان", DefaultClass = CoachClass.Second, NumberOfCoaches = 4, SeatsPerCoach = 50 },
+                new { TrainNumber = "TR-103", NameEn = "Local Three", NameAr = "محلي ثلاثة", DefaultClass = CoachClass.Third, NumberOfCoaches = 3, SeatsPerCoach = 60 },
             };
+
+            var trains = trainSeeds
+                .Select(s => new Train { TrainNumber = s.TrainNumber, NameEn = s.NameEn, NameAr = s.NameAr, CreatedAt = DateTime.UtcNow })
+                .ToList();
 
             await _context.Trains.AddRangeAsync(trains);
             await _context.SaveChangesAsync();
 
-            foreach (var train in trains)
+            for (int i = 0; i < trains.Count; i++)
             {
-                int coaches = train.TrainNumber == "TR-101" ? 5 : train.TrainNumber == "TR-102" ? 4 : 3;
-                int seatsPerCoach = train.TrainNumber == "TR-101" ? 40 : train.TrainNumber == "TR-102" ? 50 : 60;
-                await CreateCoachesAndSeats(train, coaches, seatsPerCoach);
+                var seed = trainSeeds[i];
+                await CreateCoachesAndSeats(trains[i], seed.NumberOfCoaches, seed.SeatsPerCoach, seed.DefaultClass);
             }
 
             _logger.LogInformation("Seeded {Count} trains with coaches and seats", trains.Count);
             return trains;
         }
 
-        private async Task CreateCoachesAndSeats(Train train, int numberOfCoaches, int seatsPerCoach)
+        private async Task CreateCoachesAndSeats(Train train, int numberOfCoaches, int seatsPerCoach, CoachClass coachClass)
         {
             var coaches = new List<Coach>();
             for (int i = 1; i <= numberOfCoaches; i++)
             {
-                coaches.Add(new Coach { TrainId = train.Id, CoachNumber = $"C{i}", Class = train.Type, Capacity = seatsPerCoach, Sequence = i, CreatedAt = DateTime.UtcNow });
+                coaches.Add(new Coach { TrainId = train.Id, CoachNumber = $"C{i}", Class = coachClass, Capacity = seatsPerCoach, Sequence = i, CreatedAt = DateTime.UtcNow });
             }
 
             await _context.Coaches.AddRangeAsync(coaches);

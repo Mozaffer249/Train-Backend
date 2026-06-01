@@ -10,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Resources.Authentication;
+using Sudan_Train.Data.AppMetaData;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Infrastructure.context;
 using Sudan_Train.Service.Models;
@@ -46,9 +47,39 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
 
         public async Task<Response<object>> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            var validationResult = await ValidateUserDoesNotExist(request);
-            if (validationResult != null)
-                return validationResult;
+            // If a user with this email already exists, branch on confirmation status:
+            //   • confirmed/active → real "email taken" error
+            //   • unconfirmed     → treat as a resume: regenerate the OTP, resend it,
+            //                       and return the same success shape so the client lands
+            //                       on the confirm page.
+            var existingUser = await _userManager.FindByEmailAsync(request.Email!);
+            if (existingUser != null)
+            {
+                if (existingUser.EmailConfirmed || existingUser.IsActive)
+                {
+                    return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.EmailIsExist]);
+                }
+
+                var resendOtp = GenerateOtpCode();
+                await StoreOtpInDatabaseAsync(existingUser.Id, resendOtp);
+                await SendConfirmationEmailAsync(existingUser, resendOtp, cancellationToken);
+
+                return Created<object>(
+                    _authLocalizer[AuthenticationResourcesKeys.UserRegisteredSuccessfully],
+                    entity: new
+                    {
+                        Message = "A new confirmation code has been sent to your email.",
+                        UserId = existingUser.Id,
+                        Email = existingUser.Email,
+                        ResumeConfirmation = true,
+                    });
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.PhoneNumber) &&
+                IsPhoneNumberAlreadyRegistered(request.PhoneNumber))
+            {
+                return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.PhoneNumberIsExist]);
+            }
 
             var user = await CreateUserAsync(request);
             if (user == null)
@@ -63,29 +94,12 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
 
             return Created<object>(
                 _authLocalizer[AuthenticationResourcesKeys.UserRegisteredSuccessfully],
-                entity: new { Message = "Please check your email for your confirmation code." });
-        }
-
-        private async Task<Response<object>?> ValidateUserDoesNotExist(RegisterCommand request)
-        {
-            var emailExists = await IsEmailAlreadyRegistered(request.Email!);
-            if (emailExists)
-                return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.EmailIsExist]);
-
-            if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
-            {
-                var phoneExists = IsPhoneNumberAlreadyRegistered(request.PhoneNumber);
-                if (phoneExists)
-                    return BadRequest<object>(_authLocalizer[AuthenticationResourcesKeys.PhoneNumberIsExist]);
-            }
-
-            return null;
-        }
-
-        private async Task<bool> IsEmailAlreadyRegistered(string email)
-        {
-            var existingUser = await _userManager.FindByEmailAsync(email);
-            return existingUser != null;
+                entity: new
+                {
+                    Message = "Please check your email for your confirmation code.",
+                    UserId = user.Id,
+                    Email = user.Email,
+                });
         }
 
         private bool IsPhoneNumberAlreadyRegistered(string phoneNumber)
@@ -97,8 +111,20 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
         {
             var user = MapRequestToUser(request);
             var result = await _userManager.CreateAsync(user, request.Password!);
+            if (!result.Succeeded)
+                return null;
 
-            return result.Succeeded ? user : null;
+            // Self-registered users are always Customers. Ignore role-assignment errors
+            // (e.g. role missing) so registration still succeeds; the user just has no role.
+            var roleResult = await _userManager.AddToRoleAsync(user, Roles.Customer);
+            if (!roleResult.Succeeded)
+            {
+                _logger.LogWarning(
+                    "User {UserId} created but Customer role assignment failed: {Errors}",
+                    user.Id, string.Join(", ", roleResult.Errors));
+            }
+
+            return user;
         }
 
         private User MapRequestToUser(RegisterCommand request)
@@ -304,15 +330,13 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.Register
             </div>
             
             <div class='info-section'>
-                <p><strong>Your User ID:</strong> {user.Id}</p>
                 <p><strong>Your Email:</strong> {user.Email}</p>
             </div>
-            
+
             <div class='steps'>
                 <p><strong>How to confirm your email:</strong></p>
                 <ol>
-                    <li>Go to the Confirm Email endpoint</li>
-                    <li>Enter your User ID: <strong>{user.Id}</strong></li>
+                    <li>Return to the confirmation page in the app</li>
                     <li>Enter the 4-digit code shown above</li>
                     <li>Submit to activate your account</li>
                 </ol>

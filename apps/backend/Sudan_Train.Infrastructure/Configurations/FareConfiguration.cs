@@ -13,13 +13,6 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.Property(f => f.BasePrice)
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(f => f.PricePerKm)
-                .HasColumnType("decimal(18,2)");
-
-            builder.Property(f => f.VatRate)
-                .HasColumnType("decimal(5,2)")
-                .HasDefaultValue(0.15m);
-
             builder.Property(f => f.DiscountPercent)
                 .HasColumnType("decimal(5,2)");
 

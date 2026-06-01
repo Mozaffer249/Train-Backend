@@ -141,8 +141,8 @@ const SeedingPage = () => {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Geography Data Seeding</h1>
-        <p className="text-gray-600 mt-2">Import official Sudan geography data from Google API</p>
+        <h1 className="text-3xl font-bold text-gray-900">استيراد بيانات الجغرافيا</h1>
+        <p className="text-gray-600 mt-2">استيراد بيانات الجغرافيا الرسمية للسودان من Google API</p>
       </div>
 
       {/* Warning Notice */}
@@ -150,7 +150,7 @@ const SeedingPage = () => {
         <div className="flex items-start gap-3">
           <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
           <div>
-            <h3 className="font-semibold text-blue-900 mb-1">Important Information</h3>
+            <h3 className="font-semibold text-blue-900 mb-1">معلومات هامة</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Requires Google API key configured in backend (appsettings.json)</li>
               <li>• Google Geocoding API will be called for each location</li>
@@ -166,7 +166,7 @@ const SeedingPage = () => {
           <div className="flex items-start gap-3">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
             <div>
-              <h3 className="font-semibold text-red-900 mb-1">Error</h3>
+              <h3 className="font-semibold text-red-900 mb-1">خطأ</h3>
               <p className="text-sm text-red-800">{error}</p>
             </div>
           </div>
@@ -182,7 +182,7 @@ const SeedingPage = () => {
               <Globe className="text-admin-primary-600" size={24} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Seed All Geography</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">استيراد كل بيانات الجغرافيا</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Import all geographic data (regions, states, and cities) from Google API in correct hierarchical order.
               </p>
@@ -205,7 +205,7 @@ const SeedingPage = () => {
               <MapPin className="text-purple-600" size={24} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Individual Seeding</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">استيراد فردي</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Seed specific entity types independently (useful for testing or partial updates).
               </p>
@@ -243,8 +243,8 @@ const SeedingPage = () => {
           <div className="flex items-start gap-3 mb-6">
             <CheckCircle className="text-green-600 flex-shrink-0 mt-0.5" size={24} />
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Seeding Completed</h2>
-              <p className="text-gray-600">Geography data has been imported from Google API</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">اكتمل الاستيراد</h2>
+              <p className="text-gray-600">تم استيراد بيانات الجغرافيا من Google API</p>
             </div>
           </div>
 
@@ -252,15 +252,15 @@ const SeedingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="text-2xl font-bold text-green-900">{result.totalAdded}</div>
-              <div className="text-sm text-green-700">Total Added</div>
+              <div className="text-sm text-green-700">إجمالي المضاف</div>
             </div>
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="text-2xl font-bold text-yellow-900">{result.totalSkipped}</div>
-              <div className="text-sm text-yellow-700">Total Skipped</div>
+              <div className="text-sm text-yellow-700">إجمالي المتخطّى</div>
             </div>
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="text-2xl font-bold text-red-900">{result.totalFailed}</div>
-              <div className="text-sm text-red-700">Total Failed</div>
+              <div className="text-sm text-red-700">إجمالي الفشل</div>
             </div>
           </div>
 
@@ -268,7 +268,7 @@ const SeedingPage = () => {
           <div className="space-y-4">
             {/* Regions */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">Regions</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">المناطق</h3>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Added:</span>{' '}
@@ -297,7 +297,7 @@ const SeedingPage = () => {
 
             {/* States */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">States</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">الولايات</h3>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Added:</span>{' '}
@@ -336,7 +336,7 @@ const SeedingPage = () => {
 
             {/* Cities */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">Cities</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">المدن</h3>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Added:</span>{' '}
@@ -381,7 +381,7 @@ const SeedingPage = () => {
         <div className="flex items-start gap-3">
           <Database className="text-gray-600 flex-shrink-0 mt-0.5" size={20} />
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Google API Configuration</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">إعداد Google API</h3>
             <div className="text-sm text-gray-700 space-y-2">
               <p>To enable Google API seeding, configure your backend:</p>
               <pre className="bg-white p-3 rounded border border-gray-300 overflow-x-auto">

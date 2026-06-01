@@ -36,11 +36,6 @@ namespace Sudan_Train.Data.Entity
 
         public decimal BasePrice { get; set; }
 
-        // Distance-based pricing (price per km)
-        public decimal? PricePerKm { get; set; }
-
-        public decimal VatRate { get; set; } = 0.15m; // Default 15% VAT
-
         public decimal? DiscountPercent { get; set; }
 
         [MaxLength(3)]
@@ -50,12 +45,10 @@ namespace Sudan_Train.Data.Entity
 
         public DateTime? EffectiveTo { get; set; }
 
-        // Calculated field
+        // The customer pays base − discount. No VAT line.
         [NotMapped]
-        public decimal FinalPrice => BasePrice - (BasePrice * (DiscountPercent ?? 0) / 100);
-
-        [NotMapped]
-        public decimal TotalWithVat => FinalPrice + (FinalPrice * VatRate);
+        public decimal FinalPrice => BasePrice - (BasePrice * (DiscountPercent ?? 0m) / 100m);
     }
 }
+
 

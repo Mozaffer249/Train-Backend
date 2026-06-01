@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Cairo', 'Tajawal', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
       colors: {
         'sudan-blue': {
           50: '#eff6ff',
@@ -27,8 +30,47 @@ export default {
           700: '#b45309',
           800: '#92400e',
           900: '#78350f',
-        }
-      }
+        },
+        // Sudan flag red — used for danger accents and the flag-stripe.
+        'sudan-red': {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#d21034',
+          700: '#a30c2a',
+          800: '#7f0820',
+          900: '#5e0617',
+        },
+        // Sudan flag green — primary CTA across the customer site.
+        'sudan-green': {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#007a3d',
+          800: '#066034',
+          900: '#064e2a',
+        },
+        // Warm Sudanese sand / Nile palette for backgrounds.
+        'sudan-sand': {
+          50: '#fbf6ec',
+          100: '#f5ecd6',
+          200: '#ecdcb2',
+          300: '#dec487',
+          400: '#cda760',
+          500: '#b88a3e',
+          600: '#9a6f2e',
+          700: '#7a5624',
+          800: '#5a3f1b',
+          900: '#3d2a12',
+        },
+      },
     },
   },
   plugins: [],

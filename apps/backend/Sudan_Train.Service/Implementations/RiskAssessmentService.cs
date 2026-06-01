@@ -57,12 +57,13 @@ namespace Sudan_Train.Service.Implementations
             // Calculate time window
             var windowStart = DateTime.UtcNow.AddMinutes(-settings.FailedAttemptWindowMinutes);
 
-            // Get failed attempts in the time window
-            var failedAttempts = await _context.IpLoginAttempts
-                .Where(a => a.IpAddress == ipAddress &&
-                           !a.WasSuccessful &&
-                           a.AttemptTime >= windowStart)
-                .CountAsync();
+            // IP login-attempt tracking disabled — IpLoginAttempt table dropped (DropAdvancedSecurityTables migration).
+            var failedAttempts = 0;
+            //var failedAttempts = await _context.IpLoginAttempts
+            //    .Where(a => a.IpAddress == ipAddress &&
+            //               !a.WasSuccessful &&
+            //               a.AttemptTime >= windowStart)
+            //    .CountAsync();
 
             // Assess risk level
             var assessment = new RiskAssessment
@@ -100,6 +101,10 @@ namespace Sudan_Train.Service.Implementations
 
         public async Task RecordLoginAttemptAsync(string ipAddress, int? userId, string? userName, bool wasSuccessful)
         {
+            // IP login-attempt tracking disabled — IpLoginAttempt table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+
+            /* Original implementation preserved for restoration:
             var attempt = new IpLoginAttempt
             {
                 IpAddress = ipAddress,
@@ -111,6 +116,7 @@ namespace Sudan_Train.Service.Implementations
 
             _context.IpLoginAttempts.Add(attempt);
             await _context.SaveChangesAsync();
+            */
         }
 
         public async Task<bool> IsIpBlockedAsync(string ipAddress)

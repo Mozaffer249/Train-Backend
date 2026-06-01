@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081';
       const response = await fetch(`${apiUrl}/Api/V1/Authentication/Login`, {
         method: 'POST',
         headers: {
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Validate that user has admin or staff role
       const hasAdminAccess = authData.roles?.some(
-        (role: string) => role === 'SuperAdmin' || role === 'Staff'
+        (role: string) => role === 'SuperAdmin' || role === 'Admin' || role === 'Staff'
       );
       
       if (!hasAdminAccess) {

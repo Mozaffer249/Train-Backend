@@ -19,6 +19,14 @@ namespace Sudan_Train.Infrastructure.Configurations
             // Add index on TripSeatId for seat assignment queries
             builder.HasIndex(bp => bp.TripSeatId);
 
+            // Composite index that drives the per-segment seat availability query
+            // (trip + seat + boarding/alighting overlap check).
+            builder.HasIndex(bp => new { bp.TripId, bp.TripSeatId });
+
+            // Indexes on the segment FKs for join speed.
+            builder.HasIndex(bp => bp.BoardingStationId);
+            builder.HasIndex(bp => bp.AlightingStationId);
+
             builder.Property(bp => bp.Price)
                 .HasColumnType("decimal(18,2)");
 
@@ -54,6 +62,16 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .WithOne(t => t.BookingPassenger)
                 .HasForeignKey<Ticket>(t => t.BookingPassengerId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(bp => bp.BoardingStation)
+                .WithMany()
+                .HasForeignKey(bp => bp.BoardingStationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(bp => bp.AlightingStation)
+                .WithMany()
+                .HasForeignKey(bp => bp.AlightingStationId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -56,7 +56,8 @@ export interface RouteStationFormData {
   departureMinutesFromOrigin: number;
 }
 
-// Fare interface
+// Fare interface (MVP). Polymorphic scope (route/segment/trip) + flat pricing:
+// basePrice − discount = total. No VAT.
 export interface Fare {
   id: number;
   routeId?: number;
@@ -65,27 +66,32 @@ export interface Fare {
   tripId?: number;
   coachClass: string;
   basePrice: number;
-  pricePerKm?: number;
-  vatRate: number;
   discountPercent?: number;
   currency: string;
   finalPrice: number;
-  totalWithVat: number;
   effectiveFrom: string;
   effectiveTo?: string;
 }
 
-// Fare form data
+// Form payload used by both Create (POST) and Update (PUT). Scope columns are
+// only meaningful on create — admin UI greys them out in edit mode.
 export interface FareFormData {
   routeId?: number;
   originStationId?: number;
   destinationStationId?: number;
   tripId?: number;
-  coachClass: number; // Enum: 1=First, 2=Second, 3=Third
+  coachClass: number; // 1=First, 2=Second, 3=Third
   basePrice: number;
-  pricePerKm?: number;
-  vatRate: number;
   discountPercent?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+}
+
+// Coach update payload — capacity is intentionally not editable here.
+export interface CoachUpdateData {
+  coachNumber?: string;
+  class?: number; // CoachClass enum value
+  sequence?: number;
 }
 
 // Pagination params
@@ -107,3 +113,104 @@ export const CoachClassLabels: Record<number, string> = {
   2: 'Second Class',
   3: 'Third Class',
 };
+
+// Train interface (matches backend TrainDto). A train has no single class —
+// each coach carries its own class; mixed-class trains are the norm.
+export interface Train {
+  id: number;
+  trainNumber: string;
+  nameEn: string;
+  nameAr: string;
+  coachesCount: number;
+  totalCapacity: number;
+  createdAt: string;
+}
+
+export interface TrainFormData {
+  trainNumber: string;
+  nameEn: string;
+  nameAr: string;
+}
+
+export interface BulkCoachesFormData {
+  numberOfCoaches: number;
+  class: number; // CoachClass enum
+  capacityPerCoach: number;
+  autoGenerateSeats: boolean;
+}
+
+// Trip interface (matches backend TripDto)
+export interface Trip {
+  id: number;
+  trainId: number;
+  trainNumber: string;
+  trainName: string;
+  routeId: number;
+  routeName: string;
+  originStation: string;
+  destinationStation: string;
+  departureTime: string; // ISO date-time
+  arrivalTime: string; // ISO date-time
+  status: string;
+  totalSeats: number;
+  availableSeats: number;
+  bookedSeats: number;
+}
+
+export interface TripFormData {
+  trainId: number;
+  routeId: number;
+  departureTime: string;
+  arrivalTime: string;
+}
+
+export interface TripUpdateData {
+  departureTime: string;
+  arrivalTime: string;
+  status: string;
+}
+
+export const TRIP_STATUSES = ['Scheduled', 'Departed', 'Completed', 'Cancelled', 'Delayed'] as const;
+
+// ---- Bookings (per-segment) ----
+export interface BookingPassengerInfo {
+  fullNameEn: string;
+  fullNameAr?: string | null;
+  idNumber: string;
+  phone?: string | null;
+  email?: string | null;
+  gender?: string | null;
+  nationality?: string | null;
+}
+
+export interface BookingTicketInfo {
+  ticketNumber: string;
+  qrPayload?: string | null;
+  status: string;
+}
+
+export interface Booking {
+  id: number;
+  bookingRef: string;
+  tripId: number;
+  trainName: string;
+  routeName: string;
+  boardingStationId: number;
+  alightingStationId: number;
+  boardingStationName: string;
+  alightingStationName: string;
+  departureTime: string;
+  arrivalTime: string;
+  coachClass: string;
+  seatNumber: string;
+  passenger: BookingPassengerInfo;
+  basePrice: number;
+  vatAmount: number;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  ticket?: BookingTicketInfo | null;
+}
+
+export const BOOKING_STATUSES = ['Pending', 'Confirmed', 'Cancelled', 'Completed'] as const;

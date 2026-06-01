@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — SecurityEvent table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class SecurityEventConfiguration : IEntityTypeConfiguration<SecurityEvent>
     {
         public void Configure(EntityTypeBuilder<SecurityEvent> builder)
@@ -34,4 +36,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    */
 }

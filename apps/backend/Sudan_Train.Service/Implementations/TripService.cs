@@ -58,11 +58,11 @@ namespace Sudan_Train.Service.Implementations
                 Id = tripDetails!.Id,
                 TrainId = tripDetails.TrainId,
                 TrainNumber = tripDetails.Train.TrainNumber,
-                TrainName = tripDetails.Train.NameEn ?? "",
+                TrainName = tripDetails.Train.NameAr ?? tripDetails.Train.NameEn ?? "",
                 RouteId = tripDetails.RouteId,
-                RouteName = tripDetails.Route.NameEn ?? "",
-                OriginStation = tripDetails.Route.OriginStation.NameEn,
-                DestinationStation = tripDetails.Route.DestinationStation.NameEn,
+                RouteName = tripDetails.Route.NameAr ?? tripDetails.Route.NameEn ?? "",
+                OriginStation = tripDetails.Route.OriginStation.NameAr ?? tripDetails.Route.OriginStation.NameEn ?? "",
+                DestinationStation = tripDetails.Route.DestinationStation.NameAr ?? tripDetails.Route.DestinationStation.NameEn ?? "",
                 DepartureTime = tripDetails.DepartureTime,
                 ArrivalTime = tripDetails.ArrivalTime,
                 Status = tripDetails.Status,
@@ -89,11 +89,11 @@ namespace Sudan_Train.Service.Implementations
                 Id = trip.Id,
                 TrainId = trip.TrainId,
                 TrainNumber = trip.Train.TrainNumber,
-                TrainName = trip.Train.NameEn ?? "",
+                TrainName = trip.Train.NameAr ?? trip.Train.NameEn ?? "",
                 RouteId = trip.RouteId,
-                RouteName = trip.Route.NameEn ?? "",
-                OriginStation = trip.Route.OriginStation.NameEn,
-                DestinationStation = trip.Route.DestinationStation.NameEn,
+                RouteName = trip.Route.NameAr ?? trip.Route.NameEn ?? "",
+                OriginStation = trip.Route.OriginStation.NameAr ?? trip.Route.OriginStation.NameEn ?? "",
+                DestinationStation = trip.Route.DestinationStation.NameAr ?? trip.Route.DestinationStation.NameEn ?? "",
                 DepartureTime = trip.DepartureTime,
                 ArrivalTime = trip.ArrivalTime,
                 Status = trip.Status,
@@ -134,11 +134,11 @@ namespace Sudan_Train.Service.Implementations
                 Id = t.Id,
                 TrainId = t.TrainId,
                 TrainNumber = t.Train.TrainNumber,
-                TrainName = t.Train.NameEn ?? "",
+                TrainName = t.Train.NameAr ?? t.Train.NameEn ?? "",
                 RouteId = t.RouteId,
-                RouteName = t.Route.NameEn ?? "",
-                OriginStation = t.Route.OriginStation.NameEn,
-                DestinationStation = t.Route.DestinationStation.NameEn,
+                RouteName = t.Route.NameAr ?? t.Route.NameEn ?? "",
+                OriginStation = t.Route.OriginStation.NameAr ?? t.Route.OriginStation.NameEn ?? "",
+                DestinationStation = t.Route.DestinationStation.NameAr ?? t.Route.DestinationStation.NameEn ?? "",
                 DepartureTime = t.DepartureTime,
                 ArrivalTime = t.ArrivalTime,
                 Status = t.Status,
@@ -172,11 +172,11 @@ namespace Sudan_Train.Service.Implementations
                 Id = trip.Id,
                 TrainId = trip.TrainId,
                 TrainNumber = trip.Train.TrainNumber,
-                TrainName = trip.Train.NameEn ?? "",
+                TrainName = trip.Train.NameAr ?? trip.Train.NameEn ?? "",
                 RouteId = trip.RouteId,
-                RouteName = trip.Route.NameEn ?? "",
-                OriginStation = trip.Route.OriginStation.NameEn,
-                DestinationStation = trip.Route.DestinationStation.NameEn,
+                RouteName = trip.Route.NameAr ?? trip.Route.NameEn ?? "",
+                OriginStation = trip.Route.OriginStation.NameAr ?? trip.Route.OriginStation.NameEn ?? "",
+                DestinationStation = trip.Route.DestinationStation.NameAr ?? trip.Route.DestinationStation.NameEn ?? "",
                 DepartureTime = trip.DepartureTime,
                 ArrivalTime = trip.ArrivalTime,
                 Status = trip.Status,
@@ -232,6 +232,152 @@ namespace Sudan_Train.Service.Implementations
             }).ToList();
 
             await _tripSeatRepository.AddRangeAsync(tripSeats);
+        }
+
+        public async Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId)
+        {
+            var trip = await _tripRepository.GetTableNoTracking()
+                .Include(t => t.Train)
+                    .ThenInclude(tr => tr.Coaches)
+                        .ThenInclude(c => c.Seats)
+                .Include(t => t.Route).ThenInclude(r => r.OriginStation)
+                .Include(t => t.Route).ThenInclude(r => r.DestinationStation)
+                .Include(t => t.Route).ThenInclude(r => r.RouteStations).ThenInclude(rs => rs.Station)
+                .Include(t => t.TripSeats)
+                .FirstOrDefaultAsync(t => t.Id == tripId);
+
+            if (trip == null) return null;
+
+            var boarding = StopOrderOnRoute(trip.Route, boardingStationId);
+            var alighting = StopOrderOnRoute(trip.Route, alightingStationId);
+            if (boarding == null || alighting == null || alighting.Value <= boarding.Value)
+                return null;
+
+            // Existing bookings on this trip that aren't cancelled.
+            var existing = await _tripRepository.GetTableNoTracking()
+                .Where(t => t.Id == tripId)
+                .SelectMany(t => t.BookingPassengers)
+                .Where(bp => bp.Booking.Status != BookingStatus.Cancelled && bp.TripSeatId != null)
+                .Select(bp => new { bp.TripSeatId, bp.BoardingStationId, bp.AlightingStationId })
+                .ToListAsync();
+
+            // Pre-compute stop orders for every booking so the overlap check is O(1) per seat.
+            var existingByTripSeat = existing
+                .Select(bp => new
+                {
+                    bp.TripSeatId,
+                    BOrder = StopOrderOnRoute(trip.Route, bp.BoardingStationId),
+                    AOrder = StopOrderOnRoute(trip.Route, bp.AlightingStationId),
+                })
+                .Where(x => x.BOrder.HasValue && x.AOrder.HasValue)
+                .GroupBy(x => x.TripSeatId!.Value)
+                .ToDictionary(g => g.Key, g => g.Select(x => (B: x.BOrder!.Value, A: x.AOrder!.Value)).ToList());
+
+            var tripSeatBySeatId = trip.TripSeats.ToDictionary(ts => ts.SeatId, ts => ts);
+
+            var coachDtos = new List<CoachSeatsDto>();
+            int totalSeats = 0;
+            int availableCount = 0;
+
+            foreach (var coach in trip.Train.Coaches.OrderBy(c => c.Sequence))
+            {
+                var coachDto = new CoachSeatsDto
+                {
+                    Id = coach.Id,
+                    CoachNumber = coach.CoachNumber,
+                    Class = coach.Class.ToString(),
+                    Seats = new List<AvailableSeatDto>(),
+                };
+
+                foreach (var seat in coach.Seats.OrderBy(s => s.SeatNumber))
+                {
+                    totalSeats++;
+                    if (!tripSeatBySeatId.TryGetValue(seat.Id, out var tripSeat))
+                    {
+                        // No TripSeat row for this seat — treat as unavailable.
+                        coachDto.Seats.Add(new AvailableSeatDto
+                        {
+                            Id = seat.Id,
+                            TripSeatId = 0,
+                            SeatNumber = seat.SeatNumber,
+                            IsWindow = seat.IsWindow,
+                            IsAccessible = seat.IsAccessible,
+                            IsAvailable = false,
+                        });
+                        continue;
+                    }
+
+                    bool available = tripSeat.Status != SeatStatus.Maintenance;
+                    if (available && existingByTripSeat.TryGetValue(tripSeat.Id, out var ranges))
+                    {
+                        // Overlap check: any existing booking [b2,a2] overlaps requested [b,a]?
+                        // Ranges overlap iff b < a2 && b2 < a.
+                        foreach (var (b2, a2) in ranges)
+                        {
+                            if (boarding.Value < a2 && b2 < alighting.Value)
+                            {
+                                available = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (available) availableCount++;
+                    coachDto.Seats.Add(new AvailableSeatDto
+                    {
+                        Id = seat.Id,
+                        TripSeatId = tripSeat.Id,
+                        SeatNumber = seat.SeatNumber,
+                        IsWindow = seat.IsWindow,
+                        IsAccessible = seat.IsAccessible,
+                        IsAvailable = available,
+                    });
+                }
+
+                coachDtos.Add(coachDto);
+            }
+
+            return new SegmentSeatsDto
+            {
+                TripId = trip.Id,
+                BoardingStationId = boardingStationId,
+                AlightingStationId = alightingStationId,
+                BoardingStationName = StationNameAt(trip.Route, boardingStationId),
+                AlightingStationName = StationNameAt(trip.Route, alightingStationId),
+                TotalSeats = totalSeats,
+                AvailableCount = availableCount,
+                Coaches = coachDtos,
+            };
+        }
+
+        /// <summary>
+        /// Stop position of <paramref name="stationId"/> on a route. Origin is 0,
+        /// destination is one past the highest intermediate StopOrder, intermediates
+        /// use their RouteStation.StopOrder, anything else is null.
+        /// </summary>
+        public static int? StopOrderOnRoute(Data.Entity.Route route, int stationId)
+        {
+            if (route.OriginStationId == stationId) return 0;
+            var intermediate = route.RouteStations.FirstOrDefault(rs => rs.StationId == stationId);
+            if (intermediate != null) return intermediate.StopOrder;
+            if (route.DestinationStationId == stationId)
+            {
+                var maxIntermediate = route.RouteStations.Any()
+                    ? route.RouteStations.Max(rs => rs.StopOrder)
+                    : 0;
+                return maxIntermediate + 1;
+            }
+            return null;
+        }
+
+        private static string StationNameAt(Data.Entity.Route route, int stationId)
+        {
+            if (route.OriginStationId == stationId)
+                return route.OriginStation.NameAr ?? route.OriginStation.NameEn ?? "";
+            if (route.DestinationStationId == stationId)
+                return route.DestinationStation.NameAr ?? route.DestinationStation.NameEn ?? "";
+            var rs = route.RouteStations.FirstOrDefault(x => x.StationId == stationId);
+            return rs == null ? "" : (rs.Station.NameAr ?? rs.Station.NameEn ?? "");
         }
     }
 }

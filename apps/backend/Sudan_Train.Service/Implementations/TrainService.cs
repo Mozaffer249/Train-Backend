@@ -25,14 +25,13 @@ namespace Sudan_Train.Service.Implementations
             _tripRepository = tripRepository;
         }
 
-        public async Task<TrainDto> CreateTrainAsync(string trainNumber, string nameEn, string nameAr, CoachClass type)
+        public async Task<TrainDto> CreateTrainAsync(string trainNumber, string nameEn, string nameAr)
         {
             var train = new Train
             {
                 TrainNumber = trainNumber,
                 NameEn = nameEn,
                 NameAr = nameAr,
-                Type = type,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -44,7 +43,6 @@ namespace Sudan_Train.Service.Implementations
                 TrainNumber = train.TrainNumber,
                 NameEn = train.NameEn ?? "",
                 NameAr = train.NameAr ?? "",
-                Type = train.Type.ToString(),
                 CoachesCount = 0,
                 TotalCapacity = 0,
                 CreatedAt = train.CreatedAt
@@ -66,7 +64,6 @@ namespace Sudan_Train.Service.Implementations
                 TrainNumber = train.TrainNumber,
                 NameEn = train.NameEn ?? "",
                 NameAr = train.NameAr ?? "",
-                Type = train.Type.ToString(),
                 CoachesCount = train.Coaches.Count,
                 TotalCapacity = train.Coaches.Sum(c => c.Capacity),
                 CreatedAt = train.CreatedAt
@@ -96,7 +93,6 @@ namespace Sudan_Train.Service.Implementations
                     TrainNumber = t.TrainNumber,
                     NameEn = t.NameEn ?? "",
                     NameAr = t.NameAr ?? "",
-                    Type = t.Type.ToString(),
                     CoachesCount = t.Coaches.Count,
                     TotalCapacity = t.Coaches.Sum(c => c.Capacity),
                     CreatedAt = t.CreatedAt
@@ -106,7 +102,7 @@ namespace Sudan_Train.Service.Implementations
             return trains;
         }
 
-        public async Task<TrainDto> UpdateTrainAsync(int id, string trainNumber, string nameEn, string nameAr, CoachClass type)
+        public async Task<TrainDto> UpdateTrainAsync(int id, string trainNumber, string nameEn, string nameAr)
         {
             var train = await _trainRepository.GetTableNoTracking()
                 .Include(t => t.Coaches)
@@ -118,7 +114,6 @@ namespace Sudan_Train.Service.Implementations
             train.TrainNumber = trainNumber;
             train.NameEn = nameEn;
             train.NameAr = nameAr;
-            train.Type = type;
             train.UpdatedAt = DateTime.UtcNow;
 
             await _trainRepository.UpdateAsync(train);
@@ -129,7 +124,6 @@ namespace Sudan_Train.Service.Implementations
                 TrainNumber = train.TrainNumber,
                 NameEn = train.NameEn ?? "",
                 NameAr = train.NameAr ?? "",
-                Type = train.Type.ToString(),
                 CoachesCount = train.Coaches.Count,
                 TotalCapacity = train.Coaches.Sum(c => c.Capacity),
                 CreatedAt = train.CreatedAt
@@ -249,6 +243,65 @@ namespace Sudan_Train.Service.Implementations
             var now = DateTime.UtcNow;
             return await _tripRepository.GetTableNoTracking()
                 .AnyAsync(t => t.TrainId == trainId && t.DepartureTime > now && t.Status != "Cancelled");
+        }
+
+        public async Task<CoachDto?> GetCoachByIdAsync(int coachId)
+        {
+            return await _coachRepository.GetTableNoTracking()
+                .Include(c => c.Seats)
+                .Where(c => c.Id == coachId)
+                .Select(c => new CoachDto
+                {
+                    Id = c.Id,
+                    TrainId = c.TrainId,
+                    CoachNumber = c.CoachNumber,
+                    Class = c.Class.ToString(),
+                    Capacity = c.Capacity,
+                    Sequence = c.Sequence,
+                    SeatsCount = c.Seats.Count
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        // PATCH-style coach update. Capacity is not editable — seats are already
+        // auto-generated and may have bookings referencing them. Class change
+        // re-classifies the coach but leaves the seat grid untouched.
+        public async Task<CoachDto?> UpdateCoachAsync(int coachId, string? coachNumber, CoachClass? coachClass, int? sequence)
+        {
+            var coach = await _coachRepository.GetTableAsTracking()
+                .Include(c => c.Seats)
+                .FirstOrDefaultAsync(c => c.Id == coachId);
+
+            if (coach == null) return null;
+
+            if (!string.IsNullOrWhiteSpace(coachNumber) && coachNumber != coach.CoachNumber)
+            {
+                // Uniqueness within the same train.
+                var clash = await _coachRepository.GetTableNoTracking()
+                    .AnyAsync(c => c.TrainId == coach.TrainId && c.Id != coachId && c.CoachNumber == coachNumber);
+                if (clash)
+                    throw new InvalidOperationException($"Coach number '{coachNumber}' is already used on this train.");
+                coach.CoachNumber = coachNumber;
+            }
+
+            if (coachClass.HasValue)
+                coach.Class = coachClass.Value;
+
+            if (sequence.HasValue)
+                coach.Sequence = sequence.Value;
+
+            await _coachRepository.UpdateAsync(coach);
+
+            return new CoachDto
+            {
+                Id = coach.Id,
+                TrainId = coach.TrainId,
+                CoachNumber = coach.CoachNumber,
+                Class = coach.Class.ToString(),
+                Capacity = coach.Capacity,
+                Sequence = coach.Sequence,
+                SeatsCount = coach.Seats?.Count ?? 0
+            };
         }
 
         private async Task GenerateSeatsForCoachAsync(int coachId, int capacity)

@@ -50,7 +50,8 @@ builder.Services.AddInfrastructureDependencies()
 
 // Register Background Services
 builder.Services.AddHostedService<Sudan_Train.Service.BackgroundServices.OtpCleanupService>();
-builder.Services.AddHostedService<Sudan_Train.Service.BackgroundServices.SessionCleanupService>();
+// SessionCleanupService disabled — LoginSession table dropped (DropAdvancedSecurityTables migration).
+//builder.Services.AddHostedService<Sudan_Train.Service.BackgroundServices.SessionCleanupService>();
 
 #endregion
 
@@ -185,7 +186,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Audit logging middleware (after authentication)
-app.UseMiddleware<AuditLoggingMiddleware>();
+// Disabled — AuditLog table dropped (DropAdvancedSecurityTables migration); IAuditService.LogAsync would fail at runtime.
+//app.UseMiddleware<AuditLoggingMiddleware>();
 
 app.MapControllers();
 

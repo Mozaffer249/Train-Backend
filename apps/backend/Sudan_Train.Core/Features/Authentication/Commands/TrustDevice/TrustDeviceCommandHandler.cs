@@ -29,6 +29,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.TrustDevice
 
         public async Task<Response<string>> Handle(TrustDeviceCommand request, CancellationToken cancellationToken)
         {
+            // Trusted-device management temporarily disabled — TrustedDevice table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<string>("Trusted-device management is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
 
@@ -42,6 +47,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.TrustDevice
             await _sessionService.AddTrustedDeviceAsync(userId, request.DeviceId, request.DeviceName, fingerprint);
 
             return Success<string>("Device trusted successfully");
+            */
         }
     }
 }

@@ -53,15 +53,16 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<PromotionUsage> PromotionUsages { get; set; }
 
         // Authentication & Security DbSets
-        public DbSet<LoginSession> LoginSessions { get; set; }
-        public DbSet<TrustedDevice> TrustedDevices { get; set; }
-        public DbSet<AuditLog> AuditLogs { get; set; }
-        public DbSet<SecurityEvent> SecurityEvents { get; set; }
-        public DbSet<PasswordHistory> PasswordHistories { get; set; }
-        public DbSet<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
+        // Advanced security tables temporarily disabled (dropped via DropAdvancedSecurityTables migration).
+        //public DbSet<LoginSession> LoginSessions { get; set; }
+        //public DbSet<TrustedDevice> TrustedDevices { get; set; }
+        //public DbSet<AuditLog> AuditLogs { get; set; }
+        //public DbSet<SecurityEvent> SecurityEvents { get; set; }
+        //public DbSet<PasswordHistory> PasswordHistories { get; set; }
+        //public DbSet<TwoFactorRecoveryCode> TwoFactorRecoveryCodes { get; set; }
         public DbSet<EmailConfirmationOtp> EmailConfirmationOtps { get; set; }
         public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
-        public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
+        //public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

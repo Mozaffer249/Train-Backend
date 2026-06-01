@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Plus, DollarSign } from 'lucide-react';
+import { Plus, DollarSign, Pencil } from 'lucide-react';
 import { Fare } from '../types/infrastructure';
 import { faresApi, routesApi } from '../services/api';
 import { Route } from '../types/infrastructure';
 import FilterDropdown from '../components/common/FilterDropdown';
 import FareModal from '../components/fares/FareModal';
-import { CoachClassLabels } from '../types/infrastructure';
 
 const FaresPage = () => {
   const [fares, setFares] = useState<Fare[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFareModalOpen, setIsFareModalOpen] = useState(false);
+  const [editingFare, setEditingFare] = useState<Fare | null>(null);
 
   // Filters
   const [routeFilter, setRouteFilter] = useState<number>(0);
@@ -106,12 +106,10 @@ const FaresPage = () => {
           />
 
           <button
-            onClick={() => setIsFareModalOpen(true)}
+            onClick={() => { setEditingFare(null); setIsFareModalOpen(true); }}
             className="admin-button flex items-center gap-2 ml-auto"
           >
-            <Plus size={20} />
-            Create Fare
-          </button>
+            <Plus size={20} />إنشاء سعر</button>
         </div>
       </div>
 
@@ -131,12 +129,6 @@ const FaresPage = () => {
                   Base Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price/km
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  VAT
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Discount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -145,18 +137,21 @@ const FaresPage = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Effective Period
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                     Loading fares...
                   </td>
                 </tr>
               ) : fares.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                     No fares found
                   </td>
                 </tr>
@@ -175,22 +170,11 @@ const FaresPage = () => {
                       {fare.basePrice.toFixed(2)} {fare.currency}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                      {fare.pricePerKm ? `${fare.pricePerKm.toFixed(2)} ${fare.currency}` : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                      {(fare.vatRate * 100).toFixed(0)}%
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                       {fare.discountPercent ? `${fare.discountPercent.toFixed(0)}%` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {fare.finalPrice.toFixed(2)} {fare.currency}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          +VAT: {fare.totalWithVat.toFixed(2)} {fare.currency}
-                        </div>
+                      <div className="font-medium text-gray-900">
+                        {fare.finalPrice.toFixed(2)} {fare.currency}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -198,6 +182,16 @@ const FaresPage = () => {
                         <div>From: {formatDate(fare.effectiveFrom)}</div>
                         {fare.effectiveTo && <div>To: {formatDate(fare.effectiveTo)}</div>}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => { setEditingFare(fare); setIsFareModalOpen(true); }}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                        title="تعديل"
+                      >
+                        <Pencil size={14} />
+                        تعديل
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -209,9 +203,11 @@ const FaresPage = () => {
 
       <FareModal
         isOpen={isFareModalOpen}
-        onClose={() => setIsFareModalOpen(false)}
+        onClose={() => { setIsFareModalOpen(false); setEditingFare(null); }}
+        editFare={editingFare}
         onSuccess={() => {
           setIsFareModalOpen(false);
+          setEditingFare(null);
           loadFares();
         }}
       />

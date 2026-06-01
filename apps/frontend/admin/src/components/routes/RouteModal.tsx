@@ -74,7 +74,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
     setError('');
 
     if (!formData.originStationId || !formData.destinationStationId) {
-      setError('Please select both origin and destination stations');
+      setError('يرجى اختيار محطتي الانطلاق والوصول');
       return;
     }
 
@@ -115,7 +115,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
           <div className="bg-white px-6 pt-5 pb-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                {route ? 'Edit Route' : 'Create New Route'}
+                {route ? 'تعديل مسار' : 'إنشاء مسار جديد'}
               </h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
                 <X size={24} />
@@ -177,7 +177,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                     disabled={route && route.tripsCount > 0}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <option value={0}>Select origin...</option>
+                    <option value={0}>اختر محطة الانطلاق…</option>
                     {stations.map((station) => (
                       <option key={station.id} value={station.id}>
                         {station.nameEn} ({station.code})
@@ -198,7 +198,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                     disabled={route && route.tripsCount > 0}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <option value={0}>Select destination...</option>
+                    <option value={0}>اختر محطة الوصول…</option>
                     {stations.map((station) => (
                       <option key={station.id} value={station.id}>
                         {station.nameEn} ({station.code})
@@ -221,7 +221,7 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                   placeholder="Auto-calculated if empty"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Leave empty for automatic calculation using coordinates</p>
+                <p className="text-xs text-gray-500 mt-1">اتركه فارغاً ليتم الحساب تلقائياً من الإحداثيات</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -260,15 +260,13 @@ const RouteModal = ({ isOpen, onClose, onSuccess, route }: RouteModalProps) => {
                   onClick={onClose}
                   className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                   disabled={isSubmitting}
-                >
-                  Cancel
-                </button>
+                >إلغاء</button>
                 <button
                   type="submit"
                   className="admin-button"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Saving...' : route ? 'Update ..Route' : 'Create Route'}
+                  {isSubmitting ? 'جاري الحفظ…' : route ? 'Update ..Route' : 'إنشاء مسار'}
                 </button>
               </div>
             </form>

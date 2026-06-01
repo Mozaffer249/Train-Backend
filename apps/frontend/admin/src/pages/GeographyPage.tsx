@@ -144,8 +144,8 @@ const GeographyPage = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Geography Management</h1>
-        <p className="text-gray-600 mt-2">Manage cities and stations for the train network</p>
+        <h1 className="text-3xl font-bold text-gray-900">إدارة الجغرافيا</h1>
+        <p className="text-gray-600 mt-2">إدارة المدن والمحطات لشبكة القطارات</p>
       </div>
 
       {/* Tabs */}
@@ -193,7 +193,7 @@ const GeographyPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search cities..."
+                placeholder="ابحث عن مدن…"
                 value={citySearch}
                 onChange={(e) => setCitySearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
@@ -222,9 +222,7 @@ const GeographyPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Coordinates
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -283,7 +281,7 @@ const GeographyPage = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Search stations..."
+                  placeholder="ابحث عن محطات…"
                   value={stationSearch}
                   onChange={(e) => {
                     setStationSearch(e.target.value);
@@ -308,7 +306,7 @@ const GeographyPage = () => {
               />
               
               <FilterDropdown
-                label="Status"
+                label="الحالة"
                 value={stationStatusFilter}
                 onChange={(val) => {
                   setStationStatusFilter(String(val));
@@ -316,14 +314,14 @@ const GeographyPage = () => {
                 }}
                 options={[
                   { value: 'all', label: 'All Status' },
-                  { value: 'active', label: 'Active' },
-                  { value: 'inactive', label: 'Inactive' },
+                  { value: 'active', label: 'نشط' },
+                  { value: 'inactive', label: 'غير نشط' },
                 ]}
                 className="min-w-[130px]"
               />
               
               <FilterDropdown
-                label="Type"
+                label="النوع"
                 value={stationTypeFilter}
                 onChange={(val) => {
                   setStationTypeFilter(String(val));
@@ -364,9 +362,7 @@ const GeographyPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Coordinates
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">

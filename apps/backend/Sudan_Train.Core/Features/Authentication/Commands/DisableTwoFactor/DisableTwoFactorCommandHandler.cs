@@ -34,6 +34,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.DisableTwoFactor
 
         public async Task<Response<string>> Handle(DisableTwoFactorCommand request, CancellationToken cancellationToken)
         {
+            // Two-factor authentication temporarily disabled — TwoFactorRecoveryCode table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<string>("Two-factor authentication is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             // Get current user from HttpContext
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
@@ -58,6 +63,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.DisableTwoFactor
             }
 
             return Success<string>("Two-factor authentication disabled successfully");
+            */
         }
     }
 }

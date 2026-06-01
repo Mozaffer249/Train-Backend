@@ -26,6 +26,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.TerminateAllSessions
 
         public async Task<Response<string>> Handle(TerminateAllSessionsCommand request, CancellationToken cancellationToken)
         {
+            // Session management temporarily disabled — LoginSession table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<string>("Session management is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             // Get current user from HttpContext
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
@@ -49,6 +54,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.TerminateAllSessions
             await _sessionService.TerminateAllSessionsExceptCurrentAsync(userId, currentAccessToken ?? string.Empty);
 
             return Success<string>(_authLocalizer[AuthenticationResourcesKeys.AllSessionsTerminated]);
+            */
         }
     }
 }

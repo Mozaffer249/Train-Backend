@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — PasswordHistory table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class PasswordHistoryConfiguration : IEntityTypeConfiguration<PasswordHistory>
     {
         public void Configure(EntityTypeBuilder<PasswordHistory> builder)
@@ -25,4 +27,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    */
 }

@@ -84,12 +84,12 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ResetPassword
                 return BadRequest<string>("Reset code has expired. Please request a new one.");
             }
 
-            // Check password history
-            var isReused = await _passwordSecurityService.IsPasswordInHistoryAsync(user.Id, request.NewPassword, historyCount: 5);
-            if (isReused)
-            {
-                return BadRequest<string>("Cannot reuse one of your last 5 passwords. Please choose a different password.");
-            }
+            // Password-history reuse check disabled (PasswordHistory table dropped via DropAdvancedSecurityTables migration).
+            //var isReused = await _passwordSecurityService.IsPasswordInHistoryAsync(user.Id, request.NewPassword, historyCount: 5);
+            //if (isReused)
+            //{
+            //    return BadRequest<string>("Cannot reuse one of your last 5 passwords. Please choose a different password.");
+            //}
 
             // Mark OTP as used
             otp.IsUsed = true;
@@ -110,24 +110,25 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ResetPassword
                 return BadRequest<string>(errors);
             }
 
-            // Add old password to history
-            if (!string.IsNullOrEmpty(user.PasswordHash))
-            {
-                await _passwordSecurityService.AddToPasswordHistoryAsync(user.Id, user.PasswordHash);
-            }
+            // Password-history write disabled (PasswordHistory table dropped via DropAdvancedSecurityTables migration).
+            //if (!string.IsNullOrEmpty(user.PasswordHash))
+            //{
+            //    await _passwordSecurityService.AddToPasswordHistoryAsync(user.Id, user.PasswordHash);
+            //}
 
             // Update timestamp
             user.PasswordChangedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            // Log security event
             var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
-            await _auditService.LogSecurityEventAsync(
-                userId: user.Id,
-                eventType: SecurityEventType.PasswordChanged,
-                ipAddress: ipAddress,
-                details: "Password reset via reset code"
-            );
+
+            // Security-event audit logging disabled (SecurityEvent table dropped via DropAdvancedSecurityTables migration).
+            //await _auditService.LogSecurityEventAsync(
+            //    userId: user.Id,
+            //    eventType: SecurityEventType.PasswordChanged,
+            //    ipAddress: ipAddress,
+            //    details: "Password reset via reset code"
+            //);
 
             // Send email notification
             if (_securitySettings.Value.EmailNotifications.Enabled &&

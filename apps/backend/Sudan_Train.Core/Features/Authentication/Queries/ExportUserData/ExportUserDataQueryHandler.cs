@@ -39,6 +39,11 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.ExportUserData
 
         public async Task<Response<UserDataExport>> Handle(ExportUserDataQuery request, CancellationToken cancellationToken)
         {
+            // User-data export temporarily disabled — depends on LoginSession/AuditLog tables dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<UserDataExport>("User-data export is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             // Get current user from HttpContext
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
@@ -104,6 +109,7 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.ExportUserData
             }).ToList();
 
             return Success<UserDataExport>(entity: userDataExport);
+            */
         }
     }
 }

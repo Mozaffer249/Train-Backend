@@ -30,6 +30,11 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.LoginWithTwoFactor
 
         public async Task<Response<JwtAuthResult>> Handle(LoginWithTwoFactorCommand request, CancellationToken cancellationToken)
         {
+            // Two-factor login temporarily disabled — TwoFactorRecoveryCode table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<JwtAuthResult>("Two-factor authentication is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             // Find user
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user == null)
@@ -71,6 +76,7 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.LoginWithTwoFactor
             var result = await _authenticationService.GetJWTToken(user);
 
             return Success<JwtAuthResult>(entity: result);
+            */
         }
     }
 }

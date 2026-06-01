@@ -27,8 +27,6 @@ namespace Sudan_Train.Core.Features.Infrastructure.Fares.Commands.CreateFare
                 request.TripId,
                 request.CoachClass,
                 request.BasePrice,
-                request.PricePerKm,
-                request.VatRate,
                 request.DiscountPercent);
 
             return Success("Fare created successfully", fareDto);

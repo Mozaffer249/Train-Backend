@@ -11,6 +11,11 @@ namespace Sudan_Train.Service.Abstracts
         Task<bool> CancelTripAsync(int id);
         Task<bool> HasOverlappingTripsAsync(int trainId, DateTime departureTime, DateTime arrivalTime, int? excludeTripId = null);
         Task InitializeTripSeatsAsync(int tripId, int trainId);
+
+        // Per-segment seat availability: returns the seat grid annotated with
+        // IsAvailable computed from existing BookingPassenger overlaps for the
+        // requested boarding→alighting segment.
+        Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId);
     }
 }
 

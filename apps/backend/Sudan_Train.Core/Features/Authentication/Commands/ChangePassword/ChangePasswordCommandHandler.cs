@@ -61,12 +61,12 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ChangePassword
                 return BadRequest<string>(_authLocalizer[AuthenticationResourcesKeys.PasswordNotCorrect]);
             }
 
-            // Check if password is in recent history
-            var isReused = await _passwordSecurityService.IsPasswordInHistoryAsync(user.Id, request.NewPassword, historyCount: 5);
-            if (isReused)
-            {
-                return BadRequest<string>("Cannot reuse one of your last 5 passwords. Please choose a different password.");
-            }
+            // Password-history reuse check disabled (PasswordHistory table dropped via DropAdvancedSecurityTables migration).
+            //var isReused = await _passwordSecurityService.IsPasswordInHistoryAsync(user.Id, request.NewPassword, historyCount: 5);
+            //if (isReused)
+            //{
+            //    return BadRequest<string>("Cannot reuse one of your last 5 passwords. Please choose a different password.");
+            //}
 
             // Check password strength (optional, already validated by Identity)
             var strength = await _passwordSecurityService.CheckPasswordStrengthAsync(request.NewPassword);
@@ -84,25 +84,26 @@ namespace Sudan_Train.Core.Features.Authentication.Commands.ChangePassword
                 return BadRequest<string>(errors);
             }
 
-            // Add current password to history
-            var currentPasswordHash = user.PasswordHash;
-            if (!string.IsNullOrEmpty(currentPasswordHash))
-            {
-                await _passwordSecurityService.AddToPasswordHistoryAsync(user.Id, currentPasswordHash);
-            }
+            // Password-history write disabled (PasswordHistory table dropped via DropAdvancedSecurityTables migration).
+            //var currentPasswordHash = user.PasswordHash;
+            //if (!string.IsNullOrEmpty(currentPasswordHash))
+            //{
+            //    await _passwordSecurityService.AddToPasswordHistoryAsync(user.Id, currentPasswordHash);
+            //}
 
             // Update PasswordChangedAt timestamp
             user.PasswordChangedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            // Log security event
             var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
-            await _auditService.LogSecurityEventAsync(
-                userId: user.Id,
-                eventType: SecurityEventType.PasswordChanged,
-                ipAddress: ipAddress,
-                details: "Password changed via ChangePassword endpoint"
-            );
+
+            // Security-event audit logging disabled (SecurityEvent table dropped via DropAdvancedSecurityTables migration).
+            //await _auditService.LogSecurityEventAsync(
+            //    userId: user.Id,
+            //    eventType: SecurityEventType.PasswordChanged,
+            //    ipAddress: ipAddress,
+            //    details: "Password changed via ChangePassword endpoint"
+            //);
 
             // Send security notification
             await _notificationService.NotifyPasswordChangedAsync(user, ipAddress);

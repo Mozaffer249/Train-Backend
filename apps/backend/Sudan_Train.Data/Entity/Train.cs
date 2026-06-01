@@ -18,8 +18,6 @@ namespace Sudan_Train.Data.Entity
         [MaxLength(200)]
         public string? NameAr { get; set; }
 
-        public CoachClass Type { get; set; }
-
         public ICollection<Coach> Coaches { get; set; } = new List<Coach>();
         public ICollection<TrainSchedule> TrainSchedules { get; set; } = new List<TrainSchedule>();
     }

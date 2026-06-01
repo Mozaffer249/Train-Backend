@@ -25,8 +25,7 @@ const Pagination = ({
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
       <div className="flex items-center gap-4">
-        <div className="text-sm text-gray-700">
-          Showing <span className="font-medium">{startItem}</span> to{' '}
+        <div className="text-sm text-gray-700">يعرض<span className="font-medium">{startItem}</span> to{' '}
           <span className="font-medium">{endItem}</span> of{' '}
           <span className="font-medium">{totalItems}</span> results
         </div>
@@ -69,7 +68,7 @@ const Pagination = ({
         </button>
 
         <div className="flex items-center gap-2 px-3">
-          <span className="text-sm text-gray-700">Page</span>
+          <span className="text-sm text-gray-700">صفحة</span>
           <input
             type="number"
             min={1}

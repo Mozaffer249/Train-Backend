@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — TwoFactorRecoveryCode table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class TwoFactorRecoveryCodeConfiguration : IEntityTypeConfiguration<TwoFactorRecoveryCode>
     {
         public void Configure(EntityTypeBuilder<TwoFactorRecoveryCode> builder)
@@ -26,4 +28,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    */
 }

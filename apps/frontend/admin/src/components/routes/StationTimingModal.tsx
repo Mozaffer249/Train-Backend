@@ -55,7 +55,7 @@ const StationTimingModal = ({ isOpen, onClose, onSuccess, routeId, stationId }: 
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div className="bg-white px-6 pt-5 pb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit Station Timing</h3>
+              <h3 className="text-lg font-medium text-gray-900">تعديل توقيت المحطة</h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
                 <X size={24} />
               </button>
@@ -80,7 +80,7 @@ const StationTimingModal = ({ isOpen, onClose, onSuccess, routeId, stationId }: 
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-primary-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">The order in which this station appears in the route</p>
+                <p className="text-xs text-gray-500 mt-1">ترتيب ظهور هذه المحطة في المسار</p>
               </div>
 
               <div>
@@ -128,15 +128,13 @@ const StationTimingModal = ({ isOpen, onClose, onSuccess, routeId, stationId }: 
                   onClick={onClose}
                   className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                   disabled={isSubmitting}
-                >
-                  Cancel
-                </button>
+                >إلغاء</button>
                 <button
                   type="submit"
                   className="admin-button"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Updating...' : 'Update Timing'}
+                  {isSubmitting ? 'جاري التحديث…' : 'Update Timing'}
                 </button>
               </div>
             </form>

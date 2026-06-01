@@ -35,6 +35,18 @@ namespace Sudan_Train.Data.Entity
 
         public decimal Price { get; set; }
 
+        // Segment the passenger actually rides — required so that two passengers
+        // can share a seat on a multi-stop trip when their legs don't overlap.
+        public int BoardingStationId { get; set; }
+
+        [ForeignKey(nameof(BoardingStationId))]
+        public Station BoardingStation { get; set; } = default!;
+
+        public int AlightingStationId { get; set; }
+
+        [ForeignKey(nameof(AlightingStationId))]
+        public Station AlightingStation { get; set; } = default!;
+
         // Computed property - derive from TripSeat
         [NotMapped]
         public string SeatNumber => TripSeat?.Seat?.SeatNumber ?? "N/A";

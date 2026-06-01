@@ -4,6 +4,8 @@ using Sudan_Train.Data.Entity.Identity;
 
 namespace Sudan_Train.Infrastructure.Configurations
 {
+    /* Temporarily disabled — TrustedDevice table dropped (DropAdvancedSecurityTables migration).
+       Commented out so ApplyConfigurationsFromAssembly does not re-add the entity to the model.
     public class TrustedDeviceConfiguration : IEntityTypeConfiguration<TrustedDevice>
     {
         public void Configure(EntityTypeBuilder<TrustedDevice> builder)
@@ -34,4 +36,5 @@ namespace Sudan_Train.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    */
 }

@@ -23,8 +23,7 @@ namespace Sudan_Train.Core.Features.Infrastructure.Trains.Commands.CreateTrain
             var trainDto = await _trainService.CreateTrainAsync(
                 request.TrainNumber,
                 request.NameEn,
-                request.NameAr,
-                request.Type);
+                request.NameAr);
             return Success("Train created successfully", trainDto);
         }
     }

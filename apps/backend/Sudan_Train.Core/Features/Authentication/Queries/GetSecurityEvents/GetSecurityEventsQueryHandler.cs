@@ -30,6 +30,11 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.GetSecurityEvents
 
         public async Task<Response<List<SecurityEvent>>> Handle(GetSecurityEventsQuery request, CancellationToken cancellationToken)
         {
+            // Security-event history temporarily disabled — SecurityEvent table dropped (DropAdvancedSecurityTables migration).
+            await Task.CompletedTask;
+            return BadRequest<List<SecurityEvent>>("Security-event history is temporarily disabled.");
+
+            /* Original implementation preserved for restoration:
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? _httpContextAccessor.HttpContext?.User.FindFirst("uid")?.Value;
 
@@ -41,6 +46,7 @@ namespace Sudan_Train.Core.Features.Authentication.Queries.GetSecurityEvents
             var events = await _auditService.GetUserSecurityEventsAsync(userId, request.PageNumber, request.PageSize);
 
             return Success<List<SecurityEvent>>(entity: events);
+            */
         }
     }
 }

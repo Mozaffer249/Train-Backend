@@ -23,9 +23,6 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.Property(t => t.NameAr)
                 .HasMaxLength(200);
 
-            builder.Property(t => t.Type)
-                .HasConversion<int>();
-
             builder.HasMany(t => t.Coaches)
                 .WithOne(c => c.Train)
                 .HasForeignKey(c => c.TrainId)
