@@ -242,7 +242,7 @@ namespace Sudan_Train.Service.Implementations
         {
             var now = DateTime.UtcNow;
             return await _tripRepository.GetTableNoTracking()
-                .AnyAsync(t => t.TrainId == trainId && t.DepartureTime > now && t.Status != "Cancelled");
+                .AnyAsync(t => t.TrainId == trainId && t.DepartureTime > now && t.Status != TripStatus.Cancelled);
         }
 
         public async Task<CoachDto?> GetCoachByIdAsync(int coachId)

@@ -5,6 +5,7 @@ import { bookingsApi } from '../services/api';
 import { Booking, BOOKING_STATUSES } from '../types/infrastructure';
 import FilterDropdown from '../components/common/FilterDropdown';
 import { extractErrorMessage, showConfirm, showError, showSuccess } from '../utils/alerts';
+import { useMe } from '../contexts/MeContext';
 
 const PAGE_SIZE = 20;
 
@@ -31,6 +32,7 @@ function statusBadgeClass(status: string): string {
 }
 
 const BookingsPage = () => {
+  const { isAdmin } = useMe();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -197,7 +199,7 @@ const BookingsPage = () => {
                       <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{Math.round(b.total)} {b.currency === 'SDG' ? 'جنيه' : b.currency}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">{formatDateTime(b.createdAt)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {canCancel ? (
+                        {canCancel && isAdmin ? (
                           <button
                             onClick={() => handleCancel(b)}
                             disabled={cancellingId === b.id}

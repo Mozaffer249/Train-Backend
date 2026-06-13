@@ -6,6 +6,7 @@ using Sudan_Train.Core.Features.Authentication.Commands.ChangeEmail;
 using Sudan_Train.Core.Features.Authentication.Commands.ConfirmEmailChange;
 using Sudan_Train.Core.Features.Authentication.Commands.DeleteAccount;
 using Sudan_Train.Core.Features.Authentication.Queries.GetProfile;
+using Sudan_Train.Core.Features.Authentication.Queries.GetMe;
 using Sudan_Train.Core.Features.Authentication.Queries.ExportUserData;
 using Sudan_Train.Data.AppMetaData;
 
@@ -26,6 +27,17 @@ namespace Sudan_Train.Controllers.Authentication.Account
         public async Task<IActionResult> GetProfile([FromQuery] GetProfileQuery query)
         {
             return NewResult(await Mediator.Send(query));
+        }
+
+        /// <summary>
+        /// Lightweight identity summary — userId, roles, and assigned station IDs.
+        /// Used by the admin shell to decide which pages/links to show.
+        /// </summary>
+        [Authorize]
+        [HttpGet(Router.Rule + "Account/Me")]
+        public async Task<IActionResult> GetMe()
+        {
+            return NewResult(await Mediator.Send(new GetMeQuery()));
         }
 
         /// <summary>

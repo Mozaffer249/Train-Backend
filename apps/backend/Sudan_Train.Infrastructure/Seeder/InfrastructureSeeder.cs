@@ -162,9 +162,9 @@ namespace Sudan_Train.Infrastructure.Seeder
             for (int day = 0; day < 7; day++)
             {
                 var tripDate = today.AddDays(day);
-                trips.Add(new Trip { TrainId = trains[0].Id, RouteId = routes[0].Id, DepartureTime = tripDate.AddHours(6), ArrivalTime = tripDate.AddHours(10).AddMinutes(30), Status = "Scheduled", CreatedAt = DateTime.UtcNow });
-                trips.Add(new Trip { TrainId = trains[1].Id, RouteId = routes[1].Id, DepartureTime = tripDate.AddHours(8), ArrivalTime = tripDate.AddHours(14), Status = "Scheduled", CreatedAt = DateTime.UtcNow });
-                trips.Add(new Trip { TrainId = trains[2].Id, RouteId = routes[2].Id, DepartureTime = tripDate.AddHours(15), ArrivalTime = tripDate.AddHours(21), Status = "Scheduled", CreatedAt = DateTime.UtcNow });
+                trips.Add(new Trip { TrainId = trains[0].Id, RouteId = routes[0].Id, DepartureTime = tripDate.AddHours(6), ArrivalTime = tripDate.AddHours(10).AddMinutes(30), Status = TripStatus.Scheduled, CreatedAt = DateTime.UtcNow });
+                trips.Add(new Trip { TrainId = trains[1].Id, RouteId = routes[1].Id, DepartureTime = tripDate.AddHours(8), ArrivalTime = tripDate.AddHours(14), Status = TripStatus.Scheduled, CreatedAt = DateTime.UtcNow });
+                trips.Add(new Trip { TrainId = trains[2].Id, RouteId = routes[2].Id, DepartureTime = tripDate.AddHours(15), ArrivalTime = tripDate.AddHours(21), Status = TripStatus.Scheduled, CreatedAt = DateTime.UtcNow });
             }
 
             await _context.Trip.AddRangeAsync(trips);

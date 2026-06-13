@@ -6,6 +6,6 @@ namespace Sudan_Train.Core.Features.Infrastructure.Trips.Commands.CancelTrip
     public class CancelTripCommand : IRequest<Response<string>>
     {
         public int Id { get; set; }
+        public string? Reason { get; set; }
     }
 }
-

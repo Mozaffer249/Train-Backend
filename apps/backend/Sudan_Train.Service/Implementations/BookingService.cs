@@ -42,7 +42,7 @@ namespace Sudan_Train.Service.Implementations
             if (trip == null)
                 return new BookingCreationResult { NotFound = true, Error = "Trip not found." };
 
-            if (trip.Status == "Cancelled" || trip.Status == "Completed")
+            if (trip.Status == TripStatus.Cancelled || trip.Status == TripStatus.Arrived)
                 return new BookingCreationResult { Invalid = true, Error = $"Cannot book on a {trip.Status} trip." };
 
             // ---- Resolve stop orders on this trip's route (shared across all seats) ----
@@ -207,7 +207,7 @@ namespace Sudan_Train.Service.Implementations
                         TicketNumber = $"{booking.Reference}-{seatNumber}",
                         QrCode = qrPayload,
                         IssuedAt = DateTime.UtcNow,
-                        Status = "Issued",
+                        Status = TicketStatus.Issued,
                     });
                 }
 
@@ -226,18 +226,82 @@ namespace Sudan_Train.Service.Implementations
 
         public async Task<bool> CancelBookingAsync(int bookingId, int? userId, bool isAdmin, string? reason)
         {
-            var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+            var booking = await _db.Bookings
+                .Include(b => b.Payments)
+                .Include(b => b.BookingPassengers).ThenInclude(bp => bp.Ticket)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
             if (booking == null) return false;
             if (!isAdmin && booking.UserId != userId) return false;
             if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Completed) return false;
 
-            booking.Status = BookingStatus.Cancelled;
-            booking.CancelledAt = DateTime.UtcNow;
-            booking.CancellationReason = reason;
-            booking.CancelledBy = userId;
+            using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var now = DateTime.UtcNow;
+                booking.Status = BookingStatus.Cancelled;
+                booking.CancelledAt = now;
+                booking.CancellationReason = reason;
+                booking.CancelledBy = userId;
 
-            await _db.SaveChangesAsync();
-            return true;
+                // Flip outstanding tickets to Cancelled. Tickets already boarded
+                // / marked no-show stay as they were — those events happened.
+                foreach (var bp in booking.BookingPassengers)
+                {
+                    if (bp.Ticket != null &&
+                        bp.Ticket.Status != TicketStatus.Boarded &&
+                        bp.Ticket.Status != TicketStatus.NoShow)
+                    {
+                        bp.Ticket.Status = TicketStatus.Cancelled;
+                    }
+                }
+
+                // Create one Refund row per completed payment.
+                var completedPayment = booking.Payments
+                    .FirstOrDefault(p => p.Status == PaymentStatus.Completed);
+                if (completedPayment != null)
+                {
+                    booking.RefundAmount = completedPayment.Amount;
+                    _db.Refunds.Add(new Refund
+                    {
+                        BookingId = booking.Id,
+                        PaymentId = completedPayment.Id,
+                        RefundNumber = $"RF-{booking.Reference}-{now.Ticks % 100000}",
+                        Amount = completedPayment.Amount,
+                        Currency = completedPayment.Currency ?? "SDG",
+                        Status = RefundStatus.Pending,
+                        Method = RefundMethod.Original,
+                        Reason = reason ?? "Booking cancelled",
+                        CreatedAt = now,
+                    });
+                }
+
+                // In-app notification to the booking owner (if any).
+                if (booking.UserId.HasValue)
+                {
+                    _db.Notifications.Add(new Notification
+                    {
+                        UserId = booking.UserId,
+                        BookingId = booking.Id,
+                        Type = NotificationType.BookingCancellation,
+                        Channel = NotificationChannel.InApp,
+                        Subject = "Booking cancelled",
+                        Message = $"Booking {booking.Reference} was cancelled. {reason ?? string.Empty}".Trim(),
+                        IsRead = false,
+                        IsSent = true,
+                        SentAt = now,
+                        CreatedAt = now,
+                    });
+                }
+
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<BookingDto?> GetByIdAsync(int bookingId, int? userId, bool isAdmin)
@@ -339,7 +403,7 @@ namespace Sudan_Train.Service.Implementations
                 {
                     TicketNumber = bp.Ticket.TicketNumber,
                     QrPayload = bp.Ticket.QrCode,
-                    Status = bp.Ticket.Status,
+                    Status = bp.Ticket.Status.ToString(),
                 };
 
             var primaryBreakdown = MakeBreakdown(primary);

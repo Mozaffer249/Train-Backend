@@ -500,6 +500,36 @@ namespace Trains.Infrastructure.Migrations
                     b.ToTable("Roles", "security");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.StaffStation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("AssignedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StationId");
+
+                    b.HasIndex("UserId", "StationId")
+                        .IsUnique();
+
+                    b.ToTable("StaffStations");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.User", b =>
                 {
                     b.Property<int>("Id")
@@ -1256,6 +1286,12 @@ namespace Trains.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("BoardedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("BoardedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<int>("BookingPassengerId")
                         .HasColumnType("int");
 
@@ -1268,12 +1304,10 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<string>("QrCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Issued");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("TicketNumber")
                         .IsRequired()
@@ -1287,6 +1321,8 @@ namespace Trains.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BoardedByUserId");
 
                     b.HasIndex("BookingPassengerId")
                         .IsUnique();
@@ -1426,12 +1462,10 @@ namespace Trains.Infrastructure.Migrations
                     b.Property<int>("RouteId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Scheduled");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("TrainId")
                         .HasColumnType("int");
@@ -1665,6 +1699,25 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.StaffStation", b =>
+                {
+                    b.HasOne("Sudan_Train.Data.Entity.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
+                        .WithMany("StaffStations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Sudan_Train.Data.Entity.Identity.UserRefreshToken", b =>
                 {
                     b.HasOne("Sudan_Train.Data.Entity.Identity.User", "User")
@@ -1829,11 +1882,18 @@ namespace Trains.Infrastructure.Migrations
 
             modelBuilder.Entity("Sudan_Train.Data.Entity.Ticket", b =>
                 {
+                    b.HasOne("Sudan_Train.Data.Entity.Identity.User", "BoardedByUser")
+                        .WithMany()
+                        .HasForeignKey("BoardedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Sudan_Train.Data.Entity.BookingPassenger", "BookingPassenger")
                         .WithOne("Ticket")
                         .HasForeignKey("Sudan_Train.Data.Entity.Ticket", "BookingPassengerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("BoardedByUser");
 
                     b.Navigation("BookingPassenger");
                 });
@@ -1930,6 +1990,8 @@ namespace Trains.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("PromotionUsages");
+
+                    b.Navigation("StaffStations");
 
                     b.Navigation("UserRefreshTokens");
                 });

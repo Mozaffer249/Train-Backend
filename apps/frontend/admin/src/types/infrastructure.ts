@@ -170,7 +170,7 @@ export interface TripUpdateData {
   status: string;
 }
 
-export const TRIP_STATUSES = ['Scheduled', 'Departed', 'Completed', 'Cancelled', 'Delayed'] as const;
+export const TRIP_STATUSES = ['Scheduled', 'Departed', 'Arrived', 'Cancelled', 'Delayed'] as const;
 
 // ---- Bookings (per-segment) ----
 export interface BookingPassengerInfo {
@@ -214,3 +214,220 @@ export interface Booking {
 }
 
 export const BOOKING_STATUSES = ['Pending', 'Confirmed', 'Cancelled', 'Completed'] as const;
+
+// ----- Identity / users -----
+
+export interface AdminUser {
+  id: number;
+  userName: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  isActive: boolean;
+  createdAt?: string | null;
+  roles: string[];
+  stationIds: number[];
+}
+
+export interface UserFormData {
+  firstName?: string;
+  lastName?: string;
+  userName: string;
+  email: string;
+  password?: string;
+  phoneNumber?: string;
+  roles?: string[];
+  stationIds?: number[];
+}
+
+export interface MeInfo {
+  userId: number;
+  userName?: string | null;
+  email?: string | null;
+  fullName?: string | null;
+  roles: string[];
+  assignedStationIds: number[];
+}
+
+export interface CustomerSummary {
+  userId: number;
+  fullName?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  userName?: string | null;
+  idNumber?: string | null;
+}
+
+// ----- Boarding / manifest -----
+
+export interface ManifestRow {
+  ticketId: number;
+  ticketNumber?: string | null;
+  bookingId: number;
+  bookingReference?: string | null;
+  passengerNameEn?: string | null;
+  passengerNameAr?: string | null;
+  idNumber?: string | null;
+  seatNumber?: string | null;
+  coachNumber?: string | null;
+  coachClass?: string | null;
+  boardingStationId: number;
+  boardingStationEn?: string | null;
+  boardingStationAr?: string | null;
+  alightingStationId: number;
+  alightingStationEn?: string | null;
+  alightingStationAr?: string | null;
+  status: string;
+  boardedAt?: string | null;
+  boardedByUserId?: number | null;
+}
+
+export interface TripManifest {
+  tripId: number;
+  trainNumber?: string | null;
+  routeNameEn?: string | null;
+  routeNameAr?: string | null;
+  originStationEn?: string | null;
+  originStationAr?: string | null;
+  destinationStationEn?: string | null;
+  destinationStationAr?: string | null;
+  departureTime: string;
+  arrivalTime: string;
+  status: string;
+  totalTickets: number;
+  boardedCount: number;
+  issuedCount: number;
+  noShowCount: number;
+  cancelledCount: number;
+  rows: ManifestRow[];
+}
+
+export interface ScanResult {
+  ticketId: number;
+  ticketNumber?: string | null;
+  status: string;
+  passengerName?: string | null;
+  seatNumber?: string | null;
+  tripId: number;
+}
+
+// ----- Refunds + notifications -----
+
+export interface Refund {
+  id: number;
+  refundNumber: string;
+  bookingId: number;
+  bookingReference?: string | null;
+  userId?: number | null;
+  userFullName?: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  method: string;
+  reason?: string | null;
+  processedAt?: string | null;
+  createdAt: string;
+}
+
+export interface Notification {
+  id: number;
+  bookingId?: number | null;
+  bookingReference?: string | null;
+  type: string;
+  subject: string;
+  message: string;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+// ----- Counter booking payload -----
+
+export interface CounterPassengerInput {
+  fullNameEn: string;
+  fullNameAr?: string;
+  idNumber: string;
+  phone?: string;
+  email?: string;
+  gender?: string;
+  nationality?: string;
+  birthDate?: string;
+}
+
+export interface CounterSeatInput {
+  seatId: number;
+  // Backend `CoachClass` is a numeric enum: 1=First, 2=Second, 3=Third.
+  // The wire format is the int; convert from the string class name reported
+  // by SegmentSeatsDto via `coachClassNameToId()` at submit time.
+  coachClass: number;
+  passenger: CounterPassengerInput;
+}
+
+// Maps the customer-facing class name string from CoachSeatsDto.class to
+// the backend's numeric CoachClass enum value.
+export function coachClassNameToId(name: string | undefined | null): number {
+  switch ((name ?? '').toLowerCase()) {
+    case 'first': return 1;
+    case 'third': return 3;
+    case 'second':
+    default: return 2;
+  }
+}
+
+export interface CounterBookingPayload {
+  customerUserId?: number | null;
+  tripId: number;
+  boardingStationId: number;
+  alightingStationId: number;
+  // Backend `PaymentMethod` is a numeric enum:
+  //   0=Cash, 1=CreditCard, 2=DebitCard, 3=BankTransfer, 4=MobilePayment.
+  // Send the number; the JSON deserializer doesn't accept the enum name.
+  paymentMethod?: number;
+  cardLast4?: string;
+  passengers: CounterSeatInput[];
+}
+
+// ----- Role constants (mirror Roles.cs) -----
+export const ROLES = {
+  SuperAdmin: 'SuperAdmin',
+  Admin: 'Admin',
+  Staff: 'Staff',
+  StaffCounter: 'StaffCounter',
+  StaffBoarding: 'StaffBoarding',
+  Customer: 'Customer',
+  User: 'User',
+} as const;
+export type Role = (typeof ROLES)[keyof typeof ROLES];
+
+export const TICKET_STATUSES = ['Issued', 'Boarded', 'NoShow', 'Cancelled'] as const;
+export const REFUND_STATUSES = ['Pending', 'Approved', 'Rejected', 'Completed'] as const;
+
+// ----- Per-segment seat availability (mirror of customer-app SegmentSeatsDto) -----
+
+export interface AvailableSeatDto {
+  id: number;
+  tripSeatId: number;
+  seatNumber: string;
+  isWindow: boolean;
+  isAccessible: boolean;
+  isAvailable: boolean;
+}
+
+export interface CoachSeatsDto {
+  id: number;
+  coachNumber: string;
+  class: string;
+  seats: AvailableSeatDto[];
+}
+
+export interface SegmentSeatsDto {
+  tripId: number;
+  boardingStationId: number;
+  alightingStationId: number;
+  boardingStationName: string;
+  alightingStationName: string;
+  totalSeats: number;
+  availableCount: number;
+  coaches: CoachSeatsDto[];
+}

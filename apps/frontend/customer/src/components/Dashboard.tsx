@@ -24,6 +24,16 @@ function isUpcoming(b: BookingDto): boolean {
   return !isNaN(dep) && dep > Date.now();
 }
 
+function ticketStatusBadge(status: string): string {
+  switch (status) {
+    case 'Boarded':   return 'bg-sudan-green-100 text-sudan-green-800';
+    case 'NoShow':    return 'bg-amber-100 text-amber-800';
+    case 'Cancelled': return 'bg-red-100 text-red-700';
+    case 'Issued':    return 'bg-gray-100 text-gray-700';
+    default:          return 'bg-gray-100 text-gray-700';
+  }
+}
+
 export default function Dashboard() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -258,7 +268,14 @@ export default function Dashboard() {
                         />
                       </div>
                       <div className="flex-1 text-center sm:text-start text-sm">
-                        <p className="text-xs text-gray-500 mb-1">{t('passenger')} {i + 1}</p>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <p className="text-xs text-gray-500">{t('passenger')} {i + 1}</p>
+                          {pd.ticket?.status && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${ticketStatusBadge(pd.ticket.status)}`}>
+                              {t(`ticket.status.${pd.ticket.status}`) || pd.ticket.status}
+                            </span>
+                          )}
+                        </div>
                         <p className="font-semibold text-gray-900">
                           {pd.passenger?.fullNameAr || pd.passenger?.fullNameEn}
                         </p>

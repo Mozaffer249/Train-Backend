@@ -10,26 +10,58 @@ import {
   Route as RouteIcon,
   DollarSign,
   LogOut,
+  ScanLine,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMe } from '../../contexts/MeContext';
 import { AR } from '../../i18n/ar';
+import { Role, ROLES } from '../../types/infrastructure';
+
+interface MenuItem {
+  path: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  roles: Role[]; // intersection with current user's roles → show
+}
+
+// Single source of truth for sidebar items + their role-visibility. The
+// hide-decision here is UX only — backend authorization is still the security
+// boundary (see RequireRole guards on the routes themselves).
+const ALL_ITEMS: MenuItem[] = [
+  { path: '/dashboard', icon: LayoutDashboard, label: AR.nav.dashboard,
+    roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.Staff, ROLES.StaffCounter, ROLES.StaffBoarding] },
+  { path: '/counter',   icon: Ticket,          label: AR.nav.counter,
+    roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.StaffCounter] },
+  { path: '/boarding',  icon: ScanLine,        label: AR.nav.boarding,
+    roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.StaffBoarding] },
+  { path: '/trips',     icon: CalendarDays,    label: AR.nav.trips,
+    roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.Staff, ROLES.StaffCounter, ROLES.StaffBoarding] },
+  { path: '/bookings',  icon: Ticket,          label: AR.nav.bookings,
+    roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.Staff, ROLES.StaffCounter, ROLES.StaffBoarding] },
+  { path: '/refunds',   icon: RefreshCw,       label: AR.nav.refunds,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/users',     icon: Users,           label: AR.nav.users,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/fares',     icon: DollarSign,      label: AR.nav.fares,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/routes',    icon: RouteIcon,       label: AR.nav.routes,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/trains',    icon: Train,           label: AR.nav.trains,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/geography', icon: MapPin,          label: AR.nav.geography,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/seeding',   icon: Database,        label: AR.nav.seeding,
+    roles: [ROLES.SuperAdmin] },
+];
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { hasRole } = useMe();
 
-  const menuItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: AR.nav.dashboard },
-    { path: '/geography', icon: MapPin, label: AR.nav.geography },
-    { path: '/routes', icon: RouteIcon, label: AR.nav.routes },
-    { path: '/fares', icon: DollarSign, label: AR.nav.fares },
-    { path: '/seeding', icon: Database, label: AR.nav.seeding },
-    { path: '/users', icon: Users, label: AR.nav.users },
-    { path: '/bookings', icon: Ticket, label: AR.nav.bookings },
-    { path: '/trains', icon: Train, label: AR.nav.trains },
-    { path: '/trips', icon: CalendarDays, label: AR.nav.trips },
-  ];
+  const menuItems = ALL_ITEMS.filter((item) => hasRole(...item.roles));
 
   const isActive = (path: string) => location.pathname === path;
 

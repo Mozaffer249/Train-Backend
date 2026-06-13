@@ -31,8 +31,12 @@ namespace Sudan_Train.Infrastructure.Seeder
                 // Seed Admin role
                 await CreateRoleIfNotExistsAsync(Roles.Admin);
 
-                // Seed Staff role
+                // Seed Staff role (legacy generic staff)
                 await CreateRoleIfNotExistsAsync(Roles.Staff);
+
+                // Seed the two specialized staff sub-roles (counter + boarding).
+                await CreateRoleIfNotExistsAsync(Roles.StaffCounter);
+                await CreateRoleIfNotExistsAsync(Roles.StaffBoarding);
 
                 // Seed Customer role (default for self-registered users)
                 await CreateRoleIfNotExistsAsync(Roles.Customer);

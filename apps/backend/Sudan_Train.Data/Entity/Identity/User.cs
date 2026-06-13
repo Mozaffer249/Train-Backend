@@ -14,6 +14,7 @@ namespace Sudan_Train.Data.Entity.Identity
             Bookings = new HashSet<Booking>();
             Notifications = new HashSet<Notification>();
             PromotionUsages = new HashSet<PromotionUsage>();
+            StaffStations = new HashSet<StaffStation>();
             // Advanced security navigations temporarily disabled (tables dropped via DropAdvancedSecurityTables migration).
             //LoginSessions = new HashSet<LoginSession>();
             //TrustedDevices = new HashSet<TrustedDevice>();
@@ -51,6 +52,9 @@ namespace Sudan_Train.Data.Entity.Identity
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<Notification> Notifications { get; set; }
         public ICollection<PromotionUsage> PromotionUsages { get; set; }
+
+        // Station assignments (only populated for Staff users).
+        public ICollection<StaffStation> StaffStations { get; set; }
         // Advanced security navigations temporarily disabled (tables dropped via DropAdvancedSecurityTables migration).
         //public ICollection<LoginSession> LoginSessions { get; set; }
         //public ICollection<TrustedDevice> TrustedDevices { get; set; }

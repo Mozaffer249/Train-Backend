@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Edit, Ban, Tag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, Edit, Ban, Tag, Eye } from 'lucide-react';
 import { tripsApi } from '../services/api';
 import { Trip, TRIP_STATUSES } from '../types/infrastructure';
 import { showConfirm, showSuccess, showError, extractErrorMessage } from '../utils/alerts';
 import TripModal from '../components/trips/TripModal';
 import FareModal from '../components/fares/FareModal';
 import { AR } from '../i18n/ar';
+import { useMe } from '../contexts/MeContext';
+import { ROLES } from '../types/infrastructure';
 
 function fmt(iso: string): string {
   const d = new Date(iso);
@@ -28,8 +31,15 @@ const statusBadge = (status: string) => {
 };
 
 const TripsPage = () => {
+  const navigate = useNavigate();
+  const { isAdmin, hasRole } = useMe();
+  // Strict role split: only Admin / SuperAdmin / StaffBoarding can open the
+  // manifest. StaffCounter sells tickets only — never boards passengers, so
+  // the manifest link is hidden for them (backend would 403 anyway).
+  const canViewManifest = isAdmin || hasRole(ROLES.StaffBoarding);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  
   const [dateFilter, setDateFilter] = useState('');
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,16 +88,18 @@ const TripsPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">{AR.trips.title}</h1>
           <p className="text-gray-600 mt-2">{AR.trips.subtitle}</p>
         </div>
-        <button
-          onClick={() => {
-            setEditing(null);
-            setModalOpen(true);
-          }}
-          className="admin-button flex items-center gap-2"
-        >
-          <Plus size={20} />
-          {AR.trips.addTrip}
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              setEditing(null);
+              setModalOpen(true);
+            }}
+            className="admin-button flex items-center gap-2"
+          >
+            <Plus size={20} />
+            {AR.trips.addTrip}
+          </button>
+        )}
       </div>
 
       <div className="admin-card mb-6 flex flex-col md:flex-row gap-4">
@@ -152,16 +164,26 @@ const TripsPage = () => {
                       <span className={`px-3 py-1 text-xs rounded-full ${statusBadge(trip.status)}`}>{AR.status[trip.status] || trip.status}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button onClick={() => setFareTrip(trip)} title={AR.fares.addFare} className="text-sudan-gold-700 hover:text-sudan-gold-900 ms-0 me-3">
-                        <Tag size={18} />
-                      </button>
-                      <button onClick={() => { setEditing(trip); setModalOpen(true); }} title={AR.common.edit} className="text-admin-primary-700 hover:text-admin-primary-900 ms-0 me-3">
-                        <Edit size={18} />
-                      </button>
-                      {trip.status !== 'Cancelled' && (
-                        <button onClick={() => handleCancel(trip)} title={AR.trips.yesCancel} className="text-red-600 hover:text-red-800">
-                          <Ban size={18} />
+                      {canViewManifest && (
+                        <button onClick={() => navigate(`/boarding?tripId=${trip.id}`)} title={AR.boarding.manifest}
+                          className="text-admin-primary-700 hover:text-admin-primary-900 ms-0 me-3">
+                          <Eye size={18} />
                         </button>
+                      )}
+                      {isAdmin && (
+                        <>
+                          <button onClick={() => setFareTrip(trip)} title={AR.fares.addFare} className="text-sudan-gold-700 hover:text-sudan-gold-900 ms-0 me-3">
+                            <Tag size={18} />
+                          </button>
+                          <button onClick={() => { setEditing(trip); setModalOpen(true); }} title={AR.common.edit} className="text-admin-primary-700 hover:text-admin-primary-900 ms-0 me-3">
+                            <Edit size={18} />
+                          </button>
+                          {trip.status !== 'Cancelled' && (
+                            <button onClick={() => handleCancel(trip)} title={AR.trips.yesCancel} className="text-red-600 hover:text-red-800">
+                              <Ban size={18} />
+                            </button>
+                          )}
+                        </>
                       )}
                     </td>
                   </tr>

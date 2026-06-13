@@ -44,6 +44,7 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<Station> Stations { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+        public DbSet<Sudan_Train.Data.Entity.Identity.StaffStation> StaffStations { get; set; }
 
         // New DbSets for enhanced functionality
         public DbSet<Refund> Refunds { get; set; }

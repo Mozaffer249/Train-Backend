@@ -348,7 +348,7 @@ export const coachesApi = {
 
 // Trips API
 export const tripsApi = {
-  getAll: (params?: { date?: string; routeId?: number; status?: string }) => {
+  getAll: (params?: { date?: string; routeId?: number; status?: string; upcomingOnly?: boolean }) => {
     const queryString = buildQueryParams(params);
     const endpoint = queryString ? `/Infrastructure/Trips?${queryString}` : '/Infrastructure/Trips';
     return api.get<Trip[]>(endpoint);
@@ -362,10 +362,29 @@ export const tripsApi = {
     api.put<Trip>(`/Infrastructure/Trips/${id}`, { id, ...data }),
 
   cancel: (id: number) => api.put<Trip>(`/Infrastructure/Trips/${id}/Cancel`, {}),
+
+  // Per-segment seat availability — used by the counter sale flow.
+  getSegmentSeats: (tripId: number, boardingStationId: number, alightingStationId: number) => {
+    const qs = buildQueryParams({ boardingStationId, alightingStationId });
+    return api.get<import('../types/infrastructure').SegmentSeatsDto>(
+      `/Infrastructure/Trips/${tripId}/Seats?${qs}`,
+    );
+  },
 };
 
 // Bookings API (per-segment)
-import { Booking } from '../types/infrastructure';
+import {
+  Booking,
+  AdminUser,
+  UserFormData,
+  MeInfo,
+  CustomerSummary,
+  TripManifest,
+  ScanResult,
+  Refund,
+  Notification,
+  CounterBookingPayload,
+} from '../types/infrastructure';
 
 export const bookingsApi = {
   getAll: (params?: { status?: string; userId?: number; pageNumber?: number; pageSize?: number }) => {
@@ -378,4 +397,98 @@ export const bookingsApi = {
 
   cancel: (id: number, reason?: string) =>
     api.post<string>(`/Bookings/${id}/Cancel`, { bookingId: id, reason }),
+
+  createCounter: (payload: CounterBookingPayload) =>
+    api.post<Booking>('/Bookings/Counter', payload),
+};
+
+// ----- Identity (current user) -----
+
+export const authApi = {
+  me: () => api.get<MeInfo>('/Account/Me'),
+};
+
+// ----- Users management (Admin only for writes, AnyStaff for reads) -----
+
+export const usersApi = {
+  getAll: (params?: {
+    pageNumber?: number;
+    pageSize?: number;
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+  }) => {
+    const qs = buildQueryParams(params);
+    const endpoint = qs ? `/Admin/Users?${qs}` : '/Admin/Users';
+    return api.get<AdminUser[]>(endpoint);
+  },
+
+  getById: (id: number) => api.get<AdminUser>(`/Admin/Users/${id}`),
+
+  create: (data: UserFormData) => api.post<AdminUser>('/Admin/Users', data),
+
+  update: (id: number, data: Partial<UserFormData>) =>
+    api.put<AdminUser>(`/Admin/Users/${id}`, data),
+
+  setActive: (id: number, isActive: boolean) =>
+    api.put<string>(`/Admin/Users/${id}/Active`, { id, isActive }),
+
+  assignRoles: (id: number, roles: string[]) =>
+    api.put<string[]>(`/Admin/Users/${id}/Roles`, { id, roles }),
+
+  assignStations: (id: number, stationIds: number[]) =>
+    api.put<string>(`/Admin/Users/${id}/Stations`, { id, stationIds }),
+
+  lookup: (query: string) =>
+    api.get<CustomerSummary[]>(`/Admin/Users/Lookup?query=${encodeURIComponent(query)}`),
+};
+
+// ----- Boarding (manifest, board, scan, no-show) -----
+
+export const boardingApi = {
+  getManifest: (tripId: number, boardingStationId?: number) => {
+    const qs = boardingStationId ? `?boardingStationId=${boardingStationId}` : '';
+    return api.get<TripManifest>(`/Trips/${tripId}/Manifest${qs}`);
+  },
+
+  boardTicket: (ticketId: number) =>
+    api.post<string>(`/Tickets/${ticketId}/Board`, {}),
+
+  scan: (qrPayload: string) =>
+    api.post<ScanResult>('/Tickets/Scan', { qrPayload }),
+
+  markNoShow: (ticketId: number) =>
+    api.post<string>(`/Tickets/${ticketId}/NoShow`, {}),
+
+  departTrip: (tripId: number) =>
+    api.post<string>(`/Infrastructure/Trips/${tripId}/Depart`, {}),
+
+  arriveTrip: (tripId: number) =>
+    api.post<string>(`/Infrastructure/Trips/${tripId}/Arrive`, {}),
+};
+
+// ----- Refunds (Admin only) -----
+
+export const refundsApi = {
+  getAll: (status?: string) => {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    return api.get<Refund[]>(`/Refunds${qs}`);
+  },
+
+  approve: (id: number, note?: string) =>
+    api.post<string>(`/Refunds/${id}/Approve`, { id, note }),
+
+  reject: (id: number, reason?: string) =>
+    api.post<string>(`/Refunds/${id}/Reject`, { id, reason }),
+};
+
+// ----- Notifications (current user) -----
+
+export const notificationsApi = {
+  mine: (unreadOnly?: boolean) => {
+    const qs = unreadOnly ? '?unreadOnly=true' : '';
+    return api.get<Notification[]>(`/Notifications/Mine${qs}`);
+  },
+
+  markRead: (id: number) => api.post<string>(`/Notifications/${id}/Read`, {}),
 };

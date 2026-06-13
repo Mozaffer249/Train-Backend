@@ -10,9 +10,10 @@ namespace Sudan_Train.Infrastructure.Configurations
         {
             builder.HasKey(t => t.Id);
 
+            // Status enum stored as int. Migration converts the old string column.
             builder.Property(t => t.Status)
-                .HasMaxLength(50)
-                .HasDefaultValue("Scheduled");
+                .HasConversion<int>()
+                .HasDefaultValue(TripStatus.Scheduled);
 
             builder.HasOne(t => t.Train)
                 .WithMany()
@@ -36,4 +37,3 @@ namespace Sudan_Train.Infrastructure.Configurations
         }
     }
 }
-

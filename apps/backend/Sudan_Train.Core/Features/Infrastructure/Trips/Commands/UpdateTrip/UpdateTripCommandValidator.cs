@@ -21,7 +21,7 @@ namespace Sudan_Train.Core.Features.Infrastructure.Trips.Commands.UpdateTrip
 
             RuleFor(x => x.Status)
                 .NotEmpty().WithMessage("Status is required")
-                .Must(status => new[] { "Scheduled", "In Transit", "Completed", "Delayed", "Cancelled" }.Contains(status))
+                .Must(status => new[] { "Scheduled", "Departed", "Arrived", "Cancelled", "Delayed" }.Contains(status))
                 .WithMessage("Invalid status");
         }
 

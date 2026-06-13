@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Commands.CreateTrip;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Commands.UpdateTrip;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Commands.CancelTrip;
+using Sudan_Train.Core.Features.Infrastructure.Trips.Commands.MarkTripDeparted;
+using Sudan_Train.Core.Features.Infrastructure.Trips.Commands.MarkTripArrived;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Queries.GetAllTrips;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Queries.GetTripById;
 using Sudan_Train.Core.Features.Infrastructure.Trips.Queries.GetSegmentSeats;
@@ -70,13 +72,34 @@ namespace Sudan_Train.Controllers.Infrastructure.Operations
         }
 
         /// <summary>
-        /// Cancel a trip and notify affected passengers
+        /// Cancel a trip and cascade: refunds, notifications, ticket flips.
+        /// Admin-only; Staff cannot cancel trips.
         /// </summary>
         [HttpPut("{id}/Cancel")]
-        [Authorize(Roles = Roles.AdminOrStaff)]
-        public async Task<IActionResult> CancelTrip(int id)
+        [Authorize(Roles = "SuperAdmin,Admin")]
+        public async Task<IActionResult> CancelTrip(int id, [FromBody] CancelTripCommand? body = null)
         {
-            var response = await _mediator.Send(new CancelTripCommand { Id = id });
+            var command = body ?? new CancelTripCommand();
+            command.Id = id;
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        /// <summary>Mark a trip as departed (StaffBoarding can do this at their station).</summary>
+        [HttpPost("{id}/Depart")]
+        [Authorize(Roles = Roles.BoardingRoles)]
+        public async Task<IActionResult> Depart(int id)
+        {
+            var response = await _mediator.Send(new MarkTripDepartedCommand { Id = id });
+            return Ok(response);
+        }
+
+        /// <summary>Mark a trip as arrived.</summary>
+        [HttpPost("{id}/Arrive")]
+        [Authorize(Roles = Roles.BoardingRoles)]
+        public async Task<IActionResult> Arrive(int id)
+        {
+            var response = await _mediator.Send(new MarkTripArrivedCommand { Id = id });
             return Ok(response);
         }
 

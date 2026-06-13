@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sudan_Train.Core.Features.Bookings.Commands.CancelBooking;
 using Sudan_Train.Core.Features.Bookings.Commands.CreateBooking;
+using Sudan_Train.Core.Features.Bookings.Commands.CreateCounterBooking;
 using Sudan_Train.Core.Features.Bookings.Queries.GetAllBookings;
 using Sudan_Train.Core.Features.Bookings.Queries.GetBookingById;
 using Sudan_Train.Core.Features.Bookings.Queries.GetMyBookings;
@@ -61,10 +62,19 @@ namespace Sudan_Train.Controllers.Operations
 
         /// <summary>Paginated list for admin/staff. Optional status filter.</summary>
         [HttpGet]
-        [Authorize(Roles = Roles.AdminOrStaff)]
+        [Authorize(Roles = Roles.AnyStaff)]
         public async Task<IActionResult> GetAll([FromQuery] GetAllBookingsQuery query)
         {
             var response = await _mediator.Send(query);
+            return Ok(response);
+        }
+
+        /// <summary>Counter booking — Staff sells a ticket for a registered customer or a walk-in.</summary>
+        [HttpPost("Counter")]
+        [Authorize(Roles = Roles.CounterRoles)]
+        public async Task<IActionResult> CreateCounter([FromBody] CreateCounterBookingCommand command)
+        {
+            var response = await _mediator.Send(command);
             return Ok(response);
         }
     }

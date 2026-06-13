@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+type AdminRole = 'SuperAdmin' | 'Admin' | 'Staff' | 'StaffCounter' | 'StaffBoarding';
+
+const ADMIN_ROLES: AdminRole[] = ['SuperAdmin', 'Admin', 'Staff', 'StaffCounter', 'StaffBoarding'];
+
 interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Staff';
+  roles: AdminRole[];
 }
 
 interface LoginResponse {
@@ -54,11 +58,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (token && storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser);
-          // Validate that user has admin/staff role
-          if (parsedUser.role === 'Admin' || parsedUser.role === 'Staff') {
-            setUser(parsedUser);
+          // Tolerate the legacy `role` shape — older sessions stored a single
+          // string; new sessions store the full `roles` array.
+          const roles: string[] = Array.isArray(parsedUser.roles)
+            ? parsedUser.roles
+            : parsedUser.role ? [parsedUser.role] : [];
+          if (roles.some((r) => (ADMIN_ROLES as string[]).includes(r))) {
+            setUser({ ...parsedUser, roles });
           } else {
-            // Invalid role, clear storage
             localStorage.removeItem('admin_token');
             localStorage.removeItem('admin_user');
           }
@@ -100,12 +107,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Extract data from Response<JwtAuthResult>
       const authData = result.data;
       
-      // Validate that user has admin or staff role
-      const hasAdminAccess = authData.roles?.some(
-        (role: string) => role === 'SuperAdmin' || role === 'Admin' || role === 'Staff'
-      );
-      
-      if (!hasAdminAccess) {
+      // Validate that user has any role allowed in the admin app
+      // (SuperAdmin/Admin or one of the staff sub-roles).
+      const allowedRoles = (authData.roles ?? []).filter((r) =>
+        (ADMIN_ROLES as string[]).includes(r),
+      ) as AdminRole[];
+
+      if (allowedRoles.length === 0) {
         throw new Error('Insufficient permissions. Admin or Staff access required.');
       }
 
@@ -113,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: authData.userId.toString(),
         name: authData.fullName || authData.userName,
         email: authData.email,
-        role: authData.roles.includes('SuperAdmin') ? 'Admin' : 'Staff',
+        roles: allowedRoles,
       };
 
       // Store auth data

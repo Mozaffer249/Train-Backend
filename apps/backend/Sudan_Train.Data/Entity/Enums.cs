@@ -88,5 +88,22 @@ namespace Sudan_Train.Data.Entity
         FixedAmount = 1,
         BuyOneGetOne = 2
     }
+
+    public enum TicketStatus
+    {
+        Issued = 0,
+        Boarded = 1,
+        NoShow = 2,
+        Cancelled = 3,
+    }
+
+    public enum TripStatus
+    {
+        Scheduled = 0,
+        Departed = 1,
+        Arrived = 2,
+        Cancelled = 3,
+        Delayed = 4,
+    }
 }
 

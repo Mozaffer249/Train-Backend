@@ -288,6 +288,24 @@ const ar: Record<string, string> = {
   // Search-card "starting from {class}" hint when the cheapest available fare
   // is shown but the customer may want a different class at booking time.
   'starting.from': 'ابتداءً من',
+
+  // Ticket statuses surfaced on Dashboard + e-ticket modal.
+  'ticket.status.Issued': 'صادرة',
+  'ticket.status.Boarded': 'تم الصعود',
+  'ticket.status.NoShow': 'لم يحضر',
+  'ticket.status.Cancelled': 'ملغاة',
+
+  // Notifications drawer.
+  'notifications': 'الإشعارات',
+  'notifications.empty': 'لا توجد إشعارات',
+  'notifications.markRead': 'تحديد كمقروء',
+  'notification.type.BookingConfirmation': 'تأكيد الحجز',
+  'notification.type.BookingCancellation': 'إلغاء الحجز',
+  'notification.type.TripCancellation': 'إلغاء الرحلة',
+  'notification.type.TripDelay': 'تأخير الرحلة',
+  'notification.type.PaymentReceived': 'تم استلام الدفع',
+  'notification.type.SystemAlert': 'إشعار النظام',
+  'notification.type.PromotionalOffer': 'عرض ترويجي',
 };
 
 const noop = () => undefined;

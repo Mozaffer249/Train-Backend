@@ -25,8 +25,7 @@ namespace Sudan_Train.Data.Entity
 
         public DateTime ArrivalTime { get; set; }
 
-        [MaxLength(50)]
-        public string Status { get; set; } = "Scheduled";
+        public TripStatus Status { get; set; } = TripStatus.Scheduled;
 
         public ICollection<TripSeat> TripSeats { get; set; } = new List<TripSeat>();
         public ICollection<BookingPassenger> BookingPassengers { get; set; } = new List<BookingPassenger>();

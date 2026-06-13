@@ -17,15 +17,21 @@ namespace Sudan_Train.Infrastructure.Configurations
             builder.HasIndex(t => t.TicketNumber)
                 .IsUnique();
 
+            // Status is now an enum stored as int. Existing column was
+            // nvarchar(20); the AddStaffStationsAndOpsEnums migration converts it.
             builder.Property(t => t.Status)
-                .HasMaxLength(20)
-                .HasDefaultValue("Issued");
+                .HasConversion<int>()
+                .HasDefaultValue(TicketStatus.Issued);
 
             builder.HasOne(t => t.BookingPassenger)
                 .WithOne(bp => bp.Ticket)
                 .HasForeignKey<Ticket>(t => t.BookingPassengerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(t => t.BoardedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.BoardedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
-

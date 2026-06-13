@@ -4,6 +4,7 @@ import { Train, User, Menu, X, LogOut } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import BrandStripe from './BrandStripe';
+import NotificationsDrawer from './NotificationsDrawer';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
+                <NotificationsDrawer />
                 <span className="hidden sm:flex items-center gap-1 text-sm text-sudan-green-50">
                   <User className="h-4 w-4" /> {user?.name}
                 </span>
