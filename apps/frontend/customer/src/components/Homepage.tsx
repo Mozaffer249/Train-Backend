@@ -30,6 +30,13 @@ export default function Homepage() {
   const stationName = (s: StationDto) => s.nameAr || s.nameEn;
   const stationLabel = (s: StationDto) => `${stationName(s)} — ${s.cityName}`;
 
+  const PASSENGERS_MIN = 1;
+  const PASSENGERS_MAX = 20;
+  const setPassengers = (n: number) => {
+    const clamped = Math.min(PASSENGERS_MAX, Math.max(PASSENGERS_MIN, n));
+    setSearchForm((f) => ({ ...f, passengers: String(clamped) }));
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const origin = stations.find((s) => String(s.id) === searchForm.fromId);
@@ -153,19 +160,43 @@ export default function Homepage() {
                     <Users className="inline h-4 w-4 ms-0 me-1" />
                     {t('passengers')}
                   </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    step={1}
-                    value={searchForm.passengers}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/\D/g, '');
-                      setSearchForm({ ...searchForm, passengers: raw || '1' });
-                    }}
-                    className={selectClass}
-                    inputMode="numeric"
-                  />
+                  <div className="flex items-stretch w-full border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-sudan-green-500 focus-within:border-sudan-green-500 disabled:bg-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => setPassengers(Number(searchForm.passengers || 1) - 1)}
+                      disabled={Number(searchForm.passengers || 1) <= PASSENGERS_MIN}
+                      aria-label={t('decrease.passengers')}
+                      className="px-4 text-xl font-bold text-sudan-green-700 hover:bg-sudan-green-50 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={searchForm.passengers}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, '');
+                        if (raw === '') {
+                          setSearchForm({ ...searchForm, passengers: '' });
+                          return;
+                        }
+                        setPassengers(Number(raw));
+                      }}
+                      onBlur={() => {
+                        if (!searchForm.passengers) setPassengers(1);
+                      }}
+                      className="flex-1 min-w-0 w-full text-center px-1 py-3 text-gray-900 text-sm sm:text-base focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPassengers(Number(searchForm.passengers || 1) + 1)}
+                      disabled={Number(searchForm.passengers || 1) >= PASSENGERS_MAX}
+                      aria-label={t('increase.passengers')}
+                      className="px-4 text-xl font-bold text-sudan-green-700 hover:bg-sudan-green-50 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
 
                 <div>

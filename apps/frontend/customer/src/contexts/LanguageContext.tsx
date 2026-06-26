@@ -71,6 +71,8 @@ const ar: Record<string, string> = {
   'to': 'إلى',
   'date': 'التاريخ',
   'passengers': 'المسافرون',
+  'increase.passengers': 'زيادة عدد المسافرين',
+  'decrease.passengers': 'إنقاص عدد المسافرين',
   'class': 'الدرجة',
   'search.trains': 'البحث عن الرحلات',
   'why.choose.atbara.rail': 'لماذا تختار قطارات السودان؟',
