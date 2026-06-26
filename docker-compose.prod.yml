@@ -1,0 +1,29 @@
+# Production overrides for sudan-trains.com subdomains.
+# Run with:
+#   docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# Frontends are static Vite builds — the API URL is baked at BUILD time,
+# so these must be set as build args/env before `up --build`.
+
+services:
+  backend-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Email confirmation / reset links must point at the public site, not localhost
+      - Frontend__BaseUrl=${PUBLIC_CUSTOMER_URL:-https://sudan-trains.com}
+
+  customer:
+    build:
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.sudan-trains.com}
+        - VITE_MESSAGING_API_URL=${VITE_MESSAGING_API_URL:-https://api.sudan-trains.com}
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-https://api.sudan-trains.com}
+      - VITE_MESSAGING_API_URL=${VITE_MESSAGING_API_URL:-https://api.sudan-trains.com}
+
+  admin:
+    build:
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.sudan-trains.com}
+        - VITE_MESSAGING_API_URL=${VITE_MESSAGING_API_URL:-https://api.sudan-trains.com}
+        - VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY:-}
