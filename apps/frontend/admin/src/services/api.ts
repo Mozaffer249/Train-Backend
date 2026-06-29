@@ -383,6 +383,7 @@ import {
   ScanResult,
   Refund,
   Notification,
+  PaymentsReport,
   CounterBookingPayload,
 } from '../types/infrastructure';
 
@@ -480,6 +481,22 @@ export const refundsApi = {
 
   reject: (id: number, reason?: string) =>
     api.post<string>(`/Refunds/${id}/Reject`, { id, reason }),
+};
+
+// ----- Payments report (Admin only) -----
+
+export const paymentsApi = {
+  getReport: (params?: {
+    fromDate?: string;
+    toDate?: string;
+    method?: string;
+    status?: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }) => {
+    const queryString = buildQueryParams(params);
+    return api.get<PaymentsReport>(`/Payments${queryString ? `?${queryString}` : ''}`);
+  },
 };
 
 // ----- Notifications (current user) -----

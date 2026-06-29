@@ -1,4 +1,5 @@
 using FluentValidation;
+using Sudan_Train.Data.Entity;
 
 namespace Sudan_Train.Core.Features.Bookings.Commands.CreateBooking
 {
@@ -11,6 +12,14 @@ namespace Sudan_Train.Core.Features.Bookings.Commands.CreateBooking
             RuleFor(x => x.AlightingStationId).GreaterThan(0)
                 .NotEqual(x => x.BoardingStationId)
                 .WithMessage("Boarding and alighting stations must differ.");
+
+            RuleFor(x => x.PaymentMethod)
+                .Equal(PaymentMethod.CreditCard)
+                .WithMessage("Online bookings must use Visa credit card payment.");
+
+            RuleFor(x => x.CardLast4)
+                .NotEmpty().WithMessage("Card last 4 digits are required.")
+                .Matches(@"^\d{4}$").WithMessage("Card last 4 digits must be exactly 4 digits.");
 
             RuleFor(x => x.Passengers)
                 .NotEmpty().WithMessage("At least one passenger is required.");

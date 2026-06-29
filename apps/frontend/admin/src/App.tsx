@@ -17,6 +17,7 @@ import TripsPage from './pages/TripsPage';
 import BoardingPage from './pages/BoardingPage';
 import CounterBookingPage from './pages/CounterBookingPage';
 import RefundsPage from './pages/RefundsPage';
+import PaymentsReportPage from './pages/PaymentsReportPage';
 
 function App() {
   return (
@@ -56,6 +57,11 @@ function App() {
               <Route path="refunds" element={
                 <RequireRole roles={[ROLES.SuperAdmin, ROLES.Admin]}>
                   <RefundsPage />
+                </RequireRole>
+              } />
+              <Route path="payments-report" element={
+                <RequireRole roles={[ROLES.SuperAdmin, ROLES.Admin]}>
+                  <PaymentsReportPage />
                 </RequireRole>
               } />
               <Route path="fares" element={

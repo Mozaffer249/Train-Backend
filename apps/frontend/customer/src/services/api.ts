@@ -8,6 +8,7 @@ import type {
   TripDto,
   FareDto,
   JwtAuthResult,
+  ProfileResponse,
   RegisterPayload,
   SegmentSeatsDto,
 } from '../types/api';
@@ -93,6 +94,8 @@ export const authApi = {
 
   login: (userNameOrEmail: string, password: string) =>
     api.post<JwtAuthResult>('/Authentication/Login', { userNameOrEmail, password }),
+
+  getProfile: () => api.get<ProfileResponse>('/Authentication/Profile'),
 
   sendResetCode: (email: string) =>
     api.post<string>('/Authentication/SendResetPasswordCode', { email }),

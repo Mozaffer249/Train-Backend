@@ -171,19 +171,54 @@ namespace Sudan_Train.Service.Implementations
                 }
                 await _db.SaveChangesAsync();
 
-                // Mock payment authorisation for the full booking — flips to Completed.
-                var payment = new Payment
+                // Payment authorisation — Visa card for online bookings; cash mock for counter.
+                if (input.PaymentMethod == PaymentMethod.CreditCard)
                 {
-                    BookingId = booking.Id,
-                    Method = input.PaymentMethod,
-                    Amount = totalAmount,
-                    Currency = primaryCurrency,
-                    Status = PaymentStatus.Completed,
-                    CardLast4 = input.CardLast4,
-                    Reference = $"MOCK-{booking.Reference}",
-                    CreatedAt = DateTime.UtcNow,
-                };
-                _db.Payments.Add(payment);
+                    if (string.IsNullOrWhiteSpace(input.CardLast4) || input.CardLast4.Length != 4)
+                    {
+                        await tx.RollbackAsync();
+                        return new BookingCreationResult { Invalid = true, Error = "Valid card last 4 digits are required." };
+                    }
+
+                    // Demo decline: card ending in 0000 is rejected by the simulated issuer.
+                    if (input.CardLast4 == "0000")
+                    {
+                        await tx.RollbackAsync();
+                        return new BookingCreationResult { Invalid = true, Error = "Payment declined by the card issuer." };
+                    }
+
+                    var authId = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+                    var payment = new Payment
+                    {
+                        BookingId = booking.Id,
+                        Method = input.PaymentMethod,
+                        Amount = totalAmount,
+                        Currency = primaryCurrency,
+                        Status = PaymentStatus.Completed,
+                        CardLast4 = input.CardLast4,
+                        CardBrand = "Visa",
+                        Reference = $"VISA-{authId}-{booking.Reference}",
+                        ProcessorResponse = "APPROVED",
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    _db.Payments.Add(payment);
+                }
+                else
+                {
+                    var payment = new Payment
+                    {
+                        BookingId = booking.Id,
+                        Method = input.PaymentMethod,
+                        Amount = totalAmount,
+                        Currency = primaryCurrency,
+                        Status = PaymentStatus.Completed,
+                        CardLast4 = input.CardLast4,
+                        Reference = $"MOCK-{booking.Reference}",
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    _db.Payments.Add(payment);
+                }
+
                 booking.Status = BookingStatus.Confirmed;
 
                 // One Ticket per BookingPassenger.

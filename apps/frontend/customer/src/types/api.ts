@@ -109,6 +109,20 @@ export interface RegisterPayload {
   phoneNumber?: string;
 }
 
+// Current user's profile — mirrors backend ProfileResponse (GET /Authentication/Profile).
+export interface ProfileResponse {
+  userName: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  address?: string | null;
+  nationality?: string | null;
+  profilePictureUrl?: string | null;
+  phoneNumber?: string | null;
+  twoFactorEnabled: boolean;
+  emailConfirmed: boolean;
+}
+
 // ---- Segment seat availability (real backend) ----
 export interface AvailableSeatDto {
   id: number;

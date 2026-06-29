@@ -342,6 +342,39 @@ export interface Notification {
   createdAt: string;
 }
 
+// ----- Payments report -----
+
+export const PAYMENT_METHODS = ['Cash', 'CreditCard', 'DebitCard', 'BankTransfer', 'MobilePayment'] as const;
+export const PAYMENT_STATUSES = ['Pending', 'Completed', 'Failed', 'Refunded'] as const;
+
+export interface PaymentReportItem {
+  id: number;
+  bookingId: number;
+  bookingRef: string;
+  customerName?: string | null;
+  method: string;
+  status: string;
+  amount: number;
+  currency: string;
+  cardBrand?: string | null;
+  cardLast4?: string | null;
+  reference?: string | null;
+  createdAt: string;
+}
+
+export interface PaymentsReport {
+  items: PaymentReportItem[];
+  summary: {
+    totalCollected: number;
+    count: number;
+    byStatus: { status: string; count: number; amount: number }[];
+    byMethod: { method: string; count: number; amount: number }[];
+  };
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
 // ----- Counter booking payload -----
 
 export interface CounterPassengerInput {

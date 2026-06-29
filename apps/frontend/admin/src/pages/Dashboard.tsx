@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Route as RouteIcon, Train as TrainIcon, CalendarDays } from 'lucide-react';
-import { trainsApi, routesApi, stationsApi, tripsApi } from '../services/api';
+import { MapPin, Route as RouteIcon, Train as TrainIcon, CalendarDays, DollarSign } from 'lucide-react';
+import { trainsApi, routesApi, stationsApi, tripsApi, paymentsApi } from '../services/api';
 import { Trip } from '../types/infrastructure';
 import { AR } from '../i18n/ar';
 
@@ -12,6 +12,7 @@ function fmt(iso: string): string {
 const Dashboard = () => {
   const [counts, setCounts] = useState({ trains: 0, routes: 0, stations: 0, tripsToday: 0 });
   const [todayTrips, setTodayTrips] = useState<Trip[]>([]);
+  const [revenue, setRevenue] = useState({ totalCollected: 0, count: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,10 +22,17 @@ const Dashboard = () => {
       routesApi.getAll({ pageSize: 1000 }).catch(() => []),
       stationsApi.getAll({ pageSize: 1000 }).catch(() => []),
       tripsApi.getAll({ date: today }).catch(() => []),
+      paymentsApi.getReport({ pageSize: 1 }).catch(() => null),
     ])
-      .then(([trains, routes, stations, trips]) => {
+      .then(([trains, routes, stations, trips, payments]) => {
         setCounts({ trains: trains.length, routes: routes.length, stations: stations.length, tripsToday: trips.length });
         setTodayTrips(trips.slice(0, 6));
+        if (payments) {
+          setRevenue({
+            totalCollected: payments.summary.totalCollected,
+            count: payments.summary.count,
+          });
+        }
       })
       .finally(() => setLoading(false));
   }, []);
@@ -85,9 +93,30 @@ const Dashboard = () => {
 
         <div className="admin-card">
           <h2 className="text-xl font-bold text-gray-900 mb-4">{AR.dashboard.bookingsTitle}</h2>
-          <div className="flex items-center justify-center h-40 text-center">
-            <p className="text-gray-500 text-sm">{AR.dashboard.bookingsPending}</p>
-          </div>
+          {loading ? (
+            <p className="text-gray-500">{AR.common.loading}</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-4 bg-admin-primary-50 rounded-lg">
+                <div className="bg-admin-primary-700 p-3 rounded-lg">
+                  <DollarSign className="text-white" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">{AR.dashboard.totalRevenue}</p>
+                  <p className="text-xl font-bold text-gray-900">{Math.round(revenue.totalCollected).toLocaleString('ar')} SDG</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-sudan-gold-50 rounded-lg">
+                <div className="bg-sudan-gold-500 p-3 rounded-lg">
+                  <DollarSign className="text-white" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">{AR.dashboard.completedPayments}</p>
+                  <p className="text-xl font-bold text-gray-900">{revenue.count.toLocaleString('ar')}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

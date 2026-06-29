@@ -12,6 +12,7 @@ import {
   LogOut,
   ScanLine,
   RefreshCw,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMe } from '../../contexts/MeContext';
@@ -40,6 +41,8 @@ const ALL_ITEMS: MenuItem[] = [
   { path: '/bookings',  icon: Ticket,          label: AR.nav.bookings,
     roles: [ROLES.SuperAdmin, ROLES.Admin, ROLES.Staff, ROLES.StaffCounter, ROLES.StaffBoarding] },
   { path: '/refunds',   icon: RefreshCw,       label: AR.nav.refunds,
+    roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/payments-report', icon: CreditCard, label: AR.nav.paymentsReport,
     roles: [ROLES.SuperAdmin, ROLES.Admin] },
   { path: '/users',     icon: Users,           label: AR.nav.users,
     roles: [ROLES.SuperAdmin, ROLES.Admin] },

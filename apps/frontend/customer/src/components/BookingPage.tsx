@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { User, CreditCard, Check, ArrowLeft, Train as TrainIcon, MapPin, Loader2, ChevronDown } from 'lucide-react';
+import { User, CreditCard, Check, ArrowLeft, Train as TrainIcon, MapPin, Loader2, ChevronDown, UserCheck } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { useLanguage } from '../contexts/LanguageContext';
-import { catalogApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { authApi, catalogApi } from '../services/api';
 import { bookingApi } from '../services/bookingApi';
 import { formatDateSafe, formatTimeSafe } from '../utils/dateUtils';
 import type { AvailableSeatDto, BookingDto, CoachSeatsDto, FareDto, SegmentSeatsDto } from '../types/api';
@@ -53,6 +54,12 @@ const EMPTY_PASSENGER: PassengerInfo = {
   gender: 'male',
   birthDate: '',
 };
+
+// Nationality values that exist as <option>s in the form. Profile/booking values
+// outside this set are ignored so the <select> never holds an invalid value.
+const NATIONALITY_OPTIONS = new Set([
+  'Sudan', 'Egypt', 'Ethiopia', 'Eritrea', 'Chad', 'Libya', 'South Sudan', 'Other',
+]);
 
 type PassengerField = keyof PassengerInfo;
 type PassengerErrors = Partial<Record<PassengerField, string>>;
@@ -105,13 +112,73 @@ function validatePassenger(p: PassengerInfo, t: (k: string) => string): Passenge
 
 // UI value → backend PaymentMethod enum
 // 0=Cash, 1=CreditCard, 2=DebitCard, 3=BankTransfer, 4=MobilePayment
-function paymentMethodToId(m: string): number {
-  switch (m) {
-    case 'card': return 1;
-    case 'mobile': return 4;
-    case 'bank': return 3;
-    default: return 0;
+function paymentMethodToId(_m: string): number {
+  return 1; // Visa-only checkout always sends CreditCard
+}
+
+interface CardForm {
+  cardholderName: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvv: string;
+}
+
+type CardField = keyof CardForm;
+type CardErrors = Partial<Record<CardField, string>>;
+
+const EMPTY_CARD: CardForm = {
+  cardholderName: '',
+  cardNumber: '',
+  cardExpiry: '',
+  cardCvv: '',
+};
+
+function validateCard(c: CardForm, t: (k: string) => string): CardErrors {
+  const errs: CardErrors = {};
+
+  if (!c.cardholderName.trim()) errs.cardholderName = t('validation.required');
+  else if (!/^[A-Za-z\s]+$/.test(c.cardholderName.trim())) errs.cardholderName = t('validation.english.only');
+
+  const digits = c.cardNumber.replace(/\D/g, '');
+  if (!digits) errs.cardNumber = t('validation.required');
+  else if (!digits.startsWith('4')) errs.cardNumber = t('validation.card.visa.only');
+  else if (digits.length !== 16) errs.cardNumber = t('validation.card.number');
+
+  if (!c.cardExpiry.trim()) {
+    errs.cardExpiry = t('validation.required');
+  } else {
+    const expMatch = c.cardExpiry.trim().match(/^(\d{2})\/(\d{2})$/);
+    if (!expMatch) {
+      errs.cardExpiry = t('validation.card.expiry');
+    } else {
+      const mm = parseInt(expMatch[1], 10);
+      const yy = parseInt(expMatch[2], 10);
+      if (mm < 1 || mm > 12) {
+        errs.cardExpiry = t('validation.card.expiry');
+      } else {
+        const expEnd = new Date(2000 + yy, mm, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (expEnd < today) errs.cardExpiry = t('validation.card.expired');
+      }
+    }
   }
+
+  if (!c.cardCvv.trim()) errs.cardCvv = t('validation.required');
+  else if (!/^\d{3}$/.test(c.cardCvv.trim())) errs.cardCvv = t('validation.card.cvv');
+
+  return errs;
+}
+
+function formatCardNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 16);
+  return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+}
+
+function formatCardExpiry(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
 }
 
 // "First" / "Second" / "Third" → 1/2/3
@@ -128,6 +195,11 @@ export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+
+  // "Use my data" prefill (first passenger only).
+  const [prefilling, setPrefilling] = useState(false);
+  const [prefillError, setPrefillError] = useState('');
 
   const state = location.state as BookingState | null;
   const trip = state?.trip;
@@ -145,8 +217,8 @@ export default function BookingPage() {
   // Class filter — '' = any. Drives which coaches are visible in step 2.
   const [chosenClass, setChosenClass] = useState<'' | '1' | '2' | '3'>('');
 
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [cardLast4, setCardLast4] = useState('');
+  const [cardForm, setCardForm] = useState<CardForm>({ ...EMPTY_CARD });
+  const [cardTouched, setCardTouched] = useState<Set<CardField>>(new Set());
   const [booking, setBooking] = useState<BookingDto | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -186,6 +258,71 @@ export default function BookingPage() {
   const updatePassenger = (idx: number, patch: Partial<PassengerInfo>) =>
     setPassengers((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
 
+  // Clear touched markers for given fields of a passenger, so freshly prefilled
+  // values don't immediately render stale validation errors.
+  const clearTouched = (idx: number, fields: PassengerField[]) =>
+    setTouched((prev) => {
+      const next = new Set(prev);
+      for (const f of fields) next.delete(`${idx}.${f}`);
+      return next;
+    });
+
+  // "Use my data": fill the first passenger from the logged-in user's profile
+  // and their most recent past booking. Only non-empty values overwrite fields.
+  const handleUseMyData = async () => {
+    setPrefilling(true);
+    setPrefillError('');
+    try {
+      const [profile, bookings] = await Promise.all([
+        authApi.getProfile().catch(() => null),
+        bookingApi.getMyBookings().catch(() => null),
+      ]);
+
+      const patch: Partial<PassengerInfo> = {};
+
+      if (profile) {
+        const fullNameEn = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim();
+        if (fullNameEn) patch.fullNameEn = fullNameEn;
+        if (profile.email) patch.email = profile.email;
+        if (profile.phoneNumber) patch.phone = profile.phoneNumber;
+        if (profile.nationality && NATIONALITY_OPTIONS.has(profile.nationality)) {
+          patch.nationality = profile.nationality;
+        }
+      }
+
+      // Most recent booking's primary passenger carries id/Arabic name/gender.
+      const latest = bookings && bookings.length > 0
+        ? [...bookings].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+        : null;
+      const prev = latest?.passengers?.[0]?.passenger ?? latest?.passenger ?? null;
+      if (prev) {
+        if (prev.idNumber) patch.idNumber = prev.idNumber;
+        if (prev.fullNameAr) patch.fullNameAr = prev.fullNameAr;
+        if (!patch.fullNameEn && prev.fullNameEn) patch.fullNameEn = prev.fullNameEn;
+        const g = prev.gender?.toLowerCase();
+        if (g === 'male' || g === 'female') patch.gender = g;
+        if (prev.nationality && NATIONALITY_OPTIONS.has(prev.nationality) && !patch.nationality) {
+          patch.nationality = prev.nationality;
+        }
+        if (!patch.phone && prev.phone) patch.phone = prev.phone;
+        if (!patch.email && prev.email) patch.email = prev.email;
+      }
+
+      if (Object.keys(patch).length === 0) {
+        setPrefillError(t('use.my.data.empty'));
+        return;
+      }
+
+      updatePassenger(0, patch);
+      clearTouched(0, Object.keys(patch) as PassengerField[]);
+      setExpandedPassengerIdx(0);
+    } catch {
+      setPrefillError(t('use.my.data.error'));
+    } finally {
+      setPrefilling(false);
+    }
+  };
+
   // Accordion: toggle the panel. Auto-collapse the previously-open one so only
   // one is open at a time.
   const togglePassengerPanel = (idx: number) =>
@@ -202,6 +339,20 @@ export default function BookingPage() {
     [passengers, t],
   );
   const allPassengersValid = passengerErrors.every((errs) => Object.keys(errs).length === 0);
+
+  const cardErrors = useMemo(() => validateCard(cardForm, t), [cardForm, t]);
+  const cardValid = Object.keys(cardErrors).length === 0;
+  const markCardTouched = (field: CardField) =>
+    setCardTouched((prev) => (prev.has(field) ? prev : new Set(prev).add(field)));
+  const cardErrorFor = (field: CardField): string | null =>
+    cardErrors[field] && cardTouched.has(field) ? cardErrors[field]! : null;
+  const cardFieldClass = (field: CardField) => {
+    if (cardErrors[field] && cardTouched.has(field)) {
+      return `${inputClass} border-red-400 focus:ring-red-500 focus:border-red-500`;
+    }
+    return inputClass;
+  };
+  const markAllCardTouched = () => setCardTouched(new Set(Object.keys(EMPTY_CARD) as CardField[]));
 
   // Mark every field on every passenger as touched. Called when the user hits
   // "Next" with validation errors so all errors render at once.
@@ -410,6 +561,11 @@ export default function BookingPage() {
       setError(t('select.all.seats') || 'Please select a seat for every passenger.');
       return;
     }
+    if (!cardValid) {
+      markAllCardTouched();
+      return;
+    }
+    const digits = cardForm.cardNumber.replace(/\D/g, '');
     setError('');
     setSubmitting(true);
     try {
@@ -436,15 +592,17 @@ export default function BookingPage() {
         tripId: trip.id,
         boardingStationId: state.boardingStationId,
         alightingStationId: state.alightingStationId,
-        paymentMethod: paymentMethodToId(paymentMethod),
-        cardLast4: paymentMethod === 'card' && cardLast4 ? cardLast4 : undefined,
+        paymentMethod: paymentMethodToId('card'),
+        cardLast4: digits.slice(-4),
         passengers: payloadPassengers,
       });
       setBooking(created);
       setCurrentStep(4);
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('error');
-      if (/422|conflict|unavailable|seat/i.test(msg)) {
+      if (/declined|payment/i.test(msg)) {
+        setError(t('payment.declined'));
+      } else if (/422|conflict|unavailable|seat/i.test(msg)) {
         setError(t('seat.just.taken') || 'A seat was just taken — please choose another.');
         setSelectedSeats([]);
         await fetchSeats();
@@ -540,6 +698,20 @@ export default function BookingPage() {
                           {/* Accordion body — form fields. */}
                           {isOpen && (
                             <div id={`passenger-panel-${i}`} className="px-4 sm:px-5 py-4 space-y-4 border-t border-gray-200">
+                              {i === 0 && isAuthenticated && (
+                                <div>
+                                  <button
+                                    type="button"
+                                    onClick={handleUseMyData}
+                                    disabled={prefilling}
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-sudan-green-300 text-sudan-green-700 hover:bg-sudan-green-50 disabled:opacity-60"
+                                  >
+                                    {prefilling ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
+                                    {prefilling ? t('use.my.data.loading') : t('use.my.data')}
+                                  </button>
+                                  {prefillError && <p className="text-xs text-red-600 mt-2">{prefillError}</p>}
+                                </div>
+                              )}
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('full.name.arabic')}</label>
@@ -837,55 +1009,79 @@ export default function BookingPage() {
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">{t('payment')}</h2>
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('choose.payment.method')}</h3>
-                    <div className="space-y-3">
-                      {[
-                        { value: 'card', label: t('credit.debit.card'), sub: 'Visa, Mastercard' },
-                        { value: 'mobile', label: t('mobile.payment'), sub: 'MTN Pay, Sudani Pay' },
-                        { value: 'bank', label: t('bank.transfer'), sub: t('pay.via.bank') },
-                      ].map((m) => (
-                        <label key={m.value} className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                          <input type="radio" name="payment" value={m.value} checked={paymentMethod === m.value} onChange={() => setPaymentMethod(m.value)} className="mr-3 rtl:mr-0 rtl:ml-3" />
-                          <div>
-                            <p className="font-medium">{m.label}</p>
-                            <p className="text-sm text-gray-600">{m.sub}</p>
-                          </div>
-                        </label>
-                      ))}
+                    <div className="flex items-center gap-3 p-4 border-2 border-sudan-green-600 rounded-lg bg-sudan-green-50">
+                      <div className="bg-white px-3 py-1.5 rounded border border-gray-200 font-bold text-blue-800 tracking-wider text-sm">
+                        VISA
+                      </div>
+                      <div>
+                        <p className="font-medium text-sudan-green-900">{t('payment.visa.only')}</p>
+                        <p className="text-sm text-gray-600">Visa</p>
+                      </div>
                     </div>
                   </div>
-                  <form onSubmit={handlePay} className="space-y-4 sm:space-y-6">
-                    {paymentMethod === 'card' && (
-                      <>
+                  <form onSubmit={handlePay} className="space-y-4 sm:space-y-6" noValidate>
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('cardholder.name')}</label>
+                        <input
+                          type="text"
+                          value={cardForm.cardholderName}
+                          onChange={(e) => setCardForm((prev) => ({ ...prev, cardholderName: e.target.value }))}
+                          onBlur={() => markCardTouched('cardholderName')}
+                          className={cardFieldClass('cardholderName')}
+                        />
+                        {cardErrorFor('cardholderName') && <p className="text-xs text-red-600 mt-1">{cardErrorFor('cardholderName')}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('card.number')}</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="cc-number"
+                          placeholder="4111 1111 1111 1111"
+                          value={cardForm.cardNumber}
+                          onChange={(e) => {
+                            const formatted = formatCardNumber(e.target.value);
+                            const digits = formatted.replace(/\D/g, '');
+                            setCardForm((prev) => ({ ...prev, cardNumber: formatted }));
+                          }}
+                          onBlur={() => markCardTouched('cardNumber')}
+                          className={cardFieldClass('cardNumber')}
+                        />
+                        {cardErrorFor('cardNumber') && <p className="text-xs text-red-600 mt-1">{cardErrorFor('cardNumber')}</p>}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('cardholder.name')}</label>
-                          <input type="text" className={inputClass} required />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('card.number')}</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('expiry.date')}</label>
                           <input
                             type="text"
-                            placeholder="1234 5678 9012 3456"
-                            className={inputClass}
-                            required
-                            onChange={(e) => {
-                              const digits = e.target.value.replace(/\D/g, '');
-                              setCardLast4(digits.slice(-4));
-                            }}
+                            inputMode="numeric"
+                            autoComplete="cc-exp"
+                            placeholder="MM/YY"
+                            value={cardForm.cardExpiry}
+                            onChange={(e) => setCardForm((prev) => ({ ...prev, cardExpiry: formatCardExpiry(e.target.value) }))}
+                            onBlur={() => markCardTouched('cardExpiry')}
+                            className={cardFieldClass('cardExpiry')}
                           />
+                          {cardErrorFor('cardExpiry') && <p className="text-xs text-red-600 mt-1">{cardErrorFor('cardExpiry')}</p>}
                         </div>
-                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('expiry.date')}</label>
-                            <input type="text" placeholder="MM/YY" className={inputClass} required />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                            <input type="text" placeholder="123" className={inputClass} required />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="cc-csc"
+                            placeholder="123"
+                            maxLength={3}
+                            value={cardForm.cardCvv}
+                            onChange={(e) => setCardForm((prev) => ({ ...prev, cardCvv: e.target.value.replace(/\D/g, '').slice(0, 3) }))}
+                            onBlur={() => markCardTouched('cardCvv')}
+                            className={cardFieldClass('cardCvv')}
+                          />
+                          {cardErrorFor('cardCvv') && <p className="text-xs text-red-600 mt-1">{cardErrorFor('cardCvv')}</p>}
                         </div>
-                      </>
-                    )}
+                      </div>
+                    </>
                     <div className="bg-sudan-green-50 border border-sudan-green-200 rounded-lg p-3">
                       <label className="flex items-center">
                         <input type="checkbox" className="mr-2 rtl:mr-0 rtl:ml-2" required />
