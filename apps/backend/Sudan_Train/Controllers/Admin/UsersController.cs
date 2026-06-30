@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Features.Users.Commands.AssignRoles;
 using Sudan_Train.Core.Features.Users.Commands.AssignStaffStations;
 using Sudan_Train.Core.Features.Users.Commands.CreateUser;
@@ -34,13 +35,15 @@ namespace Sudan_Train.Controllers.Admin
             [FromQuery] int pageSize = 20,
             [FromQuery] string? search = null,
             [FromQuery] string? role = null,
-            [FromQuery] bool? isActive = null)
+            [FromQuery] bool? isActive = null,
+            [FromQuery] bool excludePrivileged = true)
         {
             var query = new GetUserListQuery
             {
                 Filter = new PaginatedListFilter { PageNumber = pageNumber, PageSize = pageSize, Search = search },
                 Role = role,
                 IsActive = isActive,
+                ExcludePrivileged = excludePrivileged,
             };
             var response = await _mediator.Send(query);
             return Ok(response);
@@ -70,8 +73,18 @@ namespace Sudan_Train.Controllers.Admin
         [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         {
+            if (command.Roles.Any(RoleHierarchy.IsPrivilegedRole))
+            {
+                return BadRequest(new Response<string>
+                {
+                    Succeeded = false,
+                    Message = "Create admin accounts via /Admin/Admins (SuperAdmin only).",
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                });
+            }
+
             var response = await _mediator.Send(command);
-            return Ok(response);
+            return response.Succeeded ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut("Users/{id:int}")]
@@ -97,8 +110,19 @@ namespace Sudan_Train.Controllers.Admin
         public async Task<IActionResult> AssignRoles(int id, [FromBody] AssignRolesCommand command)
         {
             command.Id = id;
+
+            if (command.Roles.Any(RoleHierarchy.IsPrivilegedRole))
+            {
+                return BadRequest(new Response<string>
+                {
+                    Succeeded = false,
+                    Message = "Assign Admin/SuperAdmin roles via /Admin/Admins (SuperAdmin only).",
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                });
+            }
+
             var response = await _mediator.Send(command);
-            return Ok(response);
+            return response.Succeeded ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut("Users/{id:int}/Stations")]

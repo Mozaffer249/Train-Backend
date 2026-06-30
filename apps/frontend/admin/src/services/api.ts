@@ -418,9 +418,10 @@ export const usersApi = {
     search?: string;
     role?: string;
     isActive?: boolean;
+    excludePrivileged?: boolean;
   }) => {
     const qs = buildQueryParams(params);
-    const endpoint = qs ? `/Admin/Users?${qs}` : '/Admin/Users';
+    const endpoint = qs ? `/Admin/Users?${qs}` : '/Admin/Users?excludePrivileged=true';
     return api.get<AdminUser[]>(endpoint);
   },
 
@@ -442,6 +443,32 @@ export const usersApi = {
 
   lookup: (query: string) =>
     api.get<CustomerSummary[]>(`/Admin/Users/Lookup?query=${encodeURIComponent(query)}`),
+};
+
+// ----- Admin account management (SuperAdmin only) -----
+
+export const adminsApi = {
+  getAll: (params?: {
+    pageNumber?: number;
+    pageSize?: number;
+    search?: string;
+    isActive?: boolean;
+  }) => {
+    const qs = buildQueryParams(params);
+    const endpoint = qs ? `/Admin/Admins?${qs}` : '/Admin/Admins';
+    return api.get<AdminUser[]>(endpoint);
+  },
+
+  create: (data: UserFormData) => api.post<AdminUser>('/Admin/Admins', data),
+
+  update: (id: number, data: Partial<UserFormData>) =>
+    api.put<AdminUser>(`/Admin/Admins/${id}`, data),
+
+  setActive: (id: number, isActive: boolean) =>
+    api.put<string>(`/Admin/Admins/${id}/Active`, { id, isActive }),
+
+  assignRoles: (id: number, roles: string[]) =>
+    api.put<string[]>(`/Admin/Admins/${id}/Roles`, { id, roles }),
 };
 
 // ----- Boarding (manifest, board, scan, no-show) -----

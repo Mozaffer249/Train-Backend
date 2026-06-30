@@ -13,6 +13,7 @@ import {
   ScanLine,
   RefreshCw,
   CreditCard,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMe } from '../../contexts/MeContext';
@@ -46,6 +47,8 @@ const ALL_ITEMS: MenuItem[] = [
     roles: [ROLES.SuperAdmin, ROLES.Admin] },
   { path: '/users',     icon: Users,           label: AR.nav.users,
     roles: [ROLES.SuperAdmin, ROLES.Admin] },
+  { path: '/admins',    icon: ShieldCheck,     label: AR.nav.admins,
+    roles: [ROLES.SuperAdmin] },
   { path: '/fares',     icon: DollarSign,      label: AR.nav.fares,
     roles: [ROLES.SuperAdmin, ROLES.Admin] },
   { path: '/routes',    icon: RouteIcon,       label: AR.nav.routes,

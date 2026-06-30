@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { usersApi } from '../../services/api';
+import { adminsApi } from '../../services/api';
 import { AdminUser, UserFormData, ROLES } from '../../types/infrastructure';
 import { AR } from '../../i18n/ar';
 import { showError, showSuccess, extractErrorMessage } from '../../utils/alerts';
-import { useMe } from '../../contexts/MeContext';
-import { getAssignableRoles } from '../../utils/roleHierarchy';
+import { getAdminAssignableRoles } from '../../utils/roleHierarchy';
 
 interface Props {
   isOpen: boolean;
@@ -13,11 +12,9 @@ interface Props {
   onSuccess: () => void;
 }
 
-const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
-  const { me } = useMe();
+const AdminModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
   const isEdit = !!editUser;
-  const callerRoles = me?.roles ?? [];
-  const assignable = getAssignableRoles(callerRoles);
+  const assignable = getAdminAssignableRoles();
   const [form, setForm] = useState<UserFormData>({
     userName: '',
     email: '',
@@ -43,7 +40,7 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
     } else {
       setForm({
         userName: '', email: '', firstName: '', lastName: '',
-        password: '', phoneNumber: '', roles: [ROLES.Customer],
+        password: '', phoneNumber: '', roles: [ROLES.Admin],
       });
     }
   }, [editUser, isOpen]);
@@ -56,9 +53,9 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
     try {
       if (isEdit) {
         const { userName: _u, password: _p, roles: _r, ...rest } = form;
-        await usersApi.update(editUser!.id, rest);
+        await adminsApi.update(editUser!.id, rest);
       } else {
-        await usersApi.create(form);
+        await adminsApi.create(form);
       }
       await showSuccess(isEdit ? AR.common.updated : AR.common.created);
       onSuccess();
@@ -72,7 +69,7 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
       <form onSubmit={submit} className="bg-white rounded-lg w-full max-w-lg p-6 space-y-3">
-        <h2 className="text-lg font-bold">{isEdit ? AR.users.editUser : AR.users.addUser}</h2>
+        <h2 className="text-lg font-bold">{isEdit ? AR.admins.editAdmin : AR.admins.addAdmin}</h2>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label={AR.users.firstName} value={form.firstName || ''} onChange={(v) => setForm({ ...form, firstName: v })} />
@@ -106,9 +103,6 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
                 </label>
               ))}
             </div>
-            {!callerRoles.includes(ROLES.SuperAdmin) && assignable.length < Object.values(ROLES).length && (
-              <p className="text-xs text-gray-500 mt-1">{AR.users.staffRolesOnly}</p>
-            )}
           </div>
         )}
 
@@ -135,9 +129,9 @@ const Field = ({ label, value, onChange, type = 'text', required, disabled }: {
       onChange={(e) => onChange(e.target.value)}
       required={required}
       disabled={disabled}
-      className="mt-1 w-full border rounded-md px-3 py-1.5 text-sm disabled:bg-gray-100"
+      className="mt-1 w-full border rounded-md px-3 py-2 text-sm disabled:bg-gray-100"
     />
   </label>
 );
 
-export default UserModal;
+export default AdminModal;

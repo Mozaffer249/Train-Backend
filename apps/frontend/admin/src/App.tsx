@@ -11,6 +11,7 @@ import RoutesPage from './pages/RoutesPage';
 import FaresPage from './pages/FaresPage';
 import SeedingPage from './pages/SeedingPage';
 import UsersPage from './pages/UsersPage';
+import AdminsPage from './pages/AdminsPage';
 import BookingsPage from './pages/BookingsPage';
 import TrainsPage from './pages/TrainsPage';
 import TripsPage from './pages/TripsPage';
@@ -52,6 +53,11 @@ function App() {
               <Route path="users" element={
                 <RequireRole roles={[ROLES.SuperAdmin, ROLES.Admin]}>
                   <UsersPage />
+                </RequireRole>
+              } />
+              <Route path="admins" element={
+                <RequireRole roles={[ROLES.SuperAdmin]}>
+                  <AdminsPage />
                 </RequireRole>
               } />
               <Route path="refunds" element={

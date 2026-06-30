@@ -28,6 +28,9 @@ namespace Sudan_Train.Infrastructure.Seeder
                 // Seed SuperAdmin user
                 await CreateSuperAdminUserAsync();
 
+                // Seed default Admin user
+                await CreateAdminUserAsync();
+
                 _logger.LogInformation("User seeding completed.");
             }
             catch (Exception ex)
@@ -94,6 +97,66 @@ namespace Sudan_Train.Infrastructure.Seeder
             else
             {
                 _logger.LogError("Failed to create SuperAdmin user: {Errors}",
+                    string.Join(", ", createResult.Errors));
+            }
+        }
+
+        private async Task CreateAdminUserAsync()
+        {
+            const string adminEmail = "admin@sudantrain.com";
+            const string adminUsername = "admin";
+            const string adminPassword = "Admin@123";
+
+            var existingUser = await _userManager.FindByEmailAsync(adminEmail);
+            if (existingUser != null)
+            {
+                // Ensure the user has the Admin role.
+                if (!await _userManager.IsInRoleAsync(existingUser, Roles.Admin))
+                {
+                    await _userManager.AddToRoleAsync(existingUser, Roles.Admin);
+                    _logger.LogInformation("Added Admin role to existing user '{Email}'.", adminEmail);
+                }
+                _logger.LogDebug("Admin user already exists.");
+                return;
+            }
+
+            var adminUser = new User()
+            {
+                UserName = adminUsername,
+                Email = adminEmail,
+                FirstName = "System",
+                LastName = "Admin",
+                Address = "Sudan",
+                Nationality = "Sudanese",
+                Code = "AD001",
+                IsActive = true,
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true,
+                PhoneNumber = "+249123456788",
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+                SecurityStamp = Guid.NewGuid().ToString(),
+                LockoutEnabled = false,
+                LockoutEnd = null,
+                TwoFactorEnabled = false,
+                PasswordChangedAt = DateTime.UtcNow,
+                MustChangePassword = false,
+            };
+
+            var createResult = await _userManager.CreateAsync(adminUser, adminPassword);
+            if (createResult.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(adminUser, Roles.Admin);
+
+                _logger.LogInformation("Admin user created successfully.");
+                _logger.LogWarning("=== DEFAULT ADMIN CREDENTIALS ===");
+                _logger.LogWarning("Email: {Email}", adminEmail);
+                _logger.LogWarning("Password: {Password}", adminPassword);
+                _logger.LogWarning("IMPORTANT: Change these credentials immediately in production!");
+                _logger.LogWarning("=================================");
+            }
+            else
+            {
+                _logger.LogError("Failed to create Admin user: {Errors}",
                     string.Join(", ", createResult.Errors));
             }
         }

@@ -56,5 +56,14 @@ namespace Sudan_Train.Data.AppMetaData
 
         public static IEnumerable<string> GetAssignableRoles(IEnumerable<string> callerRoles) =>
             IsSuperAdmin(callerRoles) ? AllRoles : AdminAssignableRoles;
+
+        public static readonly string[] PrivilegedRoleList =
+        {
+            Roles.SuperAdmin,
+            Roles.Admin,
+        };
+
+        public static bool ContainsOnlyPrivilegedRoles(IEnumerable<string> roles) =>
+            roles.Any() && roles.All(IsPrivilegedRole);
     }
 }

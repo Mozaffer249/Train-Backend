@@ -57,8 +57,8 @@ const UserRolesModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
             </label>
           ))}
         </div>
-        {!callerRoles.includes(ROLES.SuperAdmin) && (
-          <p className="text-xs text-gray-500 mt-2">{AR.users.requiresSuperAdmin}</p>
+        {!callerRoles.includes(ROLES.SuperAdmin) && assignable.length < Object.values(ROLES).length && (
+          <p className="text-xs text-gray-500 mt-2">{AR.users.staffRolesOnly}</p>
         )}
         <div className="flex justify-end gap-2 mt-4">
           <button onClick={() => { setRoles([]); onClose(); }} className="admin-button-secondary">{AR.common.cancel}</button>

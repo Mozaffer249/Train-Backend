@@ -10,6 +10,12 @@ namespace Sudan_Train.Core.Features.Users.Queries.GetUserList
         // Optional filters set by the admin UsersPage. Null = no filter.
         public string? Role { get; set; }
         public bool? IsActive { get; set; }
+
+        /// <summary>When true, only users with Admin or SuperAdmin roles.</summary>
+        public bool PrivilegedOnly { get; set; }
+
+        /// <summary>When true, exclude users with Admin or SuperAdmin roles.</summary>
+        public bool ExcludePrivileged { get; set; }
     }
 
     public class UserDto

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Sudan_Train.Core.Wrappers;
+using Sudan_Train.Data.AppMetaData;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Infrastructure.context;
 
@@ -46,6 +47,15 @@ namespace Sudan_Train.Core.Features.Users.Queries.GetUserList
                 query = query.Where(u => roleFilteredIds.Contains(u.Id));
             }
 
+            if (request.PrivilegedOnly || request.ExcludePrivileged)
+            {
+                var privilegedIds = await GetPrivilegedUserIdsAsync(cancellationToken);
+                if (request.PrivilegedOnly)
+                    query = query.Where(u => privilegedIds.Contains(u.Id));
+                if (request.ExcludePrivileged)
+                    query = query.Where(u => !privilegedIds.Contains(u.Id));
+            }
+
             var totalCount = await query.CountAsync(cancellationToken);
 
             var pageUsers = await query
@@ -82,6 +92,15 @@ namespace Sudan_Train.Core.Features.Users.Queries.GetUserList
             }
 
             return PaginatedResult<UserDto>.Success(users, totalCount, request.Filter.PageNumber, request.Filter.PageSize);
+        }
+
+        private async Task<HashSet<int>> GetPrivilegedUserIdsAsync(CancellationToken cancellationToken)
+        {
+            var adminIds = (await _userManager.GetUsersInRoleAsync(Roles.Admin))
+                .Select(u => u.Id);
+            var superAdminIds = (await _userManager.GetUsersInRoleAsync(Roles.SuperAdmin))
+                .Select(u => u.Id);
+            return adminIds.Concat(superAdminIds).ToHashSet();
         }
     }
 }

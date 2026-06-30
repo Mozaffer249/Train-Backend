@@ -9,7 +9,7 @@ import UserModal from '../components/users/UserModal';
 import UserRolesModal from '../components/users/UserRolesModal';
 import UserStationsModal from '../components/users/UserStationsModal';
 import { useMe } from '../contexts/MeContext';
-import { canManageUser } from '../utils/roleHierarchy';
+import { OPERATIONAL_ROLES, canManageUser } from '../utils/roleHierarchy';
 
 const UsersPage = () => {
   const { me } = useMe();
@@ -42,6 +42,7 @@ const UsersPage = () => {
         search: search || undefined,
         role: roleFilter || undefined,
         isActive: activeFilter === '' ? undefined : activeFilter === 'true',
+        excludePrivileged: true,
       });
       setUsers(data);
     } catch (err) {
@@ -84,7 +85,7 @@ const UsersPage = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{AR.users.title}</h1>
-          <p className="text-gray-600">{AR.users.subtitle}</p>
+          <p className="text-gray-600">{AR.users.subtitleOperational}</p>
         </div>
         <button className="admin-button flex items-center gap-2"
           onClick={() => { setEditing(null); setModalOpen(true); }}
@@ -105,7 +106,7 @@ const UsersPage = () => {
           <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
             className="border rounded-md px-3 py-1.5 text-sm">
             <option value="">{AR.common.none}</option>
-            {Object.values(ROLES).map((r) => (<option key={r} value={r}>{r}</option>))}
+            {OPERATIONAL_ROLES.map((r) => (<option key={r} value={r}>{r}</option>))}
           </select>
         </div>
         <div>
