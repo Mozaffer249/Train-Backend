@@ -4,9 +4,12 @@ import { User, CreditCard, Check, ArrowLeft, Train as TrainIcon, MapPin, Loader2
 import QRCode from 'react-qr-code';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { authApi, catalogApi } from '../services/api';
 import { bookingApi } from '../services/bookingApi';
 import { formatDateSafe, formatTimeSafe } from '../utils/dateUtils';
+import { toUserErrorMessage } from '../utils/networkErrors';
+import { PAYMENT_PROVIDERS, activePaymentProvider } from '../utils/paymentProviders';
 import type { AvailableSeatDto, BookingDto, CoachSeatsDto, FareDto, SegmentSeatsDto } from '../types/api';
 
 interface TripContext {
@@ -112,7 +115,7 @@ function validatePassenger(p: PassengerInfo, t: (k: string) => string): Passenge
 
 // UI value → backend PaymentMethod enum
 // 0=Cash, 1=CreditCard, 2=DebitCard, 3=BankTransfer, 4=MobilePayment
-function paymentMethodToId(_m: string): number {
+function paymentMethodToId(): number {
   return 1; // Visa-only checkout always sends CreditCard
 }
 
@@ -196,6 +199,7 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
+  const { isOnline } = useNetworkStatus();
 
   // "Use my data" prefill (first passenger only).
   const [prefilling, setPrefilling] = useState(false);
@@ -417,7 +421,7 @@ export default function BookingPage() {
         ),
       );
     } catch (err) {
-      setSeatsError(err instanceof Error ? err.message : t('error'));
+      setSeatsError(toUserErrorMessage(err, t));
     } finally {
       setSeatsLoading(false);
     }
@@ -557,8 +561,12 @@ export default function BookingPage() {
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isOnline) {
+      setError(t('network.booking.requires.connection'));
+      return;
+    }
     if (selectedSeats.length !== passengerCount) {
-      setError(t('select.all.seats') || 'Please select a seat for every passenger.');
+      setError(t('select.all.seats'));
       return;
     }
     if (!cardValid) {
@@ -592,18 +600,18 @@ export default function BookingPage() {
         tripId: trip.id,
         boardingStationId: state.boardingStationId,
         alightingStationId: state.alightingStationId,
-        paymentMethod: paymentMethodToId('card'),
+        paymentMethod: paymentMethodToId(),
         cardLast4: digits.slice(-4),
         passengers: payloadPassengers,
       });
       setBooking(created);
       setCurrentStep(4);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t('error');
-      if (/declined|payment/i.test(msg)) {
+      const msg = toUserErrorMessage(err, t);
+      if (/declined|payment|رفض/i.test(msg)) {
         setError(t('payment.declined'));
       } else if (/422|conflict|unavailable|seat/i.test(msg)) {
-        setError(t('seat.just.taken') || 'A seat was just taken — please choose another.');
+        setError(t('seat.just.taken'));
         setSelectedSeats([]);
         await fetchSeats();
         setCurrentStep(2);
@@ -893,7 +901,7 @@ export default function BookingPage() {
                   ) : seatsError ? (
                     <div className="bg-red-50 text-red-600 rounded-lg p-4 mb-4">
                       {seatsError}
-                      <button onClick={fetchSeats} className="block mt-2 text-sm underline">{t('retry') || 'Retry'}</button>
+                      <button onClick={fetchSeats} className="block mt-2 text-sm underline">{t('retry')}</button>
                     </div>
                   ) : !seatsMap || seatsMap.availableCount === 0 ? (
                     <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
@@ -1008,17 +1016,44 @@ export default function BookingPage() {
               {currentStep === 3 && (
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">{t('payment')}</h2>
-                  <div className="mb-6">
-                    <div className="flex items-center gap-3 p-4 border-2 border-sudan-green-600 rounded-lg bg-sudan-green-50">
-                      <div className="bg-white px-3 py-1.5 rounded border border-gray-200 font-bold text-blue-800 tracking-wider text-sm">
-                        VISA
-                      </div>
-                      <div>
-                        <p className="font-medium text-sudan-green-900">{t('payment.visa.only')}</p>
-                        <p className="text-sm text-gray-600">Visa</p>
-                      </div>
-                    </div>
+                  <div className="mb-4 space-y-3">
+                    {PAYMENT_PROVIDERS.map((provider) => {
+                      const active = provider.id === activePaymentProvider().id;
+                      return (
+                        <div
+                          key={provider.id}
+                          className={`flex items-center gap-3 p-4 rounded-lg border ${
+                            active
+                              ? 'border-2 border-sudan-green-600 bg-sudan-green-50'
+                              : 'border-gray-200 bg-gray-50 opacity-60'
+                          }`}
+                        >
+                          {provider.id === 'visa' && (
+                            <div className="bg-white px-3 py-1.5 rounded border border-gray-200 font-bold text-blue-800 tracking-wider text-sm">
+                              {t('payment.card.brand')}
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">{t(provider.labelKey)}</p>
+                            <p className="text-sm text-gray-600">
+                              {active ? t(provider.descriptionKey) : t(provider.descriptionKey)}
+                            </p>
+                          </div>
+                          {!provider.enabled && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+                              {t('payment.provider.coming.soon')}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+                  <p className="mb-4 text-xs text-gray-500 bg-gray-50 rounded-lg p-3">{t('payment.simulated.notice')}</p>
+                  {!isOnline && (
+                    <p className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      {t('network.booking.requires.connection')}
+                    </p>
+                  )}
                   <form onSubmit={handlePay} className="space-y-4 sm:space-y-6" noValidate>
                     <>
                       <div>
@@ -1042,7 +1077,6 @@ export default function BookingPage() {
                           value={cardForm.cardNumber}
                           onChange={(e) => {
                             const formatted = formatCardNumber(e.target.value);
-                            const digits = formatted.replace(/\D/g, '');
                             setCardForm((prev) => ({ ...prev, cardNumber: formatted }));
                           }}
                           onBlur={() => markCardTouched('cardNumber')}
@@ -1066,7 +1100,7 @@ export default function BookingPage() {
                           {cardErrorFor('cardExpiry') && <p className="text-xs text-red-600 mt-1">{cardErrorFor('cardExpiry')}</p>}
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('payment.cvv')}</label>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1093,7 +1127,7 @@ export default function BookingPage() {
                         <ArrowLeft className="h-4 w-4 mr-2 rtl:mr-0 rtl:ml-2" />
                         {t('previous')}
                       </button>
-                      <button type="submit" disabled={submitting} className="flex-1 bg-sudan-green-600 text-white py-2 rounded-lg font-medium hover:bg-sudan-green-700 disabled:opacity-60 flex items-center justify-center gap-2 text-sm sm:text-base">
+                      <button type="submit" disabled={submitting || !isOnline} className="flex-1 bg-sudan-green-600 text-white py-2 rounded-lg font-medium hover:bg-sudan-green-700 disabled:opacity-60 flex items-center justify-center gap-2 text-sm sm:text-base">
                         {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                         {submitting ? t('processing') : `${t('continue.payment')} · ${Math.round(total)} ${t('sdg')}`}
                       </button>

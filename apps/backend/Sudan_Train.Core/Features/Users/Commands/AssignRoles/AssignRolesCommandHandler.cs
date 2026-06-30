@@ -1,9 +1,13 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
+using Sudan_Train.Core.Helpers;
 using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Data.Entity.Identity;
+
+using Sudan_Train.Infrastructure.context;
 
 namespace Sudan_Train.Core.Features.Users.Commands.AssignRoles
 {
@@ -11,32 +15,48 @@ namespace Sudan_Train.Core.Features.Users.Commands.AssignRoles
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly IHttpContextAccessor _http;
+        private readonly ApplicationDBContext _db;
 
         public AssignRolesCommandHandler(
             UserManager<User> userManager,
             RoleManager<Role> roleManager,
+            IHttpContextAccessor http,
+            ApplicationDBContext db,
             IStringLocalizer<SharedResources> localizer) : base(localizer)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _http = http;
+            _db = db;
         }
 
         public async Task<Response<List<string>>> Handle(AssignRolesCommand request, CancellationToken cancellationToken)
         {
+            var callerRoles = UserManagementAuthorization.GetCallerRoles(_http);
+
             var user = await _userManager.FindByIdAsync(request.Id.ToString());
             if (user == null)
                 return NotFound<List<string>>("User not found.");
 
+            var current = (await _userManager.GetRolesAsync(user)).ToList();
             var requested = request.Roles.Distinct().ToList();
 
-            // Reject unknown roles up front.
+            if (!UserManagementAuthorization.CanManageTarget(callerRoles, current))
+                return BadRequest<List<string>>(UserManagementAuthorization.PrivilegedUserError);
+
+            if (!UserManagementAuthorization.CanAssignRequestedRoles(callerRoles, requested))
+                return BadRequest<List<string>>(UserManagementAuthorization.PrivilegedRoleAssignError);
+
+            if (await UserManagementAuthorization.WouldRemoveLastSuperAdminAsync(_userManager, _db, user, requested))
+                return BadRequest<List<string>>(UserManagementAuthorization.LastSuperAdminError);
+
             foreach (var r in requested)
             {
                 if (!await _roleManager.RoleExistsAsync(r))
                     return BadRequest<List<string>>($"Role '{r}' does not exist.");
             }
 
-            var current = (await _userManager.GetRolesAsync(user)).ToList();
             var toAdd = requested.Except(current).ToList();
             var toRemove = current.Except(requested).ToList();
 

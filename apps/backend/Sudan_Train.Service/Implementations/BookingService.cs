@@ -12,11 +12,16 @@ namespace Sudan_Train.Service.Implementations
     {
         private readonly ApplicationDBContext _db;
         private readonly IFareService _fareService;
+        private readonly IBookingNotificationService _bookingNotifications;
 
-        public BookingService(ApplicationDBContext db, IFareService fareService)
+        public BookingService(
+            ApplicationDBContext db,
+            IFareService fareService,
+            IBookingNotificationService bookingNotifications)
         {
             _db = db;
             _fareService = fareService;
+            _bookingNotifications = bookingNotifications;
         }
 
         public async Task<BookingCreationResult> CreateBookingAsync(CreateBookingInput input)
@@ -249,6 +254,8 @@ namespace Sudan_Train.Service.Implementations
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
 
+                await _bookingNotifications.NotifyBookingConfirmedAsync(booking.Id);
+
                 var dto = await BuildBookingDtoAsync(booking.Id);
                 return new BookingCreationResult { Booking = dto };
             }
@@ -310,26 +317,11 @@ namespace Sudan_Train.Service.Implementations
                     });
                 }
 
-                // In-app notification to the booking owner (if any).
-                if (booking.UserId.HasValue)
-                {
-                    _db.Notifications.Add(new Notification
-                    {
-                        UserId = booking.UserId,
-                        BookingId = booking.Id,
-                        Type = NotificationType.BookingCancellation,
-                        Channel = NotificationChannel.InApp,
-                        Subject = "Booking cancelled",
-                        Message = $"Booking {booking.Reference} was cancelled. {reason ?? string.Empty}".Trim(),
-                        IsRead = false,
-                        IsSent = true,
-                        SentAt = now,
-                        CreatedAt = now,
-                    });
-                }
-
+                // In-app + email notification handled after commit.
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
+
+                await _bookingNotifications.NotifyBookingCancelledAsync(booking.Id, reason);
                 return true;
             }
             catch

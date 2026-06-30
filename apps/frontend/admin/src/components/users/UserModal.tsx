@@ -3,6 +3,8 @@ import { usersApi } from '../../services/api';
 import { AdminUser, UserFormData, ROLES } from '../../types/infrastructure';
 import { AR } from '../../i18n/ar';
 import { showError, showSuccess, extractErrorMessage } from '../../utils/alerts';
+import { useMe } from '../../contexts/MeContext';
+import { getAssignableRoles } from '../../utils/roleHierarchy';
 
 interface Props {
   isOpen: boolean;
@@ -12,7 +14,10 @@ interface Props {
 }
 
 const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
+  const { me } = useMe();
   const isEdit = !!editUser;
+  const callerRoles = me?.roles ?? [];
+  const assignable = getAssignableRoles(callerRoles);
   const [form, setForm] = useState<UserFormData>({
     userName: '',
     email: '',
@@ -86,7 +91,7 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
           <div>
             <label className="text-sm text-gray-700">{AR.users.roles}</label>
             <div className="flex flex-wrap gap-2 mt-1">
-              {Object.values(ROLES).map((r) => (
+              {assignable.map((r) => (
                 <label key={r} className="flex items-center gap-1 border px-2 py-1 rounded text-sm">
                   <input
                     type="checkbox"
@@ -101,6 +106,9 @@ const UserModal = ({ isOpen, editUser, onClose, onSuccess }: Props) => {
                 </label>
               ))}
             </div>
+            {!callerRoles.includes(ROLES.SuperAdmin) && (
+              <p className="text-xs text-gray-500 mt-1">{AR.users.requiresSuperAdmin}</p>
+            )}
           </div>
         )}
 

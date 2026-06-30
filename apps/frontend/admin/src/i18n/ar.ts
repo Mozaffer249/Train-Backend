@@ -281,6 +281,7 @@ export const AR = {
     allActive: 'الكل',
     rolesUpdated: 'تم تحديث الصلاحيات',
     stationsUpdated: 'تم تحديث المحطات',
+    requiresSuperAdmin: 'يتطلب صلاحية المدير الأعلى',
   },
   counter: {
     title: 'بيع التذاكر — نقطة البيع',
@@ -395,6 +396,15 @@ export const AR = {
     title: 'الإشعارات',
     empty: 'لا توجد إشعارات',
     markAllRead: 'تحديد الكل كمقروء',
+  },
+  notificationTypes: {
+    BookingConfirmation: 'تأكيد الحجز',
+    BookingCancellation: 'إلغاء الحجز',
+    PaymentReceived: 'تم استلام الدفع',
+    TripDelay: 'تأخير الرحلة',
+    TripCancellation: 'إلغاء الرحلة',
+    PromotionalOffer: 'عرض ترويجي',
+    SystemAlert: 'إشعار النظام',
   },
   status: {
     Scheduled: 'مجدولة',

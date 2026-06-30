@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Calendar, Users, MapPin, Star, Shield, Clock, Award, Phone, Mail, Headphones } from 'lucide-react';
+import { Search, Calendar, Users, MapPin, Star, Shield, Clock, Award, Phone, Mail, Headphones, UserCircle, Building2, TrainFront } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { catalogApi } from '../services/api';
+import { CachedDataNotice } from './ConnectionBanner';
+import { offlineCache } from '../utils/offlineCache';
+import { toUserErrorMessage } from '../utils/networkErrors';
 import type { StationDto } from '../types/api';
 
 export default function Homepage() {
@@ -11,6 +14,8 @@ export default function Homepage() {
 
   const [stations, setStations] = useState<StationDto[]>([]);
   const [stationsLoading, setStationsLoading] = useState(true);
+  const [stationsFromCache, setStationsFromCache] = useState(false);
+  const [stationsError, setStationsError] = useState('');
   const [searchForm, setSearchForm] = useState({
     fromId: '',
     toId: '',
@@ -20,12 +25,27 @@ export default function Homepage() {
   });
 
   useEffect(() => {
+    const cached = offlineCache.getStations();
+    if (cached?.length) {
+      setStations(cached);
+      setStationsFromCache(true);
+      setStationsLoading(false);
+    }
     catalogApi
       .getStations({ isActive: true, pageSize: 200 })
-      .then((data) => setStations(data || []))
-      .catch(() => setStations([]))
+      .then((data) => {
+        const list = data || [];
+        setStations(list);
+        offlineCache.setStations(list);
+        setStationsFromCache(false);
+        setStationsError('');
+      })
+      .catch((err) => {
+        if (!cached?.length) setStations([]);
+        setStationsError(toUserErrorMessage(err, t));
+      })
       .finally(() => setStationsLoading(false));
-  }, []);
+  }, [t]);
 
   const stationName = (s: StationDto) => s.nameAr || s.nameEn;
   const stationLabel = (s: StationDto) => `${stationName(s)} — ${s.cityName}`;
@@ -52,6 +72,15 @@ export default function Homepage() {
         class: searchForm.class,
       },
     });
+    offlineCache.setLastSearch({
+      originStationId: Number(searchForm.fromId),
+      destinationStationId: Number(searchForm.toId),
+      originName: origin ? stationName(origin) : '',
+      destinationName: destination ? stationName(destination) : '',
+      date: searchForm.date,
+      passengers: Number(searchForm.passengers),
+      class: searchForm.class,
+    });
   };
 
   const features = [
@@ -59,6 +88,12 @@ export default function Homepage() {
     { icon: <Clock className="h-8 w-8 text-sudan-green-700" />, titleKey: 'on.time.performance', descriptionKey: 'reliable.schedules' },
     { icon: <Star className="h-8 w-8 text-sudan-green-700" />, titleKey: 'comfort.quality', descriptionKey: 'premium.seats' },
     { icon: <Award className="h-8 w-8 text-sudan-green-700" />, titleKey: 'award.winning', descriptionKey: 'recognized.excellence' },
+  ];
+
+  const governanceRoles = [
+    { icon: UserCircle, titleKey: 'governance.passenger.title', descKey: 'governance.passenger.desc' },
+    { icon: Building2, titleKey: 'governance.admin.title', descKey: 'governance.admin.desc' },
+    { icon: TrainFront, titleKey: 'governance.authority.title', descKey: 'governance.authority.desc' },
   ];
 
   const selectClass =
@@ -101,6 +136,10 @@ export default function Homepage() {
 
           <div className="max-w-6xl mx-auto">
             <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border-t-4 border-sudan-gold-400">
+              {stationsFromCache && <CachedDataNotice />}
+              {stationsError && !stationsFromCache && (
+                <p className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg p-3">{stationsError}</p>
+              )}
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 text-center">{t('book.your.journey')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 sm:gap-6">
                 <div className="lg:col-span-2">
@@ -233,6 +272,26 @@ export default function Homepage() {
               <h3 className="font-semibold text-gray-900 mb-1">{t('customer.support')}</h3>
               <p className="text-sm text-gray-600">{t('24.7.support')}</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-12 sm:py-16 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">{t('governance.title')}</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">{t('governance.subtitle')}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {governanceRoles.map(({ icon: Icon, titleKey, descKey }) => (
+              <div key={titleKey} className="rounded-xl border border-sudan-green-100 bg-sudan-green-50/50 p-6 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sudan-green-100">
+                  <Icon className="h-6 w-6 text-sudan-green-700" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t(titleKey)}</h3>
+                <p className="text-sm text-gray-600">{t(descKey)}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

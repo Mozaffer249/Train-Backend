@@ -1,9 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Features.Users.Queries.GetUserList;
+using Sudan_Train.Core.Helpers;
 using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Infrastructure.context;
@@ -14,21 +16,30 @@ namespace Sudan_Train.Core.Features.Users.Commands.UpdateUser
     {
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDBContext _db;
+        private readonly IHttpContextAccessor _http;
 
         public UpdateUserCommandHandler(
             UserManager<User> userManager,
             ApplicationDBContext db,
+            IHttpContextAccessor http,
             IStringLocalizer<SharedResources> localizer) : base(localizer)
         {
             _userManager = userManager;
             _db = db;
+            _http = http;
         }
 
         public async Task<Response<UserDto>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
         {
+            var callerRoles = UserManagementAuthorization.GetCallerRoles(_http);
+
             var user = await _userManager.FindByIdAsync(request.Id.ToString());
             if (user == null)
                 return NotFound<UserDto>("User not found.");
+
+            var targetRoles = await _userManager.GetRolesAsync(user);
+            if (!UserManagementAuthorization.CanManageTarget(callerRoles, targetRoles))
+                return BadRequest<UserDto>(UserManagementAuthorization.PrivilegedUserError);
 
             if (request.FirstName != null) user.FirstName = request.FirstName;
             if (request.LastName != null) user.LastName = request.LastName;

@@ -3,6 +3,8 @@ import { usersApi } from '../../services/api';
 import { AdminUser, ROLES } from '../../types/infrastructure';
 import { AR } from '../../i18n/ar';
 import { showError, showSuccess, extractErrorMessage } from '../../utils/alerts';
+import { useMe } from '../../contexts/MeContext';
+import { getAssignableRoles } from '../../utils/roleHierarchy';
 
 interface Props {
   isOpen: boolean;
@@ -12,11 +14,14 @@ interface Props {
 }
 
 const UserRolesModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
+  const { me } = useMe();
   const [roles, setRoles] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen || !user) return null;
 
+  const callerRoles = me?.roles ?? [];
+  const assignable = getAssignableRoles(callerRoles);
   const initialRoles = roles.length ? roles : user.roles;
 
   const toggle = (r: string) => {
@@ -45,13 +50,16 @@ const UserRolesModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
         <h2 className="text-lg font-bold mb-2">{AR.users.assignRoles}</h2>
         <p className="text-sm text-gray-600 mb-3">{user.userName}</p>
         <div className="space-y-1">
-          {Object.values(ROLES).map((r) => (
+          {assignable.map((r) => (
             <label key={r} className="flex items-center gap-2 border rounded px-3 py-2">
               <input type="checkbox" checked={initialRoles.includes(r)} onChange={() => toggle(r)} />
               <span className="text-sm">{r}</span>
             </label>
           ))}
         </div>
+        {!callerRoles.includes(ROLES.SuperAdmin) && (
+          <p className="text-xs text-gray-500 mt-2">{AR.users.requiresSuperAdmin}</p>
+        )}
         <div className="flex justify-end gap-2 mt-4">
           <button onClick={() => { setRoles([]); onClose(); }} className="admin-button-secondary">{AR.common.cancel}</button>
           <button onClick={save} disabled={submitting} className="admin-button">

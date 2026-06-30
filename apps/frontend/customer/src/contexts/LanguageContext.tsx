@@ -283,7 +283,7 @@ const ar: Record<string, string> = {
   'validation.card.visa.only': 'يُقبل الدفع ببطاقات فيزا فقط (تبدأ الرقم بـ ٤).',
   'validation.card.expiry': 'تاريخ الانتهاء يجب أن يكون بصيغة MM/YY.',
   'validation.card.expired': 'انتهت صلاحية البطاقة.',
-  'validation.card.cvv': 'رمز CVV يجب أن يكون ٣ أرقام.',
+  'validation.card.cvv': 'رمز الأمان يجب أن يكون ٣ أرقام.',
   'passengers.count.note': 'يرجى تعبئة بيانات {n} مسافر/مسافرين',
   'seats.picked': 'تم اختيار',
   'select.all.seats': 'يرجى اختيار مقعد لكل مسافر.',
@@ -319,6 +319,33 @@ const ar: Record<string, string> = {
   'notification.type.PaymentReceived': 'تم استلام الدفع',
   'notification.type.SystemAlert': 'إشعار النظام',
   'notification.type.PromotionalOffer': 'عرض ترويجي',
+
+  // Network / offline
+  'network.offline': 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة والمحاولة مرة أخرى.',
+  'network.offline.banner': 'أنت غير متصل بالإنترنت — بعض الميزات غير متاحة حتى يعود الاتصال.',
+  'network.connection.failed': 'تعذّر الاتصال بالخادم. يرجى المحاولة مرة أخرى.',
+  'network.cached.data.notice': 'يتم عرض بيانات محفوظة مؤقتاً. قد لا تكون محدّثة.',
+  'network.booking.requires.connection': 'يتطلب إتمام الحجز اتصالاً بالإنترنت.',
+
+  // Payment providers (Visa active; others prepared for future integration)
+  'payment.visa.description': 'الدفع الإلكتروني الآمن عبر بطاقة فيزا.',
+  'payment.simulated.notice': 'نموذج أولي للدفع الإلكتروني — سيتم ربط بوابات الدفع المحلية لاحقاً.',
+  'payment.provider.bankak': 'بنكك',
+  'payment.provider.fawry': 'فوري',
+  'payment.provider.mobile': 'محفظة إلكترونية',
+  'payment.provider.coming.soon': 'قريباً',
+  'payment.cvv': 'رمز الأمان',
+  'payment.card.brand': 'فيزا',
+
+  // System governance (research gap — multi-role model)
+  'governance.title': 'نظام متكامل لإدارة السكك الحديدية',
+  'governance.subtitle': 'منصة رقمية تخدم المسافرين والإدارة وهيئة السكك الحديدية في السودان',
+  'governance.passenger.title': 'المسافر',
+  'governance.passenger.desc': 'البحث عن الرحلات، حجز المقاعد، الدفع الإلكتروني، وعرض التذاكر.',
+  'governance.admin.title': 'الإدارة',
+  'governance.admin.desc': 'إدارة القطارات والمسارات والأسعار والحجوزات والتقارير.',
+  'governance.authority.title': 'هيئة السكك الحديدية',
+  'governance.authority.desc': 'الموظفون في المحطات: بيع التذاكر، الصعود إلى القطار، ومتابعة الرحلات.',
 };
 
 const noop = () => undefined;

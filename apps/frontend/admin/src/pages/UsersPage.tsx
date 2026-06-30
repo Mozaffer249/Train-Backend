@@ -8,8 +8,12 @@ import { showConfirm, showError, showSuccess, extractErrorMessage } from '../uti
 import UserModal from '../components/users/UserModal';
 import UserRolesModal from '../components/users/UserRolesModal';
 import UserStationsModal from '../components/users/UserStationsModal';
+import { useMe } from '../contexts/MeContext';
+import { canManageUser } from '../utils/roleHierarchy';
 
 const UsersPage = () => {
+  const { me } = useMe();
+  const callerRoles = me?.roles ?? [];
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -154,25 +158,31 @@ const UsersPage = () => {
                       ))}
                 </td>
                 <td className="px-4 py-3 flex gap-2">
-                  <button className="text-admin-primary-700" title={AR.common.edit}
-                    onClick={() => { setEditing(u); setModalOpen(true); }}>
-                    <Edit size={16} />
-                  </button>
-                  <button className="text-admin-primary-700" title={AR.users.assignRoles}
-                    onClick={() => setRolesUser(u)}>
-                    <Shield size={16} />
-                  </button>
-                  {hasStaffRole(u) && (
-                    <button className="text-admin-primary-700" title={AR.users.assignStations}
-                      onClick={() => setStationsUser(u)}>
-                      <MapPin size={16} />
-                    </button>
+                  {canManageUser(callerRoles, u.roles) ? (
+                    <>
+                      <button className="text-admin-primary-700" title={AR.common.edit}
+                        onClick={() => { setEditing(u); setModalOpen(true); }}>
+                        <Edit size={16} />
+                      </button>
+                      <button className="text-admin-primary-700" title={AR.users.assignRoles}
+                        onClick={() => setRolesUser(u)}>
+                        <Shield size={16} />
+                      </button>
+                      {hasStaffRole(u) && (
+                        <button className="text-admin-primary-700" title={AR.users.assignStations}
+                          onClick={() => setStationsUser(u)}>
+                          <MapPin size={16} />
+                        </button>
+                      )}
+                      <button className={u.isActive ? 'text-green-600' : 'text-gray-400'}
+                        title={u.isActive ? AR.users.disable : AR.users.enable}
+                        onClick={() => handleToggleActive(u)}>
+                        {u.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-400">{AR.users.requiresSuperAdmin}</span>
                   )}
-                  <button className={u.isActive ? 'text-green-600' : 'text-gray-400'}
-                    title={u.isActive ? AR.users.disable : AR.users.enable}
-                    onClick={() => handleToggleActive(u)}>
-                    {u.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                  </button>
                 </td>
               </tr>
             ))}

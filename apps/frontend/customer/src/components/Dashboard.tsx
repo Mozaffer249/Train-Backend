@@ -4,6 +4,9 @@ import QRCode from 'react-qr-code';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { bookingApi } from '../services/bookingApi';
+import { CachedDataNotice } from './ConnectionBanner';
+import { offlineCache } from '../utils/offlineCache';
+import { toUserErrorMessage } from '../utils/networkErrors';
 import type { BookingDto } from '../types/api';
 
 function formatDate(iso: string): string {
@@ -41,6 +44,7 @@ export default function Dashboard() {
   const [bookings, setBookings] = useState<BookingDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [fromCache, setFromCache] = useState(false);
   const [selected, setSelected] = useState<BookingDto | null>(null);
   // Cancellation confirmation modal: booking the user is about to cancel,
   // optional reason text, and submit state.
@@ -50,12 +54,26 @@ export default function Dashboard() {
   const [cancelError, setCancelError] = useState('');
 
   const load = useCallback(() => {
-    setLoading(true);
+    const cached = offlineCache.getBookings();
+    if (cached?.length) {
+      setBookings(cached);
+      setFromCache(true);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setError('');
     bookingApi
       .getMyBookings()
-      .then((rows) => setBookings(rows))
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : t('error')))
+      .then((rows) => {
+        setBookings(rows);
+        offlineCache.setBookings(rows);
+        setFromCache(false);
+      })
+      .catch((err: unknown) => {
+        if (!cached?.length) setBookings([]);
+        setError(toUserErrorMessage(err, t));
+      })
       .finally(() => setLoading(false));
   }, [t]);
 
@@ -122,8 +140,13 @@ export default function Dashboard() {
           <p className="text-gray-600">{t('welcome.back')}, {user?.name}</p>
         </div>
 
+        {fromCache && <CachedDataNotice />}
+
         {error && (
-          <div className="mb-4 bg-red-50 text-red-600 text-sm rounded-lg p-3">{error}</div>
+          <div className="mb-4 bg-red-50 text-red-600 text-sm rounded-lg p-3 flex flex-wrap items-center justify-between gap-2">
+            <span>{error}</span>
+            <button type="button" onClick={load} className="underline font-medium">{t('retry')}</button>
+          </div>
         )}
 
         <div className="mb-8 border-b border-gray-200">
@@ -165,7 +188,7 @@ export default function Dashboard() {
                     {b.status === 'Cancelled' ? (
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">{t('cancelled')}</span>
                     ) : b.status === 'Completed' ? (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{t('completed') || 'Completed'}</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{t('completed')}</span>
                     ) : (
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${classBadge(b.coachClass)}`}>{classLabel(b.coachClass)}</span>
                     )}

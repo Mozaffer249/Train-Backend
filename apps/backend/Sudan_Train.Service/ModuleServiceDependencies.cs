@@ -28,6 +28,8 @@ namespace Sudan_Train.Service
             services.AddTransient<ITripService, TripService>();
             services.AddTransient<IBookingService, BookingService>();
             services.AddTransient<IStaffAuthorizationService, StaffAuthorizationService>();
+            services.AddTransient<IInAppNotificationService, InAppNotificationService>();
+            services.AddTransient<IBookingNotificationService, BookingNotificationService>();
 
             // Utility services
             services.AddTransient<IDistanceCalculationService, DistanceCalculationService>();

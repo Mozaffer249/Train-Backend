@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using Sudan_Train.MessagingApi.Configuration;
 using Sudan_Train.MessagingApi.Models.Enums;
 using Sudan_Train.MessagingApi.Models.Requests;
 using Sudan_Train.MessagingApi.Models.Responses;
@@ -15,19 +18,25 @@ namespace Sudan_Train.MessagingApi.Controllers
         private readonly IPushNotificationService _pushNotificationService;
         private readonly IMessageTrackingService _messageTrackingService;
         private readonly ILogger<MessagingController> _logger;
+        private readonly EmailSettings _emailSettings;
+        private readonly RabbitMQSettings _rabbitSettings;
 
         public MessagingController(
             IEmailService emailService,
             ISmsService smsService,
             IPushNotificationService pushNotificationService,
             IMessageTrackingService messageTrackingService,
-            ILogger<MessagingController> logger)
+            ILogger<MessagingController> logger,
+            IOptions<EmailSettings> emailSettings,
+            IOptions<RabbitMQSettings> rabbitSettings)
         {
             _emailService = emailService;
             _smsService = smsService;
             _pushNotificationService = pushNotificationService;
             _messageTrackingService = messageTrackingService;
             _logger = logger;
+            _emailSettings = emailSettings.Value;
+            _rabbitSettings = rabbitSettings.Value;
         }
 
         /// <summary>
@@ -377,14 +386,40 @@ namespace Sudan_Train.MessagingApi.Controllers
         /// Health check endpoint
         /// </summary>
         [HttpGet("health")]
-        public IActionResult Health()
+        public async Task<IActionResult> Health()
         {
+            var smtpConfigured = !string.IsNullOrWhiteSpace(_emailSettings.Host)
+                && !string.IsNullOrWhiteSpace(_emailSettings.FromEmail)
+                && !string.IsNullOrWhiteSpace(_emailSettings.UserName)
+                && !string.IsNullOrWhiteSpace(_emailSettings.Password);
+
+            var rabbitmq = "disconnected";
+            try
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = _rabbitSettings.HostName,
+                    Port = _rabbitSettings.Port,
+                    UserName = _rabbitSettings.UserName,
+                    Password = _rabbitSettings.Password,
+                    VirtualHost = _rabbitSettings.VirtualHost,
+                };
+                await using var connection = await factory.CreateConnectionAsync();
+                rabbitmq = connection.IsOpen ? "connected" : "disconnected";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RabbitMQ health check failed");
+            }
+
             return Ok(new
             {
                 status = "healthy",
                 service = "MessagingApi",
                 timestamp = DateTime.UtcNow,
-                version = "1.0.0"
+                version = "1.0.0",
+                smtpConfigured,
+                rabbitmq,
             });
         }
 

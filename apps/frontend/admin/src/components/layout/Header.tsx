@@ -1,9 +1,23 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMe } from '../../contexts/MeContext';
 import { AR } from '../../i18n/ar';
+import NotificationsDrawer from '../NotificationsDrawer';
+import { ROLES } from '../../types/infrastructure';
+
+const roleLabel = (roles: string[]) => {
+  if (roles.includes(ROLES.SuperAdmin)) return 'SuperAdmin';
+  if (roles.includes(ROLES.Admin)) return 'Admin';
+  if (roles.includes(ROLES.StaffCounter)) return 'StaffCounter';
+  if (roles.includes(ROLES.StaffBoarding)) return 'StaffBoarding';
+  if (roles.includes(ROLES.Staff)) return 'Staff';
+  return roles[0] ?? AR.auth.portalTitle;
+};
 
 const Header = () => {
   const { user } = useAuth();
+  const { me } = useMe();
+  const displayRoles = me?.roles ?? user?.roles ?? [];
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -20,15 +34,12 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-1 end-1 w-2 h-2 bg-sudan-red-500 rounded-full"></span>
-          </button>
+          <NotificationsDrawer />
 
           <div className="flex items-center gap-3 ps-4 border-s border-gray-200">
             <div className="text-end">
               <p className="text-sm font-medium text-gray-900">{user?.name || AR.auth.portalTitle}</p>
-              <p className="text-xs text-gray-500">{user?.role === 'Admin' ? 'Super Admin' : 'Staff'}</p>
+              <p className="text-xs text-gray-500">{roleLabel(displayRoles)}</p>
             </div>
             <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               <User size={20} />

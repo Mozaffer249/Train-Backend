@@ -15,6 +15,7 @@ namespace Sudan_Train.Service.Implementations
         private readonly IRouteRepository _routeRepository;
         private readonly ICoachRepository _coachRepository;
         private readonly ApplicationDBContext _db;
+        private readonly IBookingNotificationService _bookingNotifications;
 
         public TripService(
             ITripRepository tripRepository,
@@ -22,7 +23,8 @@ namespace Sudan_Train.Service.Implementations
             ITrainRepository trainRepository,
             IRouteRepository routeRepository,
             ICoachRepository coachRepository,
-            ApplicationDBContext db)
+            ApplicationDBContext db,
+            IBookingNotificationService bookingNotifications)
         {
             _tripRepository = tripRepository;
             _tripSeatRepository = tripSeatRepository;
@@ -30,6 +32,7 @@ namespace Sudan_Train.Service.Implementations
             _routeRepository = routeRepository;
             _coachRepository = coachRepository;
             _db = db;
+            _bookingNotifications = bookingNotifications;
         }
 
         public async Task<TripDto> CreateTripAsync(int trainId, int routeId, DateTime departureTime, DateTime arrivalTime)
@@ -330,6 +333,7 @@ namespace Sudan_Train.Service.Implementations
 
                 var now = DateTime.UtcNow;
                 int? actor = actorUserId > 0 ? actorUserId : (int?)null;
+                var notifiedBookingIds = new List<int>();
 
                 foreach (var booking in bookings)
                 {
@@ -362,21 +366,7 @@ namespace Sudan_Train.Service.Implementations
                     }
 
                     if (booking.UserId.HasValue)
-                    {
-                        _db.Notifications.Add(new Notification
-                        {
-                            UserId = booking.UserId,
-                            BookingId = booking.Id,
-                            Type = NotificationType.TripCancellation,
-                            Channel = NotificationChannel.InApp,
-                            Subject = "Trip cancelled",
-                            Message = $"Booking {booking.Reference}: your trip was cancelled. {reason ?? string.Empty}".Trim(),
-                            IsRead = false,
-                            IsSent = true,
-                            SentAt = now,
-                            CreatedAt = now,
-                        });
-                    }
+                        notifiedBookingIds.Add(booking.Id);
                 }
 
                 foreach (var bp in bookingPassengers)
@@ -387,6 +377,10 @@ namespace Sudan_Train.Service.Implementations
 
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
+
+                foreach (var bookingId in notifiedBookingIds)
+                    await _bookingNotifications.NotifyTripCancelledAsync(bookingId, reason);
+
                 return true;
             }
             catch

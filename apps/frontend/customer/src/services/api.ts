@@ -38,14 +38,14 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
     if (window.location.pathname !== '/login') {
       window.location.href = '/login';
     }
-    throw new Error('Unauthorized - please login again');
+    throw new Error('Unauthorized');
   }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const message = errorData.message || errorData.Message;
     const errors = errorData.errors || errorData.Errors;
-    throw new Error(message || errors?.join(', ') || `Request failed with status ${response.status}`);
+    throw new Error(message || errors?.join(', ') || `Request failed (${response.status})`);
   }
 
   const result: ApiResponse<T> = await response.json();
@@ -57,13 +57,20 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
   return result.data;
 }
 
+async function fetchWithAuthSafe<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  if (!navigator.onLine) {
+    throw new TypeError('Network offline');
+  }
+  return fetchWithAuth<T>(endpoint, options);
+}
+
 export const api = {
-  get: <T>(endpoint: string) => fetchWithAuth<T>(endpoint, { method: 'GET' }),
+  get: <T>(endpoint: string) => fetchWithAuthSafe<T>(endpoint, { method: 'GET' }),
   post: <T>(endpoint: string, data: unknown) =>
-    fetchWithAuth<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+    fetchWithAuthSafe<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
   put: <T>(endpoint: string, data: unknown) =>
-    fetchWithAuth<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
-  delete: <T>(endpoint: string) => fetchWithAuth<T>(endpoint, { method: 'DELETE' }),
+    fetchWithAuthSafe<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: <T>(endpoint: string) => fetchWithAuthSafe<T>(endpoint, { method: 'DELETE' }),
 };
 
 function buildQuery(params?: Record<string, string | number | boolean | undefined>): string {

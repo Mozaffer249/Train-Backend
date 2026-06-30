@@ -1,8 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, MapPin, Users, Filter, SortAsc, Train as TrainIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { catalogApi } from '../services/api';
+import { CachedDataNotice } from './ConnectionBanner';
+import { offlineCache, searchCacheKey } from '../utils/offlineCache';
+import { toUserErrorMessage } from '../utils/networkErrors';
 import { addMinutesToIso, formatDateSafe, formatDurationSafe, formatTimeSafe, shouldShowTripForSearchDate } from '../utils/dateUtils';
 
 interface SearchState {
@@ -61,137 +64,142 @@ export default function SearchResults() {
   const [trips, setTrips] = useState<TripResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [fromCache, setFromCache] = useState(false);
   const [sortBy, setSortBy] = useState<'time' | 'price' | 'duration'>('time');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
 
-  useEffect(() => {
+  const loadTrips = useCallback(async () => {
     if (!params?.originStationId || !params?.destinationStationId) {
       setLoading(false);
       return;
     }
-    let cancelled = false;
-    (async () => {
+    const cacheKey = searchCacheKey({
+      originStationId: params.originStationId,
+      destinationStationId: params.destinationStationId,
+      originName: params.originName,
+      destinationName: params.destinationName,
+      date: params.date,
+      passengers: params.passengers,
+      class: params.class,
+    });
+    const cached = offlineCache.getSearchResults(cacheKey) as TripResult[] | null;
+    if (cached?.length) {
+      setTrips(cached);
+      setFromCache(true);
+      setLoading(false);
+    } else {
       setLoading(true);
-      setError('');
-      try {
-        const coachClassId = coachClassToId(params.class);
-        const routes = await catalogApi.getRoutes({
-          originStationId: params.originStationId,
-          destinationStationId: params.destinationStationId,
-          isActive: true,
-        });
+    }
+    setError('');
+    try {
+      const coachClassId = coachClassToId(params.class);
+      const routes = await catalogApi.getRoutes({
+        originStationId: params.originStationId,
+        destinationStationId: params.destinationStationId,
+        isActive: true,
+      });
 
-        // Per route: find this segment's departure/arrival offsets relative
-        // to the trip's departureTime. Origin = 0, intermediate = stop's
-        // (departure|arrival)Offset, Destination = max(stop offset) (we use
-        // arrival to be conservative; for trips the API returns absolute arrivalTime
-        // for the route end, but we won't need it because the destination case
-        // simply uses the trip's arrivalTime when boarding/alighting align with route ends).
-        type SegOff = { departureOffset: number | string | null; arrivalOffset: number | string | null };
-        const segOffsetsForRoute = (route: typeof routes[number]): SegOff => {
-          const isOrigin = route.origin?.id === params.originStationId;
-          const isDest = route.destination?.id === params.destinationStationId;
-          const stops = route.intermediateStops ?? [];
+      type SegOff = { departureOffset: number | string | null; arrivalOffset: number | string | null };
+      const segOffsetsForRoute = (route: typeof routes[number]): SegOff => {
+        const isOrigin = route.origin?.id === params.originStationId;
+        const isDest = route.destination?.id === params.destinationStationId;
+        const stops = route.intermediateStops ?? [];
 
-          const depOffset = isOrigin
-            ? 0
-            : stops.find((s) => s.stationId === params.originStationId)?.departureOffset ?? null;
+        const depOffset = isOrigin
+          ? 0
+          : stops.find((s) => s.stationId === params.originStationId)?.departureOffset ?? null;
 
-          const arrOffset = isDest
-            ? null // use trip.arrivalTime
-            : stops.find((s) => s.stationId === params.destinationStationId)?.arrivalOffset ?? null;
+        const arrOffset = isDest
+          ? null
+          : stops.find((s) => s.stationId === params.destinationStationId)?.arrivalOffset ?? null;
 
-          return { departureOffset: depOffset, arrivalOffset: arrOffset };
-        };
+        return { departureOffset: depOffset, arrivalOffset: arrOffset };
+      };
 
-        // Collect trips with placeholder fare (resolved next pass in parallel).
-        const tripBuckets: Array<{ trip: TripResult }> = [];
-        const fareFetches: Promise<{ id: number; price: number; currency: string; fareScope: 'route' | 'segment' | 'trip' | null; fareClass: string | null }>[] = [];
+      const tripBuckets: Array<{ trip: TripResult }> = [];
+      const fareFetches: Promise<{ id: number; price: number; currency: string; fareScope: 'route' | 'segment' | 'trip' | null; fareClass: string | null }>[] = [];
 
-        for (const route of routes) {
-          const off = segOffsetsForRoute(route);
-          const routeTrips = await catalogApi.getTrips({ routeId: route.id, date: params.date });
-          for (const trip of routeTrips) {
-            const segDeparture = off.departureOffset == null
-              ? trip.departureTime
-              : addMinutesToIso(trip.departureTime, off.departureOffset);
-            const segArrival = off.arrivalOffset == null
-              ? trip.arrivalTime
-              : addMinutesToIso(trip.departureTime, off.arrivalOffset);
+      for (const route of routes) {
+        const off = segOffsetsForRoute(route);
+        const routeTrips = await catalogApi.getTrips({ routeId: route.id, date: params.date });
+        for (const trip of routeTrips) {
+          const segDeparture = off.departureOffset == null
+            ? trip.departureTime
+            : addMinutesToIso(trip.departureTime, off.departureOffset);
+          const segArrival = off.arrivalOffset == null
+            ? trip.arrivalTime
+            : addMinutesToIso(trip.departureTime, off.arrivalOffset);
 
-            if (!shouldShowTripForSearchDate(params.date, segDeparture)) {
-              continue;
-            }
-
-            tripBuckets.push({
-              trip: {
-                id: trip.id,
-                trainName: trip.trainName,
-                trainNumber: trip.trainNumber,
-                routeId: route.id,
-                departureISO: segDeparture,
-                arrivalISO: segArrival,
-                availableSeats: trip.availableSeats,
-                price: 0,
-                currency: 'SDG',
-                coachClassId,
-                fareScope: null,
-                fareClass: null,
-              },
-            });
-
-            fareFetches.push(
-              // No class arg → backend returns the cheapest available fare
-              // for this trip+segment across any class. With a class arg → strict
-              // match. The card shows the resolved class either way.
-              catalogApi
-                .getApplicableFare(trip.id, params.originStationId, params.destinationStationId)
-                .then((fare) => {
-                  // Resolution priority on the server is Trip > Segment > Route.
-                  // We mirror that classification here so the card can show a chip
-                  // when the customer is being shown an override price.
-                  const fareScope: 'route' | 'segment' | 'trip' | null = !fare
-                    ? null
-                    : fare.tripId
-                      ? 'trip'
-                      : fare.originStationId && fare.destinationStationId
-                        ? 'segment'
-                        : 'route';
-                  return {
-                    id: trip.id,
-                    price: fare?.finalPrice || fare?.basePrice || 0,
-                    currency: fare?.currency || 'SDG',
-                    fareScope,
-                    fareClass: typeof fare?.coachClass === 'string' ? fare.coachClass : null,
-                  };
-                })
-                // No fare configured for this trip+segment yet — show 0 (UI shows '—').
-                .catch(() => ({ id: trip.id, price: 0, currency: 'SDG', fareScope: null, fareClass: null })),
-            );
+          if (!shouldShowTripForSearchDate(params.date, segDeparture)) {
+            continue;
           }
+
+          tripBuckets.push({
+            trip: {
+              id: trip.id,
+              trainName: trip.trainName,
+              trainNumber: trip.trainNumber,
+              routeId: route.id,
+              departureISO: segDeparture,
+              arrivalISO: segArrival,
+              availableSeats: trip.availableSeats,
+              price: 0,
+              currency: 'SDG',
+              coachClassId,
+              fareScope: null,
+              fareClass: null,
+            },
+          });
+
+          fareFetches.push(
+            catalogApi
+              .getApplicableFare(trip.id, params.originStationId, params.destinationStationId)
+              .then((fare) => {
+                const fareScope: 'route' | 'segment' | 'trip' | null = !fare
+                  ? null
+                  : fare.tripId
+                    ? 'trip'
+                    : fare.originStationId && fare.destinationStationId
+                      ? 'segment'
+                      : 'route';
+                return {
+                  id: trip.id,
+                  price: fare?.finalPrice || fare?.basePrice || 0,
+                  currency: fare?.currency || 'SDG',
+                  fareScope,
+                  fareClass: typeof fare?.coachClass === 'string' ? fare.coachClass : null,
+                };
+              })
+              .catch(() => ({ id: trip.id, price: 0, currency: 'SDG', fareScope: null, fareClass: null })),
+          );
         }
-
-        const fares = await Promise.all(fareFetches);
-        const fareById = new Map(fares.map((f) => [f.id, f]));
-        const collected = tripBuckets.map(({ trip }) => {
-          const f = fareById.get(trip.id);
-          return f
-            ? { ...trip, price: f.price, currency: f.currency, fareScope: f.fareScope, fareClass: f.fareClass }
-            : trip;
-        });
-
-        if (!cancelled) setTrips(collected);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : t('error'));
-      } finally {
-        if (!cancelled) setLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params?.originStationId, params?.destinationStationId, params?.date]);
+
+      const fares = await Promise.all(fareFetches);
+      const fareById = new Map(fares.map((f) => [f.id, f]));
+      const collected = tripBuckets.map(({ trip }) => {
+        const f = fareById.get(trip.id);
+        return f
+          ? { ...trip, price: f.price, currency: f.currency, fareScope: f.fareScope, fareClass: f.fareClass }
+          : trip;
+      });
+
+      setTrips(collected);
+      offlineCache.setSearchResults(cacheKey, collected);
+      setFromCache(false);
+    } catch (err) {
+      if (!cached?.length) {
+        setTrips([]);
+        setError(toUserErrorMessage(err, t));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [params, t]);
+
+  useEffect(() => {
+    loadTrips();
+  }, [loadTrips]);
 
   const visibleTrips = useMemo(() => {
     return [...trips]
@@ -307,6 +315,7 @@ export default function SearchResults() {
           </div>
 
           <div className="lg:col-span-3 order-1 lg:order-2">
+            {fromCache && <CachedDataNotice />}
             <div className="mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('available.trains')}</h2>
               {!loading && <p className="text-sm sm:text-base text-gray-600">{visibleTrips.length} {t('trains.found')}</p>}
@@ -318,7 +327,12 @@ export default function SearchResults() {
                 <p className="text-gray-600">{t('loading')}</p>
               </div>
             ) : error ? (
-              <div className="bg-red-50 text-red-600 rounded-lg p-4">{error}</div>
+              <div className="bg-red-50 text-red-600 rounded-lg p-4 space-y-2">
+                <p>{error}</p>
+                <button type="button" onClick={loadTrips} className="text-sm underline font-medium">
+                  {t('retry')}
+                </button>
+              </div>
             ) : visibleTrips.length === 0 ? (
               <div className="text-center py-12">
                 <TrainIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />

@@ -1,8 +1,10 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Sudan_Train.Core.Bases;
 using Sudan_Train.Core.Features.Users.Queries.GetUserList;
+using Sudan_Train.Core.Helpers;
 using Sudan_Train.Core.Resources.Shared;
 using Sudan_Train.Data.Entity.Identity;
 using Sudan_Train.Infrastructure.context;
@@ -13,19 +15,26 @@ namespace Sudan_Train.Core.Features.Users.Commands.CreateUser
     {
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDBContext _db;
+        private readonly IHttpContextAccessor _http;
 
         public CreateUserCommandHandler(
             UserManager<User> userManager,
             ApplicationDBContext db,
+            IHttpContextAccessor http,
             IStringLocalizer<SharedResources> localizer) : base(localizer)
         {
             _userManager = userManager;
             _db = db;
+            _http = http;
         }
 
         public async Task<Response<UserDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            // Uniqueness checks up front so the error is clear.
+            var callerRoles = UserManagementAuthorization.GetCallerRoles(_http);
+
+            if (!UserManagementAuthorization.CanAssignRequestedRoles(callerRoles, request.Roles))
+                return BadRequest<UserDto>(UserManagementAuthorization.PrivilegedRoleAssignError);
+
             if (await _userManager.FindByEmailAsync(request.Email) != null)
                 return BadRequest<UserDto>("Email is already in use.");
             if (await _userManager.FindByNameAsync(request.UserName) != null)
@@ -38,7 +47,7 @@ namespace Sudan_Train.Core.Features.Users.Commands.CreateUser
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 PhoneNumber = request.PhoneNumber,
-                EmailConfirmed = true,        // admin-created accounts are pre-confirmed
+                EmailConfirmed = true,
                 IsActive = true,
             };
 
@@ -46,7 +55,6 @@ namespace Sudan_Train.Core.Features.Users.Commands.CreateUser
             if (!createResult.Succeeded)
                 return BadRequest<UserDto>(string.Join("; ", createResult.Errors.Select(e => e.Description)));
 
-            // Assign initial roles.
             if (request.Roles.Count > 0)
             {
                 var rolesResult = await _userManager.AddToRolesAsync(user, request.Roles);
@@ -54,8 +62,6 @@ namespace Sudan_Train.Core.Features.Users.Commands.CreateUser
                     return BadRequest<UserDto>(string.Join("; ", rolesResult.Errors.Select(e => e.Description)));
             }
 
-            // Assign station scope if any. Only meaningful for staff roles
-            // but we don't enforce — admin may grant in advance.
             if (request.StationIds.Count > 0)
             {
                 foreach (var sid in request.StationIds.Distinct())

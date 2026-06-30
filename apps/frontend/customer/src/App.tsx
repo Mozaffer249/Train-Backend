@@ -4,6 +4,7 @@ import SearchResults from './components/SearchResults';
 import BookingPage from './components/BookingPage';
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
+import ConnectionBanner from './components/ConnectionBanner';
 import Login from './components/Login';
 import Register from './components/Register';
 import ConfirmEmail from './components/ConfirmEmail';
@@ -18,6 +19,7 @@ function App() {
       <LanguageProvider>
         <Router>
           <div className="min-h-screen bg-gray-50">
+            <ConnectionBanner />
             <Header />
             <Routes>
               <Route path="/" element={<Homepage />} />
