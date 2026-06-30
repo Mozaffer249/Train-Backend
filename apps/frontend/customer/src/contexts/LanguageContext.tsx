@@ -1,15 +1,20 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-// Arabic-only customer UI. The language toggle has been removed; the provider
-// keeps the same `t()` API so existing pages continue to compile unchanged.
+// Customer UI supports Arabic (default, RTL) and English (LTR). The `t()` API is
+// unchanged; missing English keys gracefully fall back to the Arabic string.
+
+type Language = 'ar' | 'en';
 
 interface LanguageContextType {
-  language: 'ar';
-  setLanguage: (lang: 'ar') => void; // kept for API compatibility — no-op.
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  toggleLanguage: () => void;
   t: (key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+const STORAGE_KEY = 'app.language';
 
 const ar: Record<string, string> = {
   // Navigation
@@ -203,6 +208,7 @@ const ar: Record<string, string> = {
   'minutes.ago': 'دقائق مضت',
   'hour.ago': 'ساعة مضت',
   'hours.ago': 'ساعات مضت',
+  'language.switch': 'English',
 
   // Brand & Places
   'atbara.rail': 'قطارات السودان',
@@ -351,12 +357,378 @@ const ar: Record<string, string> = {
   'governance.authority.desc': 'الموظفون في المحطات: بيع التذاكر، الصعود إلى القطار، ومتابعة الرحلات.',
 };
 
-const noop = () => undefined;
+const en: Record<string, string> = {
+  // Navigation
+  'home': 'Home',
+  'search': 'Search',
+  'dashboard': 'Dashboard',
+  'admin': 'Admin',
+  'login': 'Sign In',
+  'logout': 'Sign Out',
+
+  // Auth pages
+  'register': 'Register',
+  'sign.in': 'Sign In',
+  'sign.up': 'Sign Up',
+  'create.account': 'Create a new account',
+  'first.name': 'First Name',
+  'last.name': 'Last Name',
+  'password': 'Password',
+  'confirm.password': 'Confirm Password',
+  'phone.number': 'Phone Number',
+  'email.address': 'Email Address',
+  'already.have.account': 'Already have an account?',
+  'dont.have.account': "Don't have an account?",
+  'forgot.password': 'Forgot your password?',
+  'confirm.email.title': 'Confirm Email',
+  'confirm.email.desc': 'Enter the 4-digit code sent to your email.',
+  'confirm.email.no.session': 'We could not find a recent registration. Please create an account first.',
+  'user.id': 'User ID',
+  'verification.code': 'Verification Code',
+  'verify': 'Verify',
+  'reset.password.title': 'Reset Password',
+  'send.reset.code': 'Send Reset Code',
+  'reset.code': 'Reset Code',
+  'new.password': 'New Password',
+  'reset.code.sent': 'A reset code has been sent to your email.',
+  'registration.success': 'Registered! Check your email for the confirmation code.',
+  'registration.resume': 'This email is already registered but not yet activated. We sent you a new confirmation code.',
+  'email.confirmed.login': 'Email confirmed. You can sign in now.',
+  'processing': 'Processing...',
+  'login.required': 'Please sign in to continue',
+
+  // Homepage
+  'hero.title': 'Book your journey on Sudan Trains',
+  'hero.subtitle': 'Explore Sudan safely and comfortably with the Sudanese railway network',
+  'book.your.journey': 'Book your journey',
+  'my.bookings': 'My Bookings',
+  'view.manage.trips': 'View and manage trips',
+  'train.status': 'Train Status',
+  'check.live.status': 'Check live status',
+  'customer.support': 'Customer Support',
+  '24.7.support': 'Round-the-clock support',
+  'need.help': 'Need help?',
+  'contact.support.team': 'Contact our support team',
+  'call.us': 'Call Us',
+  'email.us': 'Email Us',
+  'live.chat': 'Live Chat',
+  'available.24.7': 'Available 24/7',
+  'from': 'From',
+  'to': 'To',
+  'date': 'Date',
+  'passengers': 'Passengers',
+  'increase.passengers': 'Increase passengers',
+  'decrease.passengers': 'Decrease passengers',
+  'class': 'Class',
+  'search.trains': 'Search Trains',
+  'why.choose.atbara.rail': 'Why choose Sudan Trains?',
+  'experience.future.travel': 'Experience the future of travel with our modern, efficient and comfortable services',
+  'popular.routes': 'Popular Destinations',
+  'discover.most.traveled': 'Discover the most traveled destinations across Sudan',
+  'safe.secure': 'Safe & Secure',
+  'modern.safety.systems': 'Modern safety systems and secure booking',
+  'on.time.performance': 'On-Time Performance',
+  'reliable.schedules': 'Reliable schedules and punctual service',
+  'comfort.quality': 'Comfort & Quality',
+  'premium.seats': 'Premium seats and excellent service',
+  'award.winning': 'Award Winning',
+  'recognized.excellence': 'Recognized for excellence in transport',
+
+  // Search Results
+  'available.trains': 'Available Trains',
+  'departure': 'Departure',
+  'arrival': 'Arrival',
+  'duration': 'Duration',
+  'price': 'Price',
+  'book.now': 'Book Now',
+  'no.trains': 'No trains available',
+  'trains.found': 'trains available',
+  'modify.search': 'Modify Search',
+  'filters': 'Filters',
+  'all.classes': 'All Classes',
+  'price.range.sdg': 'Price range (SDG)',
+  'price.range.sar': 'Price range (SAR)',
+  'sort.by': 'Sort by',
+  'departure.time': 'Departure Time',
+  'seats.available': 'seats available',
+  'per.person': 'per person',
+
+  // Booking
+  'passenger.info': 'Passenger Information',
+  'full.name': 'Full Name',
+  'full.name.arabic': 'Full Name (Arabic)',
+  'full.name.english': 'Full Name (English)',
+  'id.number': 'ID Number',
+  'id.passport.number': 'ID / Passport Number',
+  'birth.date': 'Date of Birth',
+  'gender': 'Gender',
+  'male': 'Male',
+  'female': 'Female',
+  'nationality': 'Nationality',
+  'optional': 'Optional',
+  'seat.selection': 'Seat Selection',
+  'selected.seat': 'Selected Seat',
+  'auto.select.seat': 'Auto-select seat',
+  'add.another.passenger': 'Add another passenger',
+  'add.passenger': 'Add passenger',
+  'payment.summary': 'Payment Summary',
+  'choose.payment.method': 'Choose payment method',
+  'payment.visa.only': 'Visa cards only',
+  'payment.declined': 'Payment was declined by the bank. Please check your card details or use another card.',
+  'credit.debit.card': 'Credit / Debit Card',
+  'mobile.payment': 'Mobile Payment',
+  'bank.transfer': 'Bank Transfer',
+  'pay.via.bank': 'Pay via bank',
+  'agree.terms.conditions': 'I agree to the terms and conditions',
+  'continue.payment': 'Continue to Payment',
+  'booking.summary': 'Booking Summary',
+  'route': 'Route',
+  'ticket.price': 'Ticket Price',
+  'service.fee': 'Service Fee',
+  'total': 'Total',
+  'passenger.information': 'Passenger Information',
+  'email': 'Email',
+  'phone': 'Phone',
+  'available': 'Available',
+  'occupied': 'Occupied',
+  'selected': 'Selected',
+  'payment': 'Payment',
+  'card.number': 'Card Number',
+  'expiry.date': 'Expiry Date',
+  'cardholder.name': 'Cardholder Name',
+  'booking.confirmed': 'Booking Confirmed!',
+  'ticket.booked.successfully': 'Your ticket was booked successfully. You will receive a confirmation message shortly.',
+  'booking.reference': 'Booking Reference',
+  'scan.at.station': 'Scan at the station',
+  'whatsapp.us': 'WhatsApp',
+  'secure.payment.guaranteed': 'Secure payment guaranteed',
+  'view.my.trips': 'View my trips',
+  'book.another.trip': 'Book another trip',
+
+  // Dashboard
+  'my.trips': 'My Trips',
+  'upcoming': 'Upcoming',
+  'past': 'Past',
+  'download.ticket': 'Download Ticket',
+  'cancel.trip': 'Cancel Trip',
+  'cancel.booking': 'Cancel Booking',
+  'cancel.booking.title': 'Confirm Booking Cancellation',
+  'cancel.booking.warning': 'This action cannot be undone. All tickets associated with this booking will be cancelled.',
+  'cancel.booking.confirm': 'Yes, cancel the booking',
+  'cancel.booking.keep': 'Keep the booking',
+  'cancel.reason.label': 'Cancellation reason',
+  'cancel.reason.placeholder': 'Optional — helps us improve the service.',
+  'reschedule': 'Reschedule',
+  'welcome.back': 'Welcome back',
+  'no.upcoming.trips': 'No upcoming trips',
+  'no.past.trips': 'No past trips',
+  'e.ticket': 'E-Ticket',
+  'scan.qr.code': 'Scan the QR code at the station',
+  'booking.ref': 'Booking Ref:',
+  'train': 'Train:',
+  'seat': 'Seat:',
+  'download.pdf': 'Download PDF',
+
+  // Common
+  'loading': 'Loading...',
+  'error': 'Error',
+  'success': 'Success',
+  'cancel': 'Cancel',
+  'confirm': 'Confirm',
+  'save': 'Save',
+  'edit': 'Edit',
+  'delete': 'Delete',
+  'submit': 'Submit',
+  'back': 'Back',
+  'next': 'Next',
+  'previous': 'Previous',
+  'close': 'Close',
+  'select': 'Select',
+  'min': 'Min',
+  'max': 'Max',
+  'minutes.ago': 'minutes ago',
+  'hour.ago': 'an hour ago',
+  'hours.ago': 'hours ago',
+  'language.switch': 'العربية',
+
+  // Brand & Places
+  'atbara.rail': 'Sudan Trains',
+  'brand.name': 'Sudan Trains',
+  'brand.tagline': 'Sudanese Railway Network',
+  'khartoum': 'Khartoum',
+  'atbara': 'Atbara',
+  'port.sudan': 'Port Sudan',
+  'kassala': 'Kassala',
+  'wad.medani': 'Wad Madani',
+  'nyala': 'Nyala',
+  'el.obeid': 'El Obeid',
+  'dongola': 'Dongola',
+  'sennar': 'Sennar',
+
+  // Nationalities
+  'sudan': 'Republic of Sudan',
+  'egypt': 'Arab Republic of Egypt',
+  'ethiopia': 'Ethiopia',
+  'eritrea': 'Eritrea',
+  'chad': 'Chad',
+  'libya': 'Libya',
+  'south.sudan': 'South Sudan',
+  'other': 'Other',
+
+  // Train Classes
+  'economy': 'Economy',
+  'business': 'Business',
+  'vip': 'VIP',
+
+  // Currency / Time
+  'sdg': 'SDG',
+  'duration.hours': 'hours',
+  'duration.minutes': 'minutes',
+  'cancelled': 'Cancelled',
+  'confirmed': 'Confirmed',
+  'completed': 'Completed',
+  'pending': 'Pending',
+
+  // Booking flow (Option B per-segment)
+  'select.seat.first': 'Please select a seat first.',
+  'seat.just.taken': 'This seat was just taken by another passenger — please select another seat.',
+  'seat.hold.timer': 'Time remaining to complete the booking',
+  'seat.hold.expired': 'The seat hold has expired (5 minutes). Please select your seats again.',
+  'seat.hold.syncing': 'Holding your seats temporarily…',
+  'no.seats.available': 'No seats available for this route.',
+  'retry': 'Retry',
+  'coach': 'Coach',
+  'window.seat': 'Window seat',
+  'boarding': 'Boarding Station',
+  'alighting': 'Alighting Station',
+
+  // Coach classes (server returns "First"/"Second"/"Third")
+  'first': 'First Class',
+  'second': 'Second Class',
+  'third': 'Third Class',
+  'first.class': 'First Class',
+  'second.class': 'Second Class',
+  'third.class': 'Third Class',
+  'any.class': 'Any Class',
+  'no.coaches.in.class': 'There are no coaches in this class on this trip. Try another class.',
+  'passenger': 'Passenger',
+  'next.passenger': 'Next: next passenger details',
+  'use.my.data': 'Use my data',
+  'use.my.data.loading': 'Filling in your data...',
+  'use.my.data.error': 'Could not fetch your data, please enter it manually.',
+  'use.my.data.empty': 'No saved data to fill in, please enter it manually.',
+
+  // Client-side validation messages for the passenger info forms.
+  'validation.required': 'This field is required.',
+  'validation.arabic.only': 'Please use Arabic letters only.',
+  'validation.english.only': 'Please use English letters only.',
+  'validation.id.format': 'National ID / passport must contain 5-30 letters or digits.',
+  'validation.date.invalid': 'The date is invalid.',
+  'validation.birthdate.future': 'Date of birth must be in the past.',
+  'validation.birthdate.too.old': 'Date of birth is not reasonable.',
+  'validation.phone.format': 'Phone number must be 8 to 15 digits.',
+  'validation.email.format': 'Email format is invalid.',
+  'validation.fix.errors': 'Please fix the fields highlighted in red before continuing.',
+  'validation.card.number': 'Card number is invalid. It must be 16 digits and start with 4 (Visa).',
+  'validation.card.visa.only': 'Only Visa cards are accepted (number starts with 4).',
+  'validation.card.expiry': 'Expiry date must be in MM/YY format.',
+  'validation.card.expired': 'The card has expired.',
+  'validation.card.cvv': 'The security code must be 3 digits.',
+  'passengers.count.note': 'Please fill in details for {n} passenger(s)',
+  'seats.picked': 'Selected',
+  'select.all.seats': 'Please select a seat for each passenger.',
+  'selected.seats': 'Selected Seats',
+  'seats': 'Seats',
+
+  // Fare breakdown
+  'base.fare': 'Base Fare',
+  'discount': 'Discount',
+
+  // Fare-scope chips (shown when an override price applies)
+  'fare.scope.trip': 'Price specific to this trip',
+  'fare.scope.segment': 'Price specific to this segment',
+
+  // Search-card "starting from {class}" hint when the cheapest available fare
+  // is shown but the customer may want a different class at booking time.
+  'starting.from': 'Starting from',
+
+  // Ticket statuses surfaced on Dashboard + e-ticket modal.
+  'ticket.status.Issued': 'Issued',
+  'ticket.status.Boarded': 'Boarded',
+  'ticket.status.NoShow': 'No Show',
+  'ticket.status.Cancelled': 'Cancelled',
+
+  // Notifications drawer.
+  'notifications': 'Notifications',
+  'notifications.empty': 'No notifications',
+  'notifications.markRead': 'Mark as read',
+  'notification.type.BookingConfirmation': 'Booking Confirmation',
+  'notification.type.BookingCancellation': 'Booking Cancellation',
+  'notification.type.TripCancellation': 'Trip Cancellation',
+  'notification.type.TripDelay': 'Trip Delay',
+  'notification.type.PaymentReceived': 'Payment Received',
+  'notification.type.SystemAlert': 'System Alert',
+  'notification.type.PromotionalOffer': 'Promotional Offer',
+
+  // Network / offline
+  'network.offline': 'No internet connection. Please check your network and try again.',
+  'network.offline.banner': 'You are offline — some features are unavailable until the connection returns.',
+  'network.connection.failed': 'Could not connect to the server. Please try again.',
+  'network.cached.data.notice': 'Showing cached data. It may not be up to date.',
+  'network.booking.requires.connection': 'Completing the booking requires an internet connection.',
+
+  // Payment providers (Visa active; others prepared for future integration)
+  'payment.visa.description': 'Secure electronic payment via Visa card.',
+  'payment.simulated.notice': 'Electronic payment prototype — local payment gateways will be integrated later.',
+  'payment.provider.bankak': 'Bankak',
+  'payment.provider.fawry': 'Fawry',
+  'payment.provider.mobile': 'E-Wallet',
+  'payment.provider.coming.soon': 'Coming soon',
+  'payment.cvv': 'Security Code',
+  'payment.card.brand': 'Visa',
+
+  // System governance (research gap — multi-role model)
+  'governance.title': 'An integrated railway management system',
+  'governance.subtitle': 'A digital platform serving travelers, management and the railway authority in Sudan',
+  'governance.passenger.title': 'Passenger',
+  'governance.passenger.desc': 'Search trips, book seats, pay electronically, and view tickets.',
+  'governance.admin.title': 'Management',
+  'governance.admin.desc': 'Manage trains, routes, fares, bookings and reports.',
+  'governance.authority.title': 'Railway Authority',
+  'governance.authority.desc': 'Station staff: sell tickets, board the train, and track trips.',
+};
+
+const dictionaries: Record<Language, Record<string, string>> = { ar, en };
+
+const getInitialLanguage = (): Language => {
+  if (typeof window === 'undefined') return 'ar';
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === 'en' ? 'en' : 'ar';
+};
+
+const applyDocumentLanguage = (lang: Language) => {
+  if (typeof document === 'undefined') return;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+};
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const t = (key: string): string => ar[key] || key;
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
+
+  useEffect(() => {
+    applyDocumentLanguage(language);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, language);
+    }
+  }, [language]);
+
+  const setLanguage = (lang: Language) => setLanguageState(lang);
+  const toggleLanguage = () => setLanguageState((prev) => (prev === 'ar' ? 'en' : 'ar'));
+
+  const t = (key: string): string => dictionaries[language][key] ?? ar[key] ?? key;
+
   return (
-    <LanguageContext.Provider value={{ language: 'ar', setLanguage: noop, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

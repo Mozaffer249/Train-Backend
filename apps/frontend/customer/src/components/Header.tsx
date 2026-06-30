@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Train, User, Menu, X, LogOut } from 'lucide-react';
+import { Train, User, Menu, X, LogOut, Languages } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import BrandStripe from './BrandStripe';
@@ -8,7 +8,7 @@ import NotificationsDrawer from './NotificationsDrawer';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, language, toggleLanguage } = useLanguage();
   const { user, logout, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -57,6 +57,16 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={toggleLanguage}
+              aria-label={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
+              title={t('language.switch')}
+              className="flex items-center gap-1 text-sm text-sudan-green-50 hover:text-white transition-colors"
+            >
+              <Languages className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('language.switch')}</span>
+            </button>
+
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <NotificationsDrawer />
