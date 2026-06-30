@@ -33,6 +33,7 @@ namespace Sudan_Train.Infrastructure.context
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Trip> Trip { get; set; }
         public DbSet<TripSeat> TripSeats { get; set; }
+        public DbSet<SeatHold> SeatHolds { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingPassenger> BookingPassengers { get; set; }
         public DbSet<City> Cities { get; set; }

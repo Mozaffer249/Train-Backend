@@ -131,6 +131,7 @@ export interface AvailableSeatDto {
   isWindow: boolean;
   isAccessible: boolean;
   isAvailable: boolean;
+  isHeldByMe?: boolean;
 }
 
 export interface CoachSeatsDto {
@@ -241,4 +242,18 @@ export interface CreateBookingPayload {
   paymentMethod: number; // 0=Cash, 1=CreditCard, 2=DebitCard, 3=BankTransfer, 4=MobilePayment
   cardLast4?: string;
   passengers: CreateBookingPassengerPayload[];
+}
+
+export interface SeatHoldResultDto {
+  holdGroupId: string;
+  expiresAt: string;
+  heldSeatIds: number[];
+}
+
+export interface HoldSeatsPayload {
+  tripId: number;
+  boardingStationId: number;
+  alightingStationId: number;
+  seatIds: number[];
+  holdGroupId?: string;
 }

@@ -6,6 +6,8 @@ namespace Sudan_Train.Service.Abstracts
     public class CreateBookingInput
     {
         public int? UserId { get; set; }
+        /// <summary>Authenticated user who placed seat holds (JWT user; may differ from UserId for counter sales).</summary>
+        public int? HoldingUserId { get; set; }
         public int TripId { get; set; }
         public int BoardingStationId { get; set; }
         public int AlightingStationId { get; set; }

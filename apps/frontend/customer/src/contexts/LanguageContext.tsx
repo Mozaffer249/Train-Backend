@@ -245,6 +245,9 @@ const ar: Record<string, string> = {
   // Booking flow (Option B per-segment)
   'select.seat.first': 'يرجى اختيار مقعد أولاً.',
   'seat.just.taken': 'تم حجز هذا المقعد للتو من قبل مسافر آخر — يرجى اختيار مقعد آخر.',
+  'seat.hold.timer': 'الوقت المتبقي لإتمام الحجز',
+  'seat.hold.expired': 'انتهت مهلة حجز المقاعد (5 دقائق). يرجى اختيار المقاعد من جديد.',
+  'seat.hold.syncing': 'جاري حجز المقاعد مؤقتاً…',
   'no.seats.available': 'لا توجد مقاعد متاحة لهذا المسار.',
   'retry': 'إعادة المحاولة',
   'coach': 'العربة',

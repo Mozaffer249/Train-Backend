@@ -28,5 +28,6 @@ namespace Sudan_Train.Data.DTOs.Infrastructure
         public bool IsWindow { get; set; }
         public bool IsAccessible { get; set; }
         public bool IsAvailable { get; set; }
+        public bool IsHeldByMe { get; set; }
     }
 }

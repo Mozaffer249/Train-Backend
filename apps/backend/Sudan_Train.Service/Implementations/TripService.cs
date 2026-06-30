@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sudan_Train.Data.DTOs.Infrastructure;
 using Sudan_Train.Data.Entity;
+using Sudan_Train.Data.Helpers;
 using Sudan_Train.Infrastructure.Abstracts;
 using Sudan_Train.Infrastructure.context;
 using Sudan_Train.Service.Abstracts;
@@ -16,6 +17,7 @@ namespace Sudan_Train.Service.Implementations
         private readonly ICoachRepository _coachRepository;
         private readonly ApplicationDBContext _db;
         private readonly IBookingNotificationService _bookingNotifications;
+        private readonly ISeatHoldService _seatHoldService;
 
         public TripService(
             ITripRepository tripRepository,
@@ -24,7 +26,8 @@ namespace Sudan_Train.Service.Implementations
             IRouteRepository routeRepository,
             ICoachRepository coachRepository,
             ApplicationDBContext db,
-            IBookingNotificationService bookingNotifications)
+            IBookingNotificationService bookingNotifications,
+            ISeatHoldService seatHoldService)
         {
             _tripRepository = tripRepository;
             _tripSeatRepository = tripSeatRepository;
@@ -33,6 +36,7 @@ namespace Sudan_Train.Service.Implementations
             _coachRepository = coachRepository;
             _db = db;
             _bookingNotifications = bookingNotifications;
+            _seatHoldService = seatHoldService;
         }
 
         public async Task<TripDto> CreateTripAsync(int trainId, int routeId, DateTime departureTime, DateTime arrivalTime)
@@ -419,7 +423,7 @@ namespace Sudan_Train.Service.Implementations
             await _tripSeatRepository.AddRangeAsync(tripSeats);
         }
 
-        public async Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId)
+        public async Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId, int? currentUserId = null)
         {
             // Manual split — fetch the four pieces this method needs in
             // separate queries instead of one giant cartesian join through
@@ -490,6 +494,30 @@ namespace Sudan_Train.Service.Implementations
                 .GroupBy(x => x.TripSeatId!.Value)
                 .ToDictionary(g => g.Key, g => g.Select(x => (B: x.BOrder!.Value, A: x.AOrder!.Value)).ToList());
 
+            var activeHolds = await _seatHoldService.GetActiveHoldsForTripAsync(tripId, currentUserId);
+            var holdsByTripSeat = activeHolds
+                .Select(h => new
+                {
+                    h.TripSeatId,
+                    h.SeatId,
+                    BOrder = stopOrderByStation.TryGetValue(h.BoardingStationId, out var hBo) ? (int?)hBo : null,
+                    AOrder = stopOrderByStation.TryGetValue(h.AlightingStationId, out var hAo) ? (int?)hAo : null,
+                })
+                .Where(x => x.BOrder.HasValue && x.AOrder.HasValue)
+                .GroupBy(x => x.TripSeatId)
+                .ToDictionary(g => g.Key, g => g.Select(x => (B: x.BOrder!.Value, A: x.AOrder!.Value)).ToList());
+
+            var myHeldTripSeatIds = new HashSet<int>();
+            if (currentUserId.HasValue)
+            {
+                var allHoldsOnTrip = await _seatHoldService.GetActiveHoldsForTripAsync(tripId);
+                foreach (var h in allHoldsOnTrip)
+                {
+                    if (h.UserId == currentUserId.Value)
+                        myHeldTripSeatIds.Add(h.TripSeatId);
+                }
+            }
+
             var tripSeatBySeatId = tripSeats.ToDictionary(ts => ts.SeatId, ts => ts);
 
             var coachDtos = new List<CoachSeatsDto>();
@@ -527,17 +555,30 @@ namespace Sudan_Train.Service.Implementations
                     bool available = tripSeat.Status != SeatStatus.Maintenance;
                     if (available && existingByTripSeat.TryGetValue(tripSeat.Id, out var ranges))
                     {
-                        // Overlap check: any existing booking [b2,a2] overlaps requested [b,a]?
-                        // Ranges overlap iff b < a2 && b2 < a.
                         foreach (var (b2, a2) in ranges)
                         {
-                            if (boardingOrder < a2 && b2 < alightingOrder)
+                            if (SegmentOverlapHelper.RangesOverlap(boardingOrder, alightingOrder, b2, a2))
                             {
                                 available = false;
                                 break;
                             }
                         }
                     }
+
+                    if (available && holdsByTripSeat.TryGetValue(tripSeat.Id, out var holdRanges))
+                    {
+                        foreach (var (b2, a2) in holdRanges)
+                        {
+                            if (SegmentOverlapHelper.RangesOverlap(boardingOrder, alightingOrder, b2, a2))
+                            {
+                                available = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    var heldByMe = myHeldTripSeatIds.Contains(tripSeat.Id);
+                    if (heldByMe) available = true;
 
                     if (available) availableCount++;
                     coachDto.Seats.Add(new AvailableSeatDto
@@ -548,6 +589,7 @@ namespace Sudan_Train.Service.Implementations
                         IsWindow = seat.IsWindow,
                         IsAccessible = seat.IsAccessible,
                         IsAvailable = available,
+                        IsHeldByMe = heldByMe,
                     });
                 }
 

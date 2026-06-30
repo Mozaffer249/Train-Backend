@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Sudan_Train.Core.Features.Bookings.Commands.CancelBooking;
 using Sudan_Train.Core.Features.Bookings.Commands.CreateBooking;
 using Sudan_Train.Core.Features.Bookings.Commands.CreateCounterBooking;
+using Sudan_Train.Core.Features.Bookings.Commands.HoldSeats;
+using Sudan_Train.Core.Features.Bookings.Commands.ReleaseSeatHolds;
 using Sudan_Train.Core.Features.Bookings.Queries.GetAllBookings;
 using Sudan_Train.Core.Features.Bookings.Queries.GetBookingById;
 using Sudan_Train.Core.Features.Bookings.Queries.GetMyBookings;
@@ -28,6 +30,24 @@ namespace Sudan_Train.Controllers.Operations
         public async Task<IActionResult> Create([FromBody] CreateBookingCommand command)
         {
             var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        /// <summary>Hold seats for 5 minutes while the user completes booking.</summary>
+        [HttpPost("SeatHolds")]
+        [Authorize]
+        public async Task<IActionResult> HoldSeats([FromBody] HoldSeatsCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        /// <summary>Release held seats (optional holdGroupId filter).</summary>
+        [HttpDelete("SeatHolds")]
+        [Authorize]
+        public async Task<IActionResult> ReleaseSeatHolds([FromQuery] Guid? holdGroupId)
+        {
+            var response = await _mediator.Send(new ReleaseSeatHoldsCommand { HoldGroupId = holdGroupId });
             return Ok(response);
         }
 

@@ -35,7 +35,7 @@ namespace Sudan_Train.Service.Abstracts
         // Per-segment seat availability: returns the seat grid annotated with
         // IsAvailable computed from existing BookingPassenger overlaps for the
         // requested boarding→alighting segment.
-        Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId);
+        Task<SegmentSeatsDto?> GetSegmentSeatsAsync(int tripId, int boardingStationId, int alightingStationId, int? currentUserId = null);
     }
 }
 

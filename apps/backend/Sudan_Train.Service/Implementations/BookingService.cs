@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sudan_Train.Data.DTOs.Booking;
 using Sudan_Train.Data.DTOs.Infrastructure;
 using Sudan_Train.Data.Entity;
+using Sudan_Train.Data.Helpers;
 using Sudan_Train.Infrastructure.context;
 using Sudan_Train.Service.Abstracts;
 
@@ -13,15 +14,18 @@ namespace Sudan_Train.Service.Implementations
         private readonly ApplicationDBContext _db;
         private readonly IFareService _fareService;
         private readonly IBookingNotificationService _bookingNotifications;
+        private readonly ISeatHoldService _seatHoldService;
 
         public BookingService(
             ApplicationDBContext db,
             IFareService fareService,
-            IBookingNotificationService bookingNotifications)
+            IBookingNotificationService bookingNotifications,
+            ISeatHoldService seatHoldService)
         {
             _db = db;
             _fareService = fareService;
             _bookingNotifications = bookingNotifications;
+            _seatHoldService = seatHoldService;
         }
 
         public async Task<BookingCreationResult> CreateBookingAsync(CreateBookingInput input)
@@ -92,6 +96,18 @@ namespace Sudan_Train.Service.Implementations
                 resolved.Add((ps, tripSeat, fareDto, fareDto.Breakdown!));
             }
 
+            if (input.HoldingUserId.HasValue && input.HoldingUserId.Value > 0)
+            {
+                var holdCheck = await _seatHoldService.ValidateHoldsAsync(
+                    input.HoldingUserId.Value,
+                    input.TripId,
+                    input.BoardingStationId,
+                    input.AlightingStationId,
+                    seatIds);
+                if (!holdCheck.Valid)
+                    return new BookingCreationResult { Conflict = true, Error = holdCheck.Error ?? "Seat hold expired." };
+            }
+
             // ---- Race-resistant seat-availability re-check across all chosen seats ----
             var tripSeatIds = resolved.Select(r => r.tripSeat.Id).ToList();
             var conflicting = await _db.BookingPassengers
@@ -106,7 +122,7 @@ namespace Sudan_Train.Service.Implementations
                 var cBOrder = TripService.StopOrderOnRoute(trip.Route, c.BoardingStationId);
                 var cAOrder = TripService.StopOrderOnRoute(trip.Route, c.AlightingStationId);
                 if (cBOrder == null || cAOrder == null) continue;
-                if (bOrder.Value < cAOrder.Value && cBOrder.Value < aOrder.Value)
+                if (SegmentOverlapHelper.RangesOverlap(bOrder.Value, aOrder.Value, cBOrder.Value, cAOrder.Value))
                 {
                     var clash = resolved.First(r => r.tripSeat.Id == c.TripSeatId);
                     return new BookingCreationResult { Conflict = true, Error = $"Seat {clash.tripSeat.Seat?.SeatNumber} is no longer available for this segment." };
@@ -253,6 +269,9 @@ namespace Sudan_Train.Service.Implementations
 
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync();
+
+                if (input.HoldingUserId.HasValue && input.HoldingUserId.Value > 0)
+                    await _seatHoldService.DeleteHoldsForSeatsAsync(input.HoldingUserId.Value, trip.Id, seatIds);
 
                 await _bookingNotifications.NotifyBookingConfirmedAsync(booking.Id);
 

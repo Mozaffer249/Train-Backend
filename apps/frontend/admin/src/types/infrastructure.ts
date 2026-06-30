@@ -445,6 +445,7 @@ export interface AvailableSeatDto {
   isWindow: boolean;
   isAccessible: boolean;
   isAvailable: boolean;
+  isHeldByMe?: boolean;
 }
 
 export interface CoachSeatsDto {

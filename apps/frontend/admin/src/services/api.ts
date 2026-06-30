@@ -401,6 +401,19 @@ export const bookingsApi = {
 
   createCounter: (payload: CounterBookingPayload) =>
     api.post<Booking>('/Bookings/Counter', payload),
+
+  holdSeats: (input: {
+    tripId: number;
+    boardingStationId: number;
+    alightingStationId: number;
+    seatIds: number[];
+    holdGroupId?: string;
+  }) => api.post<{ holdGroupId: string; expiresAt: string; heldSeatIds: number[] }>('/Bookings/SeatHolds', input),
+
+  releaseSeatHolds: (holdGroupId?: string) => {
+    const qs = holdGroupId ? `?holdGroupId=${encodeURIComponent(holdGroupId)}` : '';
+    return api.delete<string>(`/Bookings/SeatHolds${qs}`);
+  },
 };
 
 // ----- Identity (current user) -----

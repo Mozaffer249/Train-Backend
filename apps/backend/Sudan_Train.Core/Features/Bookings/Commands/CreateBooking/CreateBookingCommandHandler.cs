@@ -32,6 +32,7 @@ namespace Sudan_Train.Core.Features.Bookings.Commands.CreateBooking
             var input = new CreateBookingInput
             {
                 UserId = userId > 0 ? userId : null,
+                HoldingUserId = userId > 0 ? userId : null,
                 TripId = request.TripId,
                 BoardingStationId = request.BoardingStationId,
                 AlightingStationId = request.AlightingStationId,

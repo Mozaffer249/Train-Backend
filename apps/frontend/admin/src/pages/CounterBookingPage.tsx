@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { tripsApi, usersApi, bookingsApi, stationsApi, routesApi } from '../services/api';
 import {
   Trip,
@@ -140,6 +140,17 @@ const CounterBookingPage = () => {
   // Fetched lazily once both stops are picked; refreshed when either changes.
   const [segmentSeats, setSegmentSeats] = useState<SegmentSeatsDto | null>(null);
   const [selectedSeats, setSelectedSeats] = useState<AvailableSeatDto[]>([]);
+  const [holdGroupId, setHoldGroupId] = useState<string | null>(null);
+  const [holdExpiresAt, setHoldExpiresAt] = useState<Date | null>(null);
+  const [holdSyncing, setHoldSyncing] = useState(false);
+  const [holdRemainingSec, setHoldRemainingSec] = useState<number | null>(null);
+  const holdGroupIdRef = useRef<string | null>(null);
+  holdGroupIdRef.current = holdGroupId;
+
+  const holdStorageKey = useMemo(() => {
+    if (tripId === '' || boardingStationId === '' || alightingStationId === '') return null;
+    return `counter_seat_hold_${tripId}_${boardingStationId}_${alightingStationId}`;
+  }, [tripId, boardingStationId, alightingStationId]);
   // Class filter chip — '' means show all coaches.
   const [chosenClass, setChosenClass] = useState<string>('');
 
@@ -152,17 +163,70 @@ const CounterBookingPage = () => {
     tripsApi.getSegmentSeats(tripId, boardingStationId, alightingStationId)
       .then((s) => {
         setSegmentSeats(s);
-        // Drop any previously-picked seat that is no longer available.
         setSelectedSeats((prev) => {
           const stillThere = new Map<number, AvailableSeatDto>();
           s.coaches.forEach((c) => c.seats.forEach((seat) => {
-            if (seat.isAvailable) stillThere.set(seat.id, seat);
+            if (seat.isAvailable || seat.isHeldByMe) stillThere.set(seat.id, seat);
           }));
           return prev.filter((p) => stillThere.has(p.id));
         });
       })
       .catch(() => setSegmentSeats(null));
   }, [tripId, boardingStationId, alightingStationId]);
+
+  const syncHolds = useCallback(async (seats: AvailableSeatDto[]) => {
+    if (tripId === '' || boardingStationId === '' || alightingStationId === '') return;
+    setHoldSyncing(true);
+    try {
+      const storedId = holdStorageKey ? sessionStorage.getItem(holdStorageKey) : null;
+      const result = await bookingsApi.holdSeats({
+        tripId: tripId as number,
+        boardingStationId: boardingStationId as number,
+        alightingStationId: alightingStationId as number,
+        seatIds: seats.map((s) => s.id),
+        holdGroupId: holdGroupId ?? storedId ?? undefined,
+      });
+      setHoldGroupId(result.holdGroupId);
+      setHoldExpiresAt(new Date(result.expiresAt));
+      if (holdStorageKey) sessionStorage.setItem(holdStorageKey, result.holdGroupId);
+    } catch (err) {
+      showError(AR.common.errorTitle, extractErrorMessage(err) || AR.counter.seatTaken);
+      setSelectedSeats([]);
+      setHoldGroupId(null);
+      setHoldExpiresAt(null);
+      if (holdStorageKey) sessionStorage.removeItem(holdStorageKey);
+    } finally {
+      setHoldSyncing(false);
+    }
+  }, [tripId, boardingStationId, alightingStationId, holdGroupId, holdStorageKey]);
+
+  useEffect(() => {
+    if (!holdExpiresAt) {
+      setHoldRemainingSec(null);
+      return;
+    }
+    const tick = () => {
+      const sec = Math.max(0, Math.floor((holdExpiresAt.getTime() - Date.now()) / 1000));
+      setHoldRemainingSec(sec);
+      if (sec <= 0) {
+        showError(AR.common.errorTitle, AR.counter.holdExpired);
+        setSelectedSeats([]);
+        setHoldGroupId(null);
+        setHoldExpiresAt(null);
+        if (holdStorageKey) sessionStorage.removeItem(holdStorageKey);
+        bookingsApi.releaseSeatHolds().catch(() => {});
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [holdExpiresAt, holdStorageKey]);
+
+  useEffect(() => () => {
+    if (holdGroupIdRef.current) {
+      bookingsApi.releaseSeatHolds(holdGroupIdRef.current).catch(() => {});
+    }
+  }, []);
 
   // Lookup: seatId → { coach, seat } — used for ordinal pairing + payload submit.
   const seatLookup = useMemo(() => {
@@ -184,14 +248,18 @@ const CounterBookingPage = () => {
 
   // Customer-style toggle: click an available seat → it goes to the next
   // empty passenger slot. Click a selected seat → deselect (ordinals renumber).
-  const toggleSeat = (seat: AvailableSeatDto) => {
-    if (!seat.isAvailable) return;
-    setSelectedSeats((prev) => {
-      const i = prev.findIndex((p) => p.id === seat.id);
-      if (i >= 0) return prev.filter((_, idx) => idx !== i);
-      if (prev.length >= passengers.length) return prev;
-      return [...prev, seat];
-    });
+  const toggleSeat = async (seat: AvailableSeatDto) => {
+    if (!seat.isAvailable && !seat.isHeldByMe) return;
+    const existingIdx = selectedSeats.findIndex((p) => p.id === seat.id);
+    let nextSeats: AvailableSeatDto[];
+    if (existingIdx >= 0) {
+      nextSeats = selectedSeats.filter((_, idx) => idx !== existingIdx);
+    } else {
+      if (selectedSeats.length >= passengers.length) return;
+      nextSeats = [...selectedSeats, seat];
+    }
+    setSelectedSeats(nextSeats);
+    await syncHolds(nextSeats);
   };
 
   useEffect(() => {
@@ -309,9 +377,11 @@ const CounterBookingPage = () => {
 
   // Remove the i-th passenger AND any seat that was paired to a passenger
   // index that no longer exists (last-N drop is the simplest mental model).
-  const removePassenger = (i: number) => {
+  const removePassenger = async (i: number) => {
     setPassengers((p) => p.filter((_, idx) => idx !== i));
-    setSelectedSeats((prev) => prev.slice(0, Math.max(0, prev.length - 1)));
+    const nextSeats = selectedSeats.filter((_, idx) => idx !== i);
+    setSelectedSeats(nextSeats);
+    await syncHolds(nextSeats);
   };
 
   const updatePassengerInfo = (i: number, key: keyof CounterSeatInput['passenger'], value: string) =>
@@ -324,6 +394,10 @@ const CounterBookingPage = () => {
     }
     if (selectedSeats.length !== passengers.length) {
       showError(AR.common.errorTitle, AR.counter.pickSeatFirst);
+      return;
+    }
+    if (holdRemainingSec === 0) {
+      showError(AR.common.errorTitle, AR.counter.holdExpired);
       return;
     }
     // Block submit if any passenger row has validation errors. Flip the
@@ -536,6 +610,15 @@ const CounterBookingPage = () => {
                 {AR.counter.pickedOfTotal.replace('{n}', String(selectedSeats.length)).replace('{m}', String(passengers.length))}
               </p>
 
+              {holdRemainingSec != null && holdRemainingSec > 0 && selectedSeats.length > 0 && (
+                <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  {AR.counter.holdTimer}: {String(Math.floor(holdRemainingSec / 60)).padStart(2, '0')}:{String(holdRemainingSec % 60).padStart(2, '0')}
+                </p>
+              )}
+              {holdSyncing && (
+                <p className="text-xs text-gray-500">{AR.counter.holdSyncing}</p>
+              )}
+
               {/* Per-coach seat grid — copied from customer BookingPage. */}
               <div className="space-y-4">
                 {visibleCoaches.map((c) => (
@@ -549,10 +632,11 @@ const CounterBookingPage = () => {
                       {c.seats.map((seat) => {
                         const selectedIdx = selectedSeats.findIndex((p) => p.id === seat.id);
                         const isSelected = selectedIdx >= 0;
+                        const isAvailable = seat.isAvailable || seat.isHeldByMe;
                         const atCap = !isSelected && selectedSeats.length >= passengers.length;
                         const klass = isSelected
                           ? 'bg-sudan-gold-500 border-sudan-gold-500 text-sudan-green-900'
-                          : !seat.isAvailable
+                          : !isAvailable
                           ? 'bg-red-200 border-red-300 cursor-not-allowed text-red-700'
                           : atCap
                           ? 'bg-white border-gray-200 text-gray-300 cursor-not-allowed'
@@ -561,7 +645,7 @@ const CounterBookingPage = () => {
                           <button
                             key={seat.id}
                             type="button"
-                            disabled={!seat.isAvailable || atCap}
+                            disabled={!isAvailable || atCap}
                             onClick={() => toggleSeat(seat)}
                             className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded border-2 transition-colors text-[10px] sm:text-xs font-medium ${klass}`}
                             title={seat.seatNumber}

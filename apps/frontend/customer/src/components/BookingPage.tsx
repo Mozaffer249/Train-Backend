@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { User, CreditCard, Check, ArrowLeft, Train as TrainIcon, MapPin, Loader2, ChevronDown, UserCheck } from 'lucide-react';
 import QRCode from 'react-qr-code';
@@ -399,6 +399,18 @@ export default function BookingPage() {
   const [seatsLoading, setSeatsLoading] = useState(false);
   const [seatsError, setSeatsError] = useState('');
 
+  const [holdGroupId, setHoldGroupId] = useState<string | null>(null);
+  const [holdExpiresAt, setHoldExpiresAt] = useState<Date | null>(null);
+  const [holdSyncing, setHoldSyncing] = useState(false);
+  const [holdRemainingSec, setHoldRemainingSec] = useState<number | null>(null);
+  const holdGroupIdRef = useRef<string | null>(null);
+  holdGroupIdRef.current = holdGroupId;
+
+  const holdStorageKey = useMemo(() => {
+    if (!trip || !state) return null;
+    return `seat_hold_${trip.id}_${state.boardingStationId}_${state.alightingStationId}`;
+  }, [trip, state]);
+
   // Which classes have BOTH at least one available seat AND a configured fare.
   const [availableClassIds, setAvailableClassIds] = useState<Set<'1' | '2' | '3'>>(new Set());
 
@@ -417,7 +429,7 @@ export default function BookingPage() {
       // Drop any selected seat that's no longer available.
       setSelectedSeats((prev) =>
         prev.filter((s) =>
-          result.coaches.flatMap((c) => c.seats).some((nx) => nx.id === s.id && nx.isAvailable),
+          result.coaches.flatMap((c) => c.seats).some((nx) => nx.id === s.id && (nx.isAvailable || nx.isHeldByMe)),
         ),
       );
     } catch (err) {
@@ -426,6 +438,76 @@ export default function BookingPage() {
       setSeatsLoading(false);
     }
   }, [trip, state, t]);
+
+  const syncHolds = useCallback(async (seats: AvailableSeatDto[]) => {
+    if (!trip || !state) return;
+    setHoldSyncing(true);
+    setSeatsError('');
+    try {
+      const storedId = holdStorageKey ? sessionStorage.getItem(holdStorageKey) : null;
+      const groupId = holdGroupId ?? storedId ?? undefined;
+      const result = await bookingApi.holdSeats({
+        tripId: trip.id,
+        boardingStationId: state.boardingStationId,
+        alightingStationId: state.alightingStationId,
+        seatIds: seats.map((s) => s.id),
+        holdGroupId: groupId,
+      });
+      setHoldGroupId(result.holdGroupId);
+      setHoldExpiresAt(new Date(result.expiresAt));
+      if (holdStorageKey) sessionStorage.setItem(holdStorageKey, result.holdGroupId);
+    } catch (err) {
+      showHoldError(err);
+      setSelectedSeats([]);
+      setHoldGroupId(null);
+      setHoldExpiresAt(null);
+      if (holdStorageKey) sessionStorage.removeItem(holdStorageKey);
+      await fetchSeats();
+    } finally {
+      setHoldSyncing(false);
+    }
+  }, [trip, state, holdGroupId, holdStorageKey, fetchSeats]);
+
+  const showHoldError = (err: unknown) => {
+    const msg = toUserErrorMessage(err, t);
+    setSeatsError(/422|conflict|unavailable|hold|مقعد/i.test(msg) ? t('seat.just.taken') : msg);
+  };
+
+  useEffect(() => {
+    if (currentStep === 2 && holdStorageKey && !holdGroupId) {
+      const stored = sessionStorage.getItem(holdStorageKey);
+      if (stored) setHoldGroupId(stored);
+    }
+  }, [currentStep, holdStorageKey, holdGroupId]);
+
+  useEffect(() => {
+    if (!holdExpiresAt) {
+      setHoldRemainingSec(null);
+      return;
+    }
+    const tick = () => {
+      const sec = Math.max(0, Math.floor((holdExpiresAt.getTime() - Date.now()) / 1000));
+      setHoldRemainingSec(sec);
+      if (sec <= 0) {
+        setSeatsError(t('seat.hold.expired'));
+        setSelectedSeats([]);
+        setHoldGroupId(null);
+        setHoldExpiresAt(null);
+        if (holdStorageKey) sessionStorage.removeItem(holdStorageKey);
+        bookingApi.releaseSeatHolds().catch(() => {});
+        fetchSeats();
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [holdExpiresAt, holdStorageKey, t, fetchSeats]);
+
+  useEffect(() => () => {
+    if (holdGroupIdRef.current) {
+      bookingApi.releaseSeatHolds(holdGroupIdRef.current).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     if (currentStep === 2 && !seatsMap && !seatsLoading) {
@@ -533,30 +615,31 @@ export default function BookingPage() {
     );
   }
 
-  const toggleSeat = (seat: AvailableSeatDto) => {
-    if (!seat.isAvailable) return;
-    setSelectedSeats((prev) => {
-      const existingIdx = prev.findIndex((s) => s.id === seat.id);
-      if (existingIdx >= 0) {
-        // Deselect.
-        return prev.filter((s) => s.id !== seat.id);
-      }
-      // Hit cap — silently refuse extra picks.
-      if (prev.length >= passengerCount) return prev;
-      return [...prev, seat];
-    });
+  const toggleSeat = async (seat: AvailableSeatDto) => {
+    if (!seat.isAvailable && !seat.isHeldByMe) return;
+    const existingIdx = selectedSeats.findIndex((s) => s.id === seat.id);
+    let nextSeats: AvailableSeatDto[];
+    if (existingIdx >= 0) {
+      nextSeats = selectedSeats.filter((s) => s.id !== seat.id);
+    } else {
+      if (selectedSeats.length >= passengerCount) return;
+      nextSeats = [...selectedSeats, seat];
+    }
+    setSelectedSeats(nextSeats);
+    await syncHolds(nextSeats);
   };
 
-  const autoFillSeats = () => {
+  const autoFillSeats = async () => {
     if (!seatsMap) return;
     const allFree = visibleCoaches.flatMap((c) => c.seats).filter((s) => s.isAvailable);
     if (!allFree.length) return;
-    // Take the first N free seats from the visible coach list.
     const remaining = passengerCount - selectedSeats.length;
     if (remaining <= 0) return;
     const alreadyPickedIds = new Set(selectedSeats.map((s) => s.id));
     const additions = allFree.filter((s) => !alreadyPickedIds.has(s.id)).slice(0, remaining);
-    setSelectedSeats((prev) => [...prev, ...additions]);
+    const nextSeats = [...selectedSeats, ...additions];
+    setSelectedSeats(nextSeats);
+    await syncHolds(nextSeats);
   };
 
   const handlePay = async (e: React.FormEvent) => {
@@ -567,6 +650,11 @@ export default function BookingPage() {
     }
     if (selectedSeats.length !== passengerCount) {
       setError(t('select.all.seats'));
+      return;
+    }
+    if (holdRemainingSec === 0) {
+      setError(t('seat.hold.expired'));
+      setCurrentStep(2);
       return;
     }
     if (!cardValid) {
@@ -864,6 +952,17 @@ export default function BookingPage() {
                     {t('seats.picked')} {selectedSeats.length} / {passengerCount}
                   </p>
 
+                  {holdRemainingSec != null && holdRemainingSec > 0 && selectedSeats.length > 0 && (
+                    <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                      {t('seat.hold.timer')}: {String(Math.floor(holdRemainingSec / 60)).padStart(2, '0')}:{String(holdRemainingSec % 60).padStart(2, '0')}
+                    </p>
+                  )}
+                  {holdSyncing && (
+                    <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> {t('seat.hold.syncing')}
+                    </p>
+                  )}
+
                   {availableClassIds.size >= 2 && (
                     <div className="mb-4 flex flex-wrap items-center gap-2">
                       <span className="text-sm text-gray-600">{t('class')}:</span>
@@ -880,6 +979,7 @@ export default function BookingPage() {
                             if (chosenClass === v) return;
                             setChosenClass(v as '' | '1' | '2' | '3');
                             setSelectedSeats([]);
+                            syncHolds([]);
                           }}
                           className={`px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
                             chosenClass === v
@@ -924,7 +1024,7 @@ export default function BookingPage() {
                               {coach.seats.map((seat) => {
                                 const selectedIdx = selectedSeats.findIndex((s) => s.id === seat.id);
                                 const isSelected = selectedIdx >= 0;
-                                const isAvailable = seat.isAvailable;
+                                const isAvailable = seat.isAvailable || seat.isHeldByMe;
                                 const atCap = !isSelected && selectedSeats.length >= passengerCount;
                                 return (
                                   <button
